@@ -2,8 +2,8 @@ package com.cupshe.restclient;
 
 import com.cupshe.Application;
 import com.cupshe.army.knife.ResponseVO;
-import com.cupshe.demo.service.DemoService;
 import com.cupshe.demo.domain.DemoDTO;
+import com.cupshe.demo.service.DemoService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,13 +82,4 @@ public class RestClientTests {
         ResponseVO<Map<String, List<DemoDTO>>> res = demoService.complexObject();
         System.out.println(res);
     }
-
-    // TODO:
-    //  1. RPC 接口请求参数携带 @RequestBody，以及无注解参数的传值，另外需测试表单提交方式
-    //  2. @GetMapping，@PostMapping，@PutMapping，@DeleteMapping，@RequestMapping
-    //  3. 返回值类型为 ResponseVO<T>，List<T>，Map<K, V>，Object 其它对象类型
-    //  4. 返回值类型为基础数据类型（包装类及 String）
-    //  5. 无返回值类型的请求场景（接口方法返回值类型为 void）
-    //  6. 无请求参数的请求场景（接口方法无入参）
-    //  7. 测试本工程打包为 jar 文件后与各工程的整合，及联调是否可以正常工作
 }
