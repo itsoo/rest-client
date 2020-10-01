@@ -1,0 +1,67 @@
+package com.cupshe.restclient;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.FactoryBean;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.cglib.proxy.Proxy;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.util.Assert;
+
+/**
+ * RestClientFactoryBean
+ *
+ * @author zxy
+ */
+public class RestClientFactoryBean implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
+
+    private Class<?> clazz;
+    private String name;
+    private String path;
+    private RestClient.LoadBalanceType loadBalanceType;
+    private int maxAutoRetries;
+    private String fallback;
+    private long connectTimeout;
+
+    // ~ ext properties ~ //
+
+    private ApplicationContext applicationContext;
+
+    public RestClientFactoryBean(Class<?> clazz, String name, String path, RestClient.LoadBalanceType loadBalanceType,
+                                 int maxAutoRetries, String fallback, long connectTimeout) {
+        this.clazz = clazz;
+        this.name = name;
+        this.path = path;
+        this.loadBalanceType = loadBalanceType;
+        this.maxAutoRetries = maxAutoRetries;
+        this.fallback = fallback;
+        this.connectTimeout = connectTimeout;
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public Object getObject() {
+        applicationContext.getBean(RestClientConfigProperties.class);
+        return Proxy.newProxyInstance(this.clazz.getClassLoader(), ofArray(this.clazz),
+                new RestClientProxy(name, path, loadBalanceType, maxAutoRetries, fallback, connectTimeout));
+    }
+
+    @Override
+    public Class<?> getObjectType() {
+        return clazz;
+    }
+
+    @Override
+    public void afterPropertiesSet() {
+        Assert.notNull(this.clazz, "Proxy class cannot be null.");
+        Assert.notNull(this.name, "Value of @RestClient cannot be null.");
+    }
+
+    private Class[] ofArray(Class... args) {
+        return args;
+    }
+}
