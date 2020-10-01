@@ -1,0 +1,11 @@
+{
+  "groups": [
+    {
+      "name": "rest-client",
+      "type": "com.cupshe.restclient.RestClientConfigProperties",
+      "sourceType": "com.cupshe.restclient.RestClientConfigProperties"
+    }
+  ],
+  "properties": [],
+  "hints": []
+}
