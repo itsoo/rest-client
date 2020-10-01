@@ -22,6 +22,8 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.cupshe.restclient.RestClient.LoadBalanceType;
+
 /**
  * RestClientProxy
  *
@@ -32,14 +34,14 @@ public class RestClientProxy implements InvocationHandler {
 
     private String name;
     private String path;
-    private RestClient.LoadBalanceType loadBalanceType;
+    private LoadBalanceType loadBalanceType;
     private int maxAutoRetries;
     private String fallback;
 
     private RestTemplate client;
     private ThreadLocal<Integer> counter = ThreadLocal.withInitial(() -> 0);
 
-    RestClientProxy(String name, String path, RestClient.LoadBalanceType loadBalanceType, int maxAutoRetries,
+    RestClientProxy(String name, String path, LoadBalanceType loadBalanceType, int maxAutoRetries,
                     String fallback, long connectTimeout) {
         this.name = name;
         this.path = path;

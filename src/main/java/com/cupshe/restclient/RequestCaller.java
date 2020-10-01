@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.cupshe.restclient.RestClient.LoadBalanceType;
+
 /**
  * RequestCaller
  *
@@ -26,7 +28,7 @@ public class RequestCaller {
         random = new CallRandom();
     }
 
-    String get(RestClient.LoadBalanceType loadBalanceType) {
+    String get(LoadBalanceType loadBalanceType) {
         int i = getCall(loadBalanceType).index();
         if (i == -1) {
             throw new NotFoundException();
@@ -35,8 +37,8 @@ public class RequestCaller {
         return services.get(i);
     }
 
-    private AbstractCall getCall(RestClient.LoadBalanceType loadBalanceType) {
-        return RestClient.LoadBalanceType.R.equals(loadBalanceType) ? random : roundRobin;
+    private AbstractCall getCall(LoadBalanceType loadBalanceType) {
+        return LoadBalanceType.R.equals(loadBalanceType) ? random : roundRobin;
     }
 
     private abstract class AbstractCall {

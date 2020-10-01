@@ -8,6 +8,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 
+import static com.cupshe.restclient.RestClient.LoadBalanceType;
+
 /**
  * RestClientFactoryBean
  *
@@ -18,7 +20,7 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
     private Class<?> clazz;
     private String name;
     private String path;
-    private RestClient.LoadBalanceType loadBalanceType;
+    private LoadBalanceType loadBalanceType;
     private int maxAutoRetries;
     private String fallback;
     private long connectTimeout;
@@ -27,7 +29,7 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
 
     private ApplicationContext applicationContext;
 
-    public RestClientFactoryBean(Class<?> clazz, String name, String path, RestClient.LoadBalanceType loadBalanceType,
+    public RestClientFactoryBean(Class<?> clazz, String name, String path, LoadBalanceType loadBalanceType,
                                  int maxAutoRetries, String fallback, long connectTimeout) {
         this.clazz = clazz;
         this.name = name;
