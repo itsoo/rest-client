@@ -90,8 +90,8 @@ public class RestClientProxy implements InvocationHandler {
     private String sendRequestAndGetResponse(Object body, HttpHeaders headers, Method method, Object[] args)
             throws URISyntaxException {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        ResponseEntity<byte[]> res = null;
         String uriPath = getUriPath(path, attr.path, method, args);
+        ResponseEntity<byte[]> res = null;
 
         do {
             URI uri = RequestGenerator.genericUriOf(getTargetHost(name), uriPath);
