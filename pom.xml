@@ -20,6 +20,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -53,6 +54,7 @@
             <groupId>com.cupshe</groupId>
             <artifactId>army-knife</artifactId>
             <version>0.0.1-RELEASE</version>
+            <optional>true</optional>
             <exclusions>
                 <exclusion>
                     <groupId>com.github.pagehelper</groupId>
