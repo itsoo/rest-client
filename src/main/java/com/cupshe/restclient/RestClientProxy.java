@@ -132,7 +132,7 @@ public class RestClientProxy implements InvocationHandler {
     }
 
     private String getTargetHost(String name) {
-        for (RequestCaller rm : RestClientConfigProperties.getRouters()) {
+        for (RequestCaller rm : RestClientProperties.getRouters()) {
             if (rm.getName().equals(name)) {
                 return rm.get(loadBalanceType);
             }

@@ -1,0 +1,34 @@
+{
+  "groups": [],
+  "properties": [
+    {
+      "name": "rest-client",
+      "type": "com.cupshe.restclient.RestClientProperties",
+      "sourceType": "com.cupshe.restclient.RestClientProperties",
+      "description": "RPC client config."
+    },
+    {
+      "name": "rest-client.routers",
+      "type": "java.util.List<com.cupshe.restclient.RequestCaller>",
+      "sourceType": "com.cupshe.restclient.RestClientProperties",
+      "description": "Remote service list."
+    }
+  ],
+  "hints": [
+    {
+      "name": "rest-client.routers",
+      "values": [
+        {
+          "value": "name",
+          "type": "java.lang.String",
+          "description": "Service name."
+        },
+        {
+          "value": "services",
+          "type": "java.util.List<java.lang.String>",
+          "description": "Service location list."
+        }
+      ]
+    }
+  ]
+}

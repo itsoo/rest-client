@@ -16,16 +16,23 @@ import static com.cupshe.restclient.RestClient.LoadBalanceType;
  * @author zxy
  */
 @Data
-public class RequestCaller {
+class RequestCaller {
 
     private String name;
     private List<String> services;
     private AbstractCall roundRobin;
     private AbstractCall random;
 
-    public RequestCaller() {
+    private RequestCaller() {
         roundRobin = new CallRoundRobin();
         random = new CallRandom();
+    }
+
+    static RequestCaller of(String name, List<String> services) {
+        RequestCaller result = new RequestCaller();
+        result.setName(name);
+        result.setServices(services);
+        return result;
     }
 
     String get(LoadBalanceType loadBalanceType) {

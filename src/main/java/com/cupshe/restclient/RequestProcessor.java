@@ -93,7 +93,15 @@ class RequestProcessor {
     }
 
     static String processParamsOfUri(String uri, String[] params) {
-        return uri + getQuerySeparator(uri) + String.join("&", params);
+        String[] reqParams = params.clone();
+        for (int i = 0; i < reqParams.length; i++) {
+            String[] kv = StringUtils.split(reqParams[i], "=");
+            if (kv != null) {
+                reqParams[i] = kv[0] + '=' + encode(kv[1]);
+            }
+        }
+
+        return uri + getQuerySeparator(uri) + String.join("&", reqParams);
     }
 
     static Object processRequestBodyOf(Parameter[] params, Object[] args) {
