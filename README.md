@@ -17,7 +17,7 @@
 <dependency>
   <groupId>com.cupshe</groupId>
   <artifactId>rest-client</artifactId>
-  <version>0.0.1-RELEASE</version>
+  <version>0.0.2-RELEASE</version>
 </dependency>
 ```
 
@@ -107,3 +107,4 @@ public class DemoServiceImpl implements DemoService {
 5. 无返回值类型的请求场景（接口方法返回值类型为 void）
 6. 无请求参数的请求场景（接口方法无入参）
 7. 测试本工程打包为 jar 文件后与各工程的整合，及联调是否可以正常工作
+8. 测试标准 URI 路径的处理
