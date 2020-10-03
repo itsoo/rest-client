@@ -81,8 +81,9 @@ class AnnotationMethodAttribute {
         return new AnnotationMethodAttribute(path, headers, params, method);
     }
 
-    private static String[] getOrDefault(@NonNull String[] str, String[] def) {
-        return str.length > 0 ? str : def;
+    private static String[] getOrDefault(@NonNull String[] arg, String[] def) {
+        Assert.isTrue(!(arg.length == 0 && def.length == 0), "path or value cannot be all empty.");
+        return arg.length == 0 ? def : arg;
     }
 
     private static Annotation getMethodAnnotation(Method method) {

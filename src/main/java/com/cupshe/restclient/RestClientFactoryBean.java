@@ -24,13 +24,14 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
     private int maxAutoRetries;
     private String fallback;
     private long connectTimeout;
+    private long readTimeout;
 
     // ~ ext properties ~ //
 
     private ApplicationContext applicationContext;
 
     public RestClientFactoryBean(Class<?> clazz, String name, String path, LoadBalanceType loadBalanceType,
-                                 int maxAutoRetries, String fallback, long connectTimeout) {
+                                 int maxAutoRetries, String fallback, long connectTimeout, long readTimeout) {
         this.clazz = clazz;
         this.name = name;
         this.path = path;
@@ -38,6 +39,7 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
         this.maxAutoRetries = maxAutoRetries;
         this.fallback = fallback;
         this.connectTimeout = connectTimeout;
+        this.readTimeout = readTimeout;
     }
 
     @Override
@@ -50,7 +52,7 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
         // loaded only config properties
         applicationContext.getBean(RestClientProperties.class);
         return Proxy.newProxyInstance(this.clazz.getClassLoader(), ofArray(this.clazz),
-                new RestClientProxy(name, path, loadBalanceType, maxAutoRetries, fallback, connectTimeout));
+                new RestClientProxy(name, path, loadBalanceType, maxAutoRetries, fallback, connectTimeout, readTimeout));
     }
 
     @Override
@@ -61,7 +63,6 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
     @Override
     public void afterPropertiesSet() {
         Assert.notNull(this.clazz, "Proxy class cannot be null.");
-        Assert.notNull(this.name, "Value of @RestClient cannot be null.");
     }
 
     private Class[] ofArray(Class... args) {

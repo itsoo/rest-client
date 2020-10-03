@@ -13,7 +13,8 @@ import java.util.Map;
  *
  * @author zxy
  */
-@RestClient(value = "comment", path = "/api/v1/comment", maxAutoRetries = 3)
+@RestClient(value = "comment", path = "/api/v1/comment", maxAutoRetries = 3,
+        fallback = "@com.cupshe.demo.service.DemoServiceImpl#fallback", readTimeout = 1000L)
 public interface DemoProvider {
 
     @PostMapping("/form")

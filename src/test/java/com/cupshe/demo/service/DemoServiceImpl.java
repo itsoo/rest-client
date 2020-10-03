@@ -6,6 +6,7 @@ import com.cupshe.demo.rpc.DemoProvider;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -60,7 +61,7 @@ public class DemoServiceImpl implements DemoService {
         return demoProvider.complexObject();
     }
 
-    public String fallback() {
-        return "test fallback method.";
+    public ResponseVO<Object> fallback() {
+        return ResponseVO.of("test fallback method.");
     }
 }

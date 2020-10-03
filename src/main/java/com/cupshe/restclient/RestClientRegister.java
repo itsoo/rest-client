@@ -63,12 +63,13 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
                     String clazz = component.getBeanClassName();
                     BeanDefinitionBuilder bb = BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class);
                     bb.addConstructorArgValue(Class.forName(clazz));
-                    bb.addConstructorArgValue(attrs.get("value"));
+                    bb.addConstructorArgValue(getOrDefault(attrs.get("name"), attrs.get("value")));
                     bb.addConstructorArgValue(attrs.get("path"));
                     bb.addConstructorArgValue(attrs.get("loadBalanceType"));
                     bb.addConstructorArgValue(attrs.get("maxAutoRetries"));
                     bb.addConstructorArgValue(attrs.get("fallback"));
                     bb.addConstructorArgValue(attrs.get("connectTimeout"));
+                    bb.addConstructorArgValue(attrs.get("readTimeout"));
                     BeanDefinitionReaderUtils.registerBeanDefinition(
                             new BeanDefinitionHolder(bb.getBeanDefinition(), '$' + clazz, ofArray(clazz)), registry);
                 }
@@ -99,6 +100,11 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         }
 
         return result;
+    }
+
+    private Object getOrDefault(Object arg, Object def) {
+        Assert.isTrue(!(StringUtils.isEmpty(arg) && StringUtils.isEmpty(def)), "name or value cannot be all empty.");
+        return StringUtils.isEmpty(arg) ? def : arg;
     }
 
     private String[] ofArray(String... args) {

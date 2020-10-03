@@ -40,7 +40,7 @@ public class RestClientProxy implements InvocationHandler {
     private ThreadLocal<Integer> counter = ThreadLocal.withInitial(() -> 0);
 
     RestClientProxy(String name, String path, LoadBalanceType loadBalanceType, int maxAutoRetries,
-                    String fallback, long connectTimeout) {
+                    String fallback, long connectTimeout, long readTimeout) {
         this.name = name;
         this.path = path;
         this.loadBalanceType = loadBalanceType;
@@ -48,6 +48,7 @@ public class RestClientProxy implements InvocationHandler {
         this.fallback = fallback;
         this.client = new RestTemplateBuilder()
                 .setConnectTimeout(Duration.ofMillis(connectTimeout))
+                .setReadTimeout(Duration.ofMillis(readTimeout))
                 .build();
     }
 

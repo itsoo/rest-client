@@ -28,13 +28,6 @@ class RequestCaller {
         random = new CallRandom();
     }
 
-    static RequestCaller of(String name, List<String> services) {
-        RequestCaller result = new RequestCaller();
-        result.setName(name);
-        result.setServices(services);
-        return result;
-    }
-
     String get(LoadBalanceType loadBalanceType) {
         int i = getCall(loadBalanceType).index();
         if (i == -1) {
