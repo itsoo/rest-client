@@ -93,7 +93,7 @@ class RequestProcessor {
     }
 
     static String processParamsOfUri(String uri, String[] params) {
-        return getQuerySeparator(uri) + String.join("&", params);
+        return uri + getQuerySeparator(uri) + String.join("&", params);
     }
 
     static Object processRequestBodyOf(Parameter[] params, Object[] args) {
