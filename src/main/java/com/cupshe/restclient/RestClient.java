@@ -24,7 +24,7 @@ public @interface RestClient {
     /*** 最大重试次数 */
     int maxAutoRetries() default 0;
 
-    /*** fallback eg.('@com.examples.Demo#abc') */
+    /*** fallback e.g.('@com.examples.Demo#abc') */
     String fallback() default "";
 
     /*** 连接超时时间 */

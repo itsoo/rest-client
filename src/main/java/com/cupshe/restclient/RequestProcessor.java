@@ -7,10 +7,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.util.UriUtils;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -35,7 +35,7 @@ class RequestProcessor {
             return url;
         }
 
-        char sp = url.lastIndexOf('?') > -1 ? '&' : '?';
+        char sp = getQuerySeparator(url);
         StringBuilder result = new StringBuilder(url);
         for (int i = 0, size = args.size(); i < size; i++) {
             if (i > 0) {
@@ -63,7 +63,7 @@ class RequestProcessor {
             String key = kv.getKey();
             Object value = kv.getValue();
             if (StringUtils.hasText(key) && value != null) {
-                result = result.replace('{' + key + '}', value.toString());
+                result = StringUtils.replace(result, '{' + key + '}', value.toString());
                 it.remove();
             }
         }
@@ -74,7 +74,7 @@ class RequestProcessor {
             for (int i = 0; i < size; i++) {
                 Object value = args.get(i).getValue();
                 if (value != null) {
-                    result = result.replace(m.group(i + 1), value.toString());
+                    result = StringUtils.replace(result, m.group(i + 1), value.toString());
                 }
             }
         }
@@ -83,14 +83,23 @@ class RequestProcessor {
     }
 
     static String processStandardUri(String prefix, String path) {
-        return prefix.endsWith("/") || path.startsWith("/") ? prefix + path : prefix + '/' + path;
+        String result = '/' + prefix + '/' + path;
+        for (String repeatSp = "//"; result.contains(repeatSp); ) {
+            result = StringUtils.replace(result, repeatSp, "/");
+        }
+
+        result = "/".equals(result) ? "" : result;
+        return result.endsWith("/") ? result.substring(0, result.length() - 1) : result;
     }
 
-    static Object processRequestBodyOf(Method method, Object[] args) {
-        Parameter[] params = method.getParameters();
+    static String processParamsOfUri(String uri, String[] params) {
+        return getQuerySeparator(uri) + String.join("&", params);
+    }
+
+    static Object processRequestBodyOf(Parameter[] params, Object[] args) {
         for (int i = 0; i < params.length; i++) {
-            RequestBody anno = params[i].getDeclaredAnnotation(RequestBody.class);
-            if (anno != null) {
+            RequestBody da = params[i].getDeclaredAnnotation(RequestBody.class);
+            if (da != null) {
                 return args[i];
             }
         }
@@ -98,26 +107,24 @@ class RequestProcessor {
         return null;
     }
 
-    static List<Kv> processPathVariablesOf(Method method, Object[] args) {
+    static List<Kv> processPathVariablesOf(Parameter[] params, Object[] args) {
         List<Kv> result = new ArrayList<>();
-        Parameter[] params = method.getParameters();
         for (int i = 0; i < params.length; i++) {
-            PathVariable anno = params[i].getDeclaredAnnotation(PathVariable.class);
-            if (anno != null) {
-                result.add(new Kv(anno.value(), args[i]));
+            PathVariable da = params[i].getDeclaredAnnotation(PathVariable.class);
+            if (da != null) {
+                result.add(new Kv(da.value(), args[i]));
             }
         }
 
         return result;
     }
 
-    static List<Kv> processRequestParamsOf(Method method, Object[] args) {
+    static List<Kv> processRequestParamsOf(Parameter[] params, Object[] args) {
         List<Kv> result = new ArrayList<>();
-        Parameter[] params = method.getParameters();
         for (int i = 0; i < params.length; i++) {
-            RequestParam anno = params[i].getDeclaredAnnotation(RequestParam.class);
-            if (anno != null) {
-                result.add(new Kv(anno.value(), args[i]));
+            RequestParam da = params[i].getDeclaredAnnotation(RequestParam.class);
+            if (da != null) {
+                result.add(new Kv(da.value(), args[i]));
             }
 
             if (isEmptyAnnotations(params[i].getDeclaredAnnotations())) {
@@ -128,9 +135,13 @@ class RequestProcessor {
         return result;
     }
 
+    private static char getQuerySeparator(String uri) {
+        return uri.lastIndexOf('?') > -1 ? '&' : '?';
+    }
+
     @SneakyThrows
     private static String encode(Object value) {
-        return StringUtils.isEmpty(value) ? "" : URLEncoder.encode(value.toString(), "UTF-8");
+        return StringUtils.isEmpty(value) ? "" : UriUtils.encode(value.toString(), StandardCharsets.UTF_8);
     }
 
     @SafeVarargs

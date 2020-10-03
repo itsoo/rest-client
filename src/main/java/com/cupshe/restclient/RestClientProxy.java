@@ -5,10 +5,7 @@ import com.cupshe.restclient.exception.ConnectTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cglib.proxy.InvocationHandler;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,6 +13,7 @@ import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Duration;
@@ -56,11 +54,9 @@ public class RestClientProxy implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         checkParamsValidity(method);
-        Object body = RequestProcessor.processRequestBodyOf(method, args);
-        HttpHeaders headers = getHttpHeaders(body);
 
         try {
-            String res = sendRequestAndGetResponse(body, headers, method, args);
+            String res = sendRequestAndGetResponse(AnnotationMethodAttribute.of(method), method, args);
             if (res != null) {
                 return ResponseProcessor.convertToObject(res, method);
             }
@@ -87,17 +83,23 @@ public class RestClientProxy implements InvocationHandler {
         Assert.isTrue(count <= 1, "@RequestBody cannot have more than one.");
     }
 
-    private String sendRequestAndGetResponse(Object body, HttpHeaders headers, Method method, Object[] args)
+    private String sendRequestAndGetResponse(AnnotationMethodAttribute attr, Method method, Object[] args)
             throws URISyntaxException {
-        AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        String uriPath = getUriPath(path, attr.path, method, args);
+        String uriPath = getUriPath(path, attr.path, attr.params, method.getParameters(), args);
+        Object body = RequestProcessor.processRequestBodyOf(method.getParameters(), args);
+        HttpHeaders headers = getHttpHeaders(attr, body);
+        return sendRequestAndGetResponse(uriPath, attr.method, body, headers);
+    }
+
+    private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers)
+            throws URISyntaxException {
         ResponseEntity<byte[]> res = null;
 
         do {
             URI uri = RequestGenerator.genericUriOf(getTargetHost(name), uriPath);
 
             try {
-                res = client.exchange(new RequestEntity<>(body, headers, attr.method, uri), byte[].class);
+                res = client.exchange(new RequestEntity<>(body, headers, method, uri), byte[].class);
                 if (log.isDebugEnabled()) {
                     log.debug("Rest connect success ==> [{}]", uri.toString());
                 }
@@ -113,8 +115,15 @@ public class RestClientProxy implements InvocationHandler {
         return (res != null && (bytes = res.getBody()) != null) ? new String(bytes) : null;
     }
 
-    private HttpHeaders getHttpHeaders(Object body) {
+    private HttpHeaders getHttpHeaders(AnnotationMethodAttribute attr, Object body) {
         HttpHeaders result = RequestGenerator.genericHttpHeaders();
+        for (String header : attr.headers) {
+            String[] kv = StringUtils.split(header, "=");
+            if (kv != null) {
+                result.add(kv[0], kv[1]);
+            }
+        }
+
         if (body != null) {
             result.setContentType(MediaType.APPLICATION_JSON);
         }
@@ -132,12 +141,12 @@ public class RestClientProxy implements InvocationHandler {
         return null;
     }
 
-    private String getUriPath(String prefix, String uri, Method method, Object[] args) {
+    private String getUriPath(String prefix, String uri, String[] defParams, Parameter[] params, Object[] args) {
         String result = RequestProcessor.processStandardUri(prefix, uri);
-        List<Kv> pathVariables = RequestProcessor.processPathVariablesOf(method, args);
+        List<Kv> pathVariables = RequestProcessor.processPathVariablesOf(params, args);
         result = RequestProcessor.processPathVariableOf(result, pathVariables);
-        List<Kv> requestParams = RequestProcessor.processRequestParamsOf(method, args);
+        List<Kv> requestParams = RequestProcessor.processRequestParamsOf(params, args);
         result = RequestProcessor.processRequestParamOf(result, requestParams);
-        return result;
+        return RequestProcessor.processParamsOfUri(result, defParams);
     }
 }

@@ -19,10 +19,11 @@ import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * RestClientRegister
@@ -55,8 +56,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
             Set<BeanDefinition> components = scanner.findCandidateComponents(basePackage);
             for (BeanDefinition component : components) {
                 if (component instanceof AnnotatedBeanDefinition) {
-                    Map<String, Object> attrs = ((AnnotatedBeanDefinition) component)
-                            .getMetadata()
+                    Map<String, Object> attrs = ((AnnotatedBeanDefinition) component).getMetadata()
                             .getAnnotationAttributes(RestClient.class.getCanonicalName());
                     Assert.notNull(attrs, "Cannot found interface with @RestClient.");
 
@@ -91,14 +91,9 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
             return Collections.emptySet();
         }
 
-        Set<String> result = new HashSet<>();
-        String[] basePackages = (String[]) attrs.get("basePackages");
-        for (String pkg : basePackages) {
-            if (StringUtils.hasText(pkg)) {
-                result.add(pkg);
-            }
-        }
-
+        Set<String> result = Arrays.stream((String[]) attrs.get("basePackages"))
+                .filter(StringUtils::hasText)
+                .collect(Collectors.toSet());
         if (result.isEmpty()) {
             result.add(ClassUtils.getPackageName(metadata.getClassName()));
         }
