@@ -1,6 +1,6 @@
 package com.cupshe.demo.service;
 
-import com.cupshe.army.knife.ResponseVO;
+import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.rpc.DemoProvider;
 import org.springframework.stereotype.Service;

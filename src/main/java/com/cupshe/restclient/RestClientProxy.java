@@ -1,6 +1,6 @@
 package com.cupshe.restclient;
 
-import com.cupshe.army.knife.Kv;
+import com.cupshe.ak.Kv;
 import com.cupshe.restclient.exception.ConnectTimeoutException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.client.RestTemplateBuilder;

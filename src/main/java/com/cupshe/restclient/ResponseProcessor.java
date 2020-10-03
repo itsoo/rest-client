@@ -1,6 +1,6 @@
 package com.cupshe.restclient;
 
-import com.cupshe.army.knife.JsonUtils;
+import com.cupshe.ak.JsonUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 

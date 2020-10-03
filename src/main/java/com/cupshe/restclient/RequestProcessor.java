@@ -1,7 +1,7 @@
 package com.cupshe.restclient;
 
-import com.cupshe.army.knife.BeanUtils;
-import com.cupshe.army.knife.Kv;
+import com.cupshe.ak.BeanUtils;
+import com.cupshe.ak.Kv;
 import lombok.SneakyThrows;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PathVariable;

@@ -1,7 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.Application;
-import com.cupshe.army.knife.ResponseVO;
+import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.service.DemoService;
 import org.junit.Test;
