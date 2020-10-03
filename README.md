@@ -96,6 +96,8 @@ public class DemoServiceImpl implements DemoService {
 - fallback 的实现方法必须为无参数方法，返回值类型不做约束，也可以是 static 方法
 - 接口的实现类是动态代理对象，使用 @Autowired 注解会报红色告警，建议使用 @Resource 注解来避免告警
 - 接口的返回参数类型如果包含泛型的，必须指定正确的泛型类型，否则将会在反序列化过程中报错
+- @RequestMapping 等注解中 headers 为请求携带的头信息，与标准注解不同
+- @RequestMapping 等注解中 params 为请求携带的硬编码参数信息（不解析表达式），与标准注解不同
 
 
 #### 测试场景
