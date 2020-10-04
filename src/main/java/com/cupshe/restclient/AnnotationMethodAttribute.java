@@ -21,8 +21,8 @@ class AnnotationMethodAttribute {
     String[] params;
 
     private AnnotationMethodAttribute(String[] path, String[] headers, String[] params, HttpMethod method) {
-        Assert.isTrue(path.length == 1, "@RequestMapping value is wrong (only one parameter).");
-        this.path = path[0];
+        Assert.isTrue(path.length <= 1, "@RequestMapping value is wrong (only one parameter).");
+        this.path = path.length == 1 ? path[0] : "";
         this.headers = headers;
         this.params = params;
         this.method = method;
@@ -81,8 +81,7 @@ class AnnotationMethodAttribute {
         return new AnnotationMethodAttribute(path, headers, params, method);
     }
 
-    private static String[] getOrDefault(@NonNull String[] arg, String[] def) {
-        Assert.isTrue(!(arg.length == 0 && def.length == 0), "path or value cannot be all empty.");
+    private static String[] getOrDefault(@NonNull String[] arg, @NonNull String[] def) {
         return arg.length == 0 ? def : arg;
     }
 

@@ -98,7 +98,6 @@ public class DemoServiceImpl implements DemoService {
 - 接口的返回参数类型如果包含泛型的，必须指定正确的泛型类型，否则将会在反序列化过程中报错
 - @RequestMapping 等注解中 headers 为请求携带的头信息，与标准注解不同
 - @RequestMapping 等注解中 params 为请求携带的硬编码参数信息（不解析表达式），与标准注解不同
-- @RequestMapping 等注解中 path 与 value 不能同时为空
 - @RequestMapping 等注解中 path 与 value 同时设置时 path 权重高于 value
 - @RestClient 注解中 name 与 value 不能同时为空
 - @RestClient 注解中 name 与 value 同时设置时 name 权重高于 value
