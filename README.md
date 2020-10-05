@@ -90,6 +90,24 @@ public class DemoServiceImpl implements DemoService {
 ```
 
 
+#### 参数配置
+
+```
+@EnableRestClient
+└─ basePackages   // 扫描包路径（数组）
+
+@RestClient
+├─ name           // 服务名称：1.name 与 value 不能同时为空；2.与 value 同时设置时权重高于 value
+├─ value          // 服务名称：1.name 与 value 不能同时为空；2.与 name 同时设置时权重低于 name
+├─ path           // 请求 URI 上下文（即 path 的前缀部分）
+├─ maxAutoRetries // 最大重试次数，第一次请求不计入重试次数（即存在失败情况下的总请求次数为 maxAutoRetries + 1）
+├─ fallback       // 失败时的兜底方法（无参数有返回值方法）格式：@类的全限定名#方法名称：e.g.'@com.examples.Demo#abc'
+│                    若未设置 fallback 失败将抛出异常 com.cupshe.restclient.exception.ConnectTimeoutException
+├─ connectTimeout // 连接超时时间（ms），默认值：1000L
+└─ readTimeout    // 等待响应超时时间（ms），默认值：-1L（即不超时，一直等待直到响应）
+```
+
+
 #### 注意事项
 
 - fallback 方法接收字符串类型的值，描述为 "@类的全限定名#方法名称" 例如："@com.examples.Demo#abc"
