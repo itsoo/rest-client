@@ -3,9 +3,9 @@ package com.cupshe.restclient;
 import com.cupshe.ak.Kv;
 import com.cupshe.restclient.exception.ConnectTimeoutException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.cglib.proxy.InvocationHandler;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -16,7 +16,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 
@@ -40,16 +39,13 @@ public class RestClientProxy implements InvocationHandler {
     private ThreadLocal<Integer> counter = ThreadLocal.withInitial(() -> 0);
 
     RestClientProxy(String name, String path, LoadBalanceType loadBalanceType, int maxAutoRetries,
-                    String fallback, long connectTimeout, long readTimeout) {
+                    String fallback, int connectTimeout, int readTimeout) {
         this.name = name;
         this.path = path;
         this.loadBalanceType = loadBalanceType;
         this.maxAutoRetries = maxAutoRetries;
         this.fallback = fallback;
-        this.client = new RestTemplateBuilder()
-                .setConnectTimeout(Duration.ofMillis(connectTimeout))
-                .setReadTimeout(Duration.ofMillis(readTimeout))
-                .build();
+        this.client = createRestTemplate(connectTimeout, readTimeout);
     }
 
     @Override
@@ -75,6 +71,13 @@ public class RestClientProxy implements InvocationHandler {
         } finally {
             counter.remove();
         }
+    }
+
+    private RestTemplate createRestTemplate(int connectTimeout, int readTimeout) {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(connectTimeout);
+        factory.setReadTimeout(readTimeout);
+        return new RestTemplate(factory);
     }
 
     private void checkParamsValidity(Method method) {

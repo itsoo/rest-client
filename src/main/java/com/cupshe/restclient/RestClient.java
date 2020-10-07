@@ -69,18 +69,18 @@ public @interface RestClient {
     String fallback() default "";
 
     /**
-     * 连接超时时间（ms）
+     * 请求连接超时时间（ms）
      *
      * @return long
      */
-    long connectTimeout() default 1000L;
+    int connectTimeout() default 1000;
 
     /**
      * 等待响应超时时间（ms）
      *
      * @return long
      */
-    long readTimeout() default -1L;
+    int readTimeout() default -1;
 
     /**
      * 负载均衡策略枚举
