@@ -1,6 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.JsonUtils;
+import com.cupshe.restclient.exception.ClassConvertException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 
@@ -15,12 +16,16 @@ import java.util.List;
  */
 class ResponseProcessor {
 
-    static Object convertToObject(String res, Method method) throws JsonProcessingException {
-        if (isInconvertibleType(method.getReturnType()) || !isJsonFormatString(res)) {
+    static Object convertToObject(String res, Method method) {
+        if (isInconvertibleType(method.getReturnType())) {
             return res;
         }
 
-        return convertToObject(res, method.getGenericReturnType());
+        try {
+            return convertToObject(res, method.getGenericReturnType());
+        } catch (JsonProcessingException e) {
+            throw new ClassConvertException(res, e);
+        }
     }
 
     private static Object convertToObject(String res, Type genericType) throws JsonProcessingException {
@@ -34,9 +39,5 @@ class ResponseProcessor {
 
     private static boolean isInconvertibleType(Class<?> returnType) {
         return returnType.isPrimitive() || returnType.isAssignableFrom(String.class);
-    }
-
-    private static boolean isJsonFormatString(String json) {
-        return json.charAt(0) == '{' || json.charAt(0) == '[';
     }
 }

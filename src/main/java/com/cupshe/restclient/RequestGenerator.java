@@ -24,10 +24,10 @@ class RequestGenerator {
         return headers;
     }
 
-    static URI genericUriOf(String baseUrl, String path) throws URISyntaxException {
-        Assert.notNull(baseUrl, "Param <baseUrl> cannot be null.");
+    static URI genericUriOf(String targetHost, String path) throws URISyntaxException {
+        Assert.notNull(targetHost, "Param <targetHost> cannot be null.");
 
-        String url = baseUrl;
+        String url = targetHost;
         if (!url.startsWith(PROTOCOL)) {
             url = PROTOCOL + url;
         }

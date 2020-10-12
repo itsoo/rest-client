@@ -51,7 +51,7 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
     public Object getObject() {
         // loaded only config properties
         applicationContext.getBean(RestClientProperties.class);
-        // returns the client proxy object
+        // return proxy object
         return Proxy.newProxyInstance(this.clazz.getClassLoader(), ofArray(this.clazz),
                 new RestClientProxy(name, path, loadBalanceType, maxAutoRetries, fallback, connectTimeout, readTimeout));
     }

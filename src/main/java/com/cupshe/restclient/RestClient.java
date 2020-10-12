@@ -61,7 +61,7 @@ public @interface RestClient {
     int maxAutoRetries() default 0;
 
     /**
-     * 失败时的兜底方法（无参数有返回值方法）e.g. '@com.examples.Demo#abc'
+     * 失败时的兜底方法（无参数有返回值方法）e.g.'@com.examples.Demo#abc'
      *
      * @return @类的全限定名#方法名称
      * @throws ConnectTimeoutException 若未设置 fallback 失败将抛出异常
@@ -71,14 +71,14 @@ public @interface RestClient {
     /**
      * 请求连接超时时间（ms）
      *
-     * @return long
+     * @return int
      */
     int connectTimeout() default 1000;
 
     /**
      * 等待响应超时时间（ms）
      *
-     * @return long
+     * @return int
      */
     int readTimeout() default -1;
 

@@ -21,7 +21,7 @@ class FallbackInvoker {
     }
 
     static FallbackInvoker of(String reference) {
-        isInconvertibleValue(reference);
+        assertInconvertibleValue(reference);
         Class<?> className = processClassNameOf(reference);
         String methodName = processMethodNameOf(reference);
         return new FallbackInvoker(className, methodName);
@@ -33,7 +33,7 @@ class FallbackInvoker {
         return method.invoke(target);
     }
 
-    private static void isInconvertibleValue(String arg) {
+    private static void assertInconvertibleValue(String arg) {
         Assert.isTrue(arg.lastIndexOf('#') != -1 && arg.charAt(0) == '@',
                 "Fallback value must like '@com.examples.Demo#abc', (@FullyQualified#MethodName).");
     }

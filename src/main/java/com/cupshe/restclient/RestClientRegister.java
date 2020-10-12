@@ -7,11 +7,9 @@ import org.springframework.beans.factory.config.BeanDefinitionHolder;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
-import org.springframework.core.env.Environment;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
@@ -30,15 +28,9 @@ import java.util.stream.Collectors;
  *
  * @author zxy
  */
-public class RestClientRegister implements ImportBeanDefinitionRegistrar, ResourceLoaderAware, EnvironmentAware {
+public class RestClientRegister implements ImportBeanDefinitionRegistrar, ResourceLoaderAware {
 
-    private Environment environment;
     private ResourceLoader resourceLoader;
-
-    @Override
-    public void setEnvironment(Environment environment) {
-        this.environment = environment;
-    }
 
     @Override
     public void setResourceLoader(ResourceLoader resourceLoader) {
@@ -48,9 +40,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
     @SneakyThrows
     @Override
     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
-        ClassPathScanningCandidateComponentProvider scanner = getScanner();
-        scanner.setResourceLoader(resourceLoader);
-        scanner.addIncludeFilter(new AnnotationTypeFilter(RestClient.class));
+        ClassPathScanningCandidateComponentProvider scanner = getComponentProviderScanner();
 
         for (String basePackage : getBasePackages(metadata)) {
             Set<BeanDefinition> components = scanner.findCandidateComponents(basePackage);
@@ -77,13 +67,17 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         }
     }
 
-    private ClassPathScanningCandidateComponentProvider getScanner() {
-        return new ClassPathScanningCandidateComponentProvider(false, environment) {
+    private ClassPathScanningCandidateComponentProvider getComponentProviderScanner() {
+        ClassPathScanningCandidateComponentProvider result = new ClassPathScanningCandidateComponentProvider(false) {
             @Override
             protected boolean isCandidateComponent(AnnotatedBeanDefinition def) {
                 return def.getMetadata().isIndependent() && !def.getMetadata().isAnnotation();
             }
         };
+
+        result.setResourceLoader(resourceLoader);
+        result.addIncludeFilter(new AnnotationTypeFilter(RestClient.class));
+        return result;
     }
 
     private Set<String> getBasePackages(AnnotationMetadata metadata) {
