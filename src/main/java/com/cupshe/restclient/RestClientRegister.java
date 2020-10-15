@@ -41,10 +41,8 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
     @Override
     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
         ClassPathScanningCandidateComponentProvider scanner = getComponentProviderScanner();
-
         for (String basePackage : getBasePackages(metadata)) {
-            Set<BeanDefinition> components = scanner.findCandidateComponents(basePackage);
-            for (BeanDefinition component : components) {
+            for (BeanDefinition component : scanner.findCandidateComponents(basePackage)) {
                 if (component instanceof AnnotatedBeanDefinition) {
                     Map<String, Object> attrs = ((AnnotatedBeanDefinition) component).getMetadata()
                             .getAnnotationAttributes(RestClient.class.getCanonicalName());
