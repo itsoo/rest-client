@@ -1,6 +1,5 @@
 package com.cupshe.restclient;
 
-import com.cupshe.ak.Kv;
 import com.cupshe.restclient.exception.ConnectTimeoutException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -16,7 +15,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.net.URI;
 import java.util.Arrays;
-import java.util.List;
 
 import static com.cupshe.restclient.RequestProcessor.*;
 import static com.cupshe.restclient.RestClient.LoadBalanceType;
@@ -134,10 +132,8 @@ public class RestClientProxy implements InvocationHandler {
 
     private String getUriPath(String prefix, String uri, String[] defParams, Parameter[] params, Object[] args) {
         String result = processStandardUri(prefix, uri);
-        List<Kv> pathVariables = processPathVariablesOf(params, args);
-        result = processPathVariableOf(result, pathVariables);
-        List<Kv> requestParams = processRequestParamsOf(params, args);
-        result = processRequestParamOf(result, requestParams);
+        result = processPathVariableOf(result, processPathVariablesOf(params, args));
+        result = processRequestParamOf(result, processRequestParamsOf(params, args));
         return processParamsOfUri(result, defParams);
     }
 }
