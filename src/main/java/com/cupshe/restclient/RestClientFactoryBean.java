@@ -26,8 +26,6 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
     private int connectTimeout;
     private int readTimeout;
 
-    // ~ ext properties ~ //
-
     private ApplicationContext applicationContext;
 
     public RestClientFactoryBean(Class<?> clazz, String name, String path, LoadBalanceType loadBalanceType,
@@ -51,7 +49,6 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
     public Object getObject() {
         // loaded only config properties
         applicationContext.getBean(RestClientProperties.class);
-        // proxy object
         return Proxy.newProxyInstance(this.clazz.getClassLoader(), ofArray(this.clazz),
                 new RestClientProxy(name, path, loadBalanceType, maxAutoRetries, fallback, connectTimeout, readTimeout));
     }
