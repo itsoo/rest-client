@@ -18,6 +18,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.cupshe.restclient.RequestProcessor.*;
 import static com.cupshe.restclient.RestClient.LoadBalanceType;
 
 /**
@@ -79,7 +80,7 @@ public class RestClientProxy implements InvocationHandler {
 
     private String sendRequestAndGetResponse(AnnotationMethodAttribute attr, Method method, Object[] args) {
         String uriPath = getUriPath(path, attr.path, attr.params, method.getParameters(), args);
-        Object body = RequestProcessor.processRequestBodyOf(method.getParameters(), args);
+        Object body = processRequestBodyOf(method.getParameters(), args);
         HttpHeaders headers = getHttpHeaders(attr, body);
         return sendRequestAndGetResponse(uriPath, attr.method, body, headers);
     }
@@ -132,11 +133,11 @@ public class RestClientProxy implements InvocationHandler {
     }
 
     private String getUriPath(String prefix, String uri, String[] defParams, Parameter[] params, Object[] args) {
-        String result = RequestProcessor.processStandardUri(prefix, uri);
-        List<Kv> pathVariables = RequestProcessor.processPathVariablesOf(params, args);
-        result = RequestProcessor.processPathVariableOf(result, pathVariables);
-        List<Kv> requestParams = RequestProcessor.processRequestParamsOf(params, args);
-        result = RequestProcessor.processRequestParamOf(result, requestParams);
-        return RequestProcessor.processParamsOfUri(result, defParams);
+        String result = processStandardUri(prefix, uri);
+        List<Kv> pathVariables = processPathVariablesOf(params, args);
+        result = processPathVariableOf(result, pathVariables);
+        List<Kv> requestParams = processRequestParamsOf(params, args);
+        result = processRequestParamOf(result, requestParams);
+        return processParamsOfUri(result, defParams);
     }
 }
