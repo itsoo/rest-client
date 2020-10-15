@@ -20,7 +20,7 @@ class RequestGenerator {
     static HttpHeaders genericHttpHeaders() {
         HttpHeaders headers = new HttpHeaders();
         headers.add(CALL_SOURCE_KEY, CALL_SOURCE_VALUE);
-        headers.add(TRANCE_ID_KEY, genericTranceId());
+        headers.add(TRACE_ID_KEY, genericTranceId());
         return headers;
     }
 
@@ -38,9 +38,9 @@ class RequestGenerator {
 
     private static String genericTranceId() {
         try {
-            return Optional.ofNullable(TRANCE_ID_STORE.get()).orElse(UuidUtils.createUuid());
+            return Optional.ofNullable(TRACE_ID_STORE.get()).orElse(UuidUtils.createUuid());
         } finally {
-            TRANCE_ID_STORE.remove();
+            TRACE_ID_STORE.remove();
         }
     }
 }

@@ -51,7 +51,7 @@
         <dependency>
             <groupId>com.cupshe</groupId>
             <artifactId>army-knife</artifactId>
-            <version>0.0.1-RELEASE</version>
+            <version>0.0.3-RELEASE</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
