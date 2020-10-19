@@ -1,6 +1,6 @@
 package com.cupshe.restclient;
 
-import com.cupshe.ak.UuidUtils;
+import com.cupshe.ak.net.UuidUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 
@@ -8,7 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-import static com.cupshe.ak.BaseConstant.*;
+import static com.cupshe.ak.base.BaseConstant.*;
 
 /**
  * RequestGenerator

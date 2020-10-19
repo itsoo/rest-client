@@ -17,8 +17,14 @@ class RestTemplateUtils {
 
     private static ClientHttpRequestFactory getClientFactory(int connectTimeout, int readTimeout) {
         OkHttp3ClientHttpRequestFactory result = new OkHttp3ClientHttpRequestFactory();
-        result.setConnectTimeout(connectTimeout);
-        result.setReadTimeout(readTimeout);
+        if (connectTimeout >= 0) {
+            result.setConnectTimeout(connectTimeout);
+        }
+
+        if (readTimeout >= 0) {
+            result.setReadTimeout(readTimeout);
+        }
+
         return result;
     }
 }
