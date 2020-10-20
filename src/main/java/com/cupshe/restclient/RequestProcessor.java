@@ -1,6 +1,6 @@
 package com.cupshe.restclient;
 
-import com.cupshe.ak.BeanUtils;
+import com.cupshe.ak.bean.BeanUtils;
 import com.cupshe.ak.core.Kv;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;

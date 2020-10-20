@@ -8,7 +8,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Optional;
 
-import static com.cupshe.ak.base.BaseConstant.*;
+import static com.cupshe.ak.common.BaseConstant.*;
 
 /**
  * RequestGenerator
