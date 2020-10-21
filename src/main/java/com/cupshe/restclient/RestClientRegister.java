@@ -1,5 +1,7 @@
 package com.cupshe.restclient;
 
+import com.cupshe.ak.bean.BeanUtils;
+import com.cupshe.ak.text.StringUtils;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -15,7 +17,6 @@ import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
-import org.springframework.util.StringUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,6 +50,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
                     Assert.notNull(attrs, "Cannot found interface with @RestClient.");
 
                     String clazz = component.getBeanClassName();
+                    String beanName = StringUtils.defaultString(BeanUtils.getBeanName(clazz), '$' + clazz);
                     BeanDefinitionBuilder bb = BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class);
                     bb.addConstructorArgValue(Class.forName(clazz));
                     bb.addConstructorArgValue(getOrDefault(attrs.get("name"), attrs.get("value")));
@@ -59,7 +61,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
                     bb.addConstructorArgValue(attrs.get("connectTimeout"));
                     bb.addConstructorArgValue(attrs.get("readTimeout"));
                     BeanDefinitionReaderUtils.registerBeanDefinition(
-                            new BeanDefinitionHolder(bb.getBeanDefinition(), '$' + clazz, ofArray(clazz)), registry);
+                            new BeanDefinitionHolder(bb.getBeanDefinition(), beanName, ofArray(clazz)), registry);
                 }
             }
         }
@@ -85,7 +87,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         }
 
         Set<String> result = Arrays.stream((String[]) attrs.get("basePackages"))
-                .filter(StringUtils::hasText)
+                .filter(StringUtils::isNotEmpty)
                 .collect(Collectors.toSet());
         if (result.isEmpty()) {
             result.add(ClassUtils.getPackageName(metadata.getClassName()));
