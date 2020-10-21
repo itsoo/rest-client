@@ -17,7 +17,7 @@
 <dependency>
   <groupId>com.cupshe</groupId>
   <artifactId>rest-client</artifactId>
-  <version>0.0.2-RELEASE</version>
+  <version>0.1.1-RELEASE</version>
 </dependency>
 ```
 
