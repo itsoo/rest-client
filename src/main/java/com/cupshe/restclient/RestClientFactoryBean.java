@@ -17,14 +17,14 @@ import static com.cupshe.restclient.RestClient.LoadBalanceType;
  */
 public class RestClientFactoryBean implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
 
-    private Class<?> clazz;
-    private String name;
-    private String path;
-    private LoadBalanceType loadBalanceType;
-    private int maxAutoRetries;
-    private String fallback;
-    private int connectTimeout;
-    private int readTimeout;
+    private final Class<?> clazz;
+    private final String name;
+    private final String path;
+    private final LoadBalanceType loadBalanceType;
+    private final int maxAutoRetries;
+    private final String fallback;
+    private final int connectTimeout;
+    private final int readTimeout;
 
     private ApplicationContext applicationContext;
 
@@ -63,7 +63,7 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
         Assert.notNull(this.clazz, "Proxy class cannot be null.");
     }
 
-    private Class[] ofArray(Class... args) {
+    private Class<?>[] ofArray(Class<?>... args) {
         return args;
     }
 }
