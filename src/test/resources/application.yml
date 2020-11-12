@@ -11,3 +11,7 @@ rest-client:
       services:
         - "127.0.0.1:8090"
         - "127.0.0.1:8091"
+
+logging:
+  level:
+    com.cupshe: debug

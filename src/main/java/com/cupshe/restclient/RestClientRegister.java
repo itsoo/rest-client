@@ -50,7 +50,8 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
                     Assert.notNull(attrs, "Cannot found interface with @RestClient.");
 
                     String clazz = component.getBeanClassName();
-                    String beanName = StringUtils.defaultString(BeanUtils.getBeanName(clazz), '$' + clazz);
+                    String classBeanName = StringUtils.defaultString(BeanUtils.getBeanName(clazz), '$' + clazz);
+                    String beanName = getOrDefault(attrs.get("id"), classBeanName).toString();
                     BeanDefinitionBuilder bb = BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class);
                     bb.addConstructorArgValue(Class.forName(clazz));
                     bb.addConstructorArgValue(getOrDefault(attrs.get("name"), attrs.get("value")));
@@ -97,8 +98,12 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
     }
 
     private Object getOrDefault(Object arg, Object def) {
-        Assert.isTrue(!(StringUtils.isEmpty(arg) && StringUtils.isEmpty(def)), "name or value cannot be all empty.");
+        Assert.isTrue(anyoneIsNotEmpty(arg, def), "Property 'value' or 'defaultValue' cannot be all empty.");
         return StringUtils.isEmpty(arg) ? def : arg;
+    }
+
+    private boolean anyoneIsNotEmpty(Object arg, Object oth) {
+        return !StringUtils.isEmpty(arg) || !StringUtils.isEmpty(oth);
     }
 
     private String[] ofArray(String... args) {

@@ -22,14 +22,14 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
     private final String path;
     private final LoadBalanceType loadBalanceType;
     private final int maxAutoRetries;
-    private final String fallback;
+    private final Class<?> fallback;
     private final int connectTimeout;
     private final int readTimeout;
 
     private ApplicationContext applicationContext;
 
     public RestClientFactoryBean(Class<?> clazz, String name, String path, LoadBalanceType loadBalanceType,
-                                 int maxAutoRetries, String fallback, int connectTimeout, int readTimeout) {
+                                 int maxAutoRetries, Class<?> fallback, int connectTimeout, int readTimeout) {
         this.clazz = clazz;
         this.name = name;
         this.path = path;

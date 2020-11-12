@@ -3,19 +3,19 @@ package com.cupshe.restclient.exception;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * NotFoundException
+ * BadRequestException
  *
  * @author zxy
  */
-public class NotFoundException extends AbstractHttpException {
+public class BadRequestException extends AbstractHttpException {
 
     @Override
     public int getStatusCode() {
-        return HttpServletResponse.SC_NOT_FOUND;
+        return HttpServletResponse.SC_BAD_REQUEST;
     }
 
     @Override
     public String getMessage() {
-        return "Not found";
+        return "Bad request";
     }
 }

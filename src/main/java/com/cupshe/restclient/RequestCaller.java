@@ -41,7 +41,7 @@ class RequestCaller {
         return LoadBalanceType.R.equals(loadBalanceType) ? random : roundRobin;
     }
 
-    private abstract class AbstractCall {
+    private abstract static class AbstractCall {
         /**
          * 获取应访问服务列表索引
          *
@@ -51,7 +51,7 @@ class RequestCaller {
     }
 
     private class CallRoundRobin extends AbstractCall {
-        private AtomicInteger i = new AtomicInteger(0);
+        private final AtomicInteger i = new AtomicInteger(0);
 
         @Override
         int index() {

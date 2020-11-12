@@ -1,6 +1,5 @@
 package com.cupshe.restclient;
 
-import lombok.SneakyThrows;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Method;
@@ -12,38 +11,27 @@ import java.lang.reflect.Method;
  */
 class FallbackInvoker {
 
-    private Class<?> className;
-    private String methodName;
+    private final Class<?> reference;
+    private final Method method;
 
-    private FallbackInvoker(Class<?> className, String methodName) {
-        this.className = className;
-        this.methodName = methodName;
+    private FallbackInvoker(Class<?> reference, Method method) {
+        this.reference = reference;
+        this.method = method;
     }
 
-    static FallbackInvoker of(String reference) {
+    static FallbackInvoker of(Class<?> reference, Method method) {
         assertInconvertibleValue(reference);
-        Class<?> className = processClassNameOf(reference);
-        String methodName = processMethodNameOf(reference);
-        return new FallbackInvoker(className, methodName);
+        return new FallbackInvoker(reference, method);
     }
 
-    Object invoke() throws Throwable {
-        Object target = this.className.newInstance();
-        Method method = this.className.getDeclaredMethod(this.methodName);
-        return method.invoke(target);
+    Object invoke(Object[] args) throws Throwable {
+        String methodName = method.getName();
+        Class<?>[] paramTypes = method.getParameterTypes();
+        Method fallback = reference.getDeclaredMethod(methodName, paramTypes);
+        return fallback.invoke(reference.newInstance(), args);
     }
 
-    private static void assertInconvertibleValue(String arg) {
-        Assert.isTrue(arg.lastIndexOf('#') != -1 && arg.charAt(0) == '@',
-                "Fallback value must like '@com.examples.Demo#abc', (@FullyQualified#MethodName).");
-    }
-
-    @SneakyThrows
-    private static Class<?> processClassNameOf(String reference) {
-        return Class.forName(reference.substring(1, reference.lastIndexOf('#')));
-    }
-
-    private static String processMethodNameOf(String reference) {
-        return reference.substring(reference.lastIndexOf('#') + 1);
+    private static void assertInconvertibleValue(Class<?> arg) {
+        Assert.isTrue(!arg.isPrimitive(), "The fallback class cannot be primitive.");
     }
 }

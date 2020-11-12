@@ -1,20 +1,24 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.net.UriUtils;
+import com.cupshe.restclient.exception.BadRequestException;
 import com.cupshe.restclient.exception.ConnectTimeoutException;
+import com.cupshe.restclient.exception.NotFoundException;
+import com.cupshe.restclient.exception.UnauthorizedException;
 import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.cglib.proxy.InvocationHandler;
 import org.springframework.http.*;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static com.cupshe.restclient.RequestProcessor.*;
@@ -25,20 +29,19 @@ import static com.cupshe.restclient.RestClient.LoadBalanceType;
  *
  * @author zxy
  */
-@Slf4j
 public class RestClientProxy implements InvocationHandler {
 
-    private String name;
-    private String path;
-    private LoadBalanceType loadBalanceType;
-    private int maxAutoRetries;
-    private String fallback;
+    private final String name;
+    private final String path;
+    private final LoadBalanceType loadBalanceType;
+    private final int maxAutoRetries;
+    private final Class<?> fallback;
 
-    private RestTemplate client;
-    private ThreadLocal<Integer> counter = ThreadLocal.withInitial(() -> 0);
+    private final RestTemplate client;
+    private final ThreadLocal<Integer> counter = ThreadLocal.withInitial(() -> 0);
 
     RestClientProxy(String name, String path, LoadBalanceType loadBalanceType, int maxAutoRetries,
-                    String fallback, int connectTimeout, int readTimeout) {
+                    Class<?> fallback, int connectTimeout, int readTimeout) {
         this.name = name;
         this.path = path;
         this.loadBalanceType = loadBalanceType;
@@ -49,19 +52,20 @@ public class RestClientProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        checkParamsValidity(method);
-
         try {
+            checkParamsValidity(method);
             String res = sendRequestAndGetResponse(AnnotationMethodAttribute.of(method), method, args);
             if (res != null) {
+                Logging.debug(res);
                 return ResponseProcessor.convertToObject(res, method);
             }
-            // void
+            // is void
             if (method.getReturnType().isAssignableFrom(Void.TYPE)) {
                 return Void.TYPE;
             }
-            if (StringUtils.hasText(fallback)) {
-                return FallbackInvoker.of(fallback).invoke();
+            // not primitive
+            if (!fallback.isPrimitive()) {
+                return FallbackInvoker.of(fallback, method).invoke(args);
             }
 
             throw new ConnectTimeoutException();
@@ -74,7 +78,7 @@ public class RestClientProxy implements InvocationHandler {
         long count = Arrays.stream(method.getParameters())
                 .filter(t -> t.getAnnotation(RequestBody.class) != null)
                 .count();
-        Assert.isTrue(count <= 1, "@RequestBody cannot have more than one.");
+        Assert.isTrue(count <= 1, "@RequestBody of the method cannot have more than one.");
     }
 
     private String sendRequestAndGetResponse(AnnotationMethodAttribute attr, Method method, Object[] args) {
@@ -88,16 +92,24 @@ public class RestClientProxy implements InvocationHandler {
     private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
         URI uri = RequestGenerator.genericUriOf(getTargetHost(name), uriPath);
         ResponseEntity<byte[]> res = sendRequestAndGetResponse(new RequestEntity<>(body, headers, method, uri));
-        byte[] bytes;
-        return (res != null && (bytes = res.getBody()) != null) ? new String(bytes) : null;
+        byte[] b;
+        return (res != null && (b = res.getBody()) != null) ? new String(b, StandardCharsets.UTF_8) : null;
     }
 
     private ResponseEntity<byte[]> sendRequestAndGetResponse(RequestEntity<?> requestEntity) {
         do {
             try {
+                Logging.debug(requestEntity);
                 return client.exchange(requestEntity, byte[].class);
+            } catch (HttpClientErrorException.BadRequest e) {
+                Logging.error(new BadRequestException(), requestEntity);
+            } catch (HttpClientErrorException.Unauthorized e) {
+                Logging.error(new UnauthorizedException(), requestEntity);
+            } catch (HttpClientErrorException.NotFound e) {
+                Logging.error(new NotFoundException(), requestEntity);
             } catch (ResourceAccessException e) { // Timeout
-                log.error(e.getMessage());
+                Logging.error(e.getMessage());
+            } finally {
                 counter.set(counter.get() + 1);
             }
         } while (counter.get() <= maxAutoRetries);

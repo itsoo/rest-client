@@ -1,62 +1,58 @@
-package com.cupshe.demo.service;
+package com.cupshe.demo.fallback;
 
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.rpc.DemoProvider;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 /**
- * CommentServiceImpl
+ * DemoProviderFallback
  *
  * @author zxy
  */
-@Service
-public class DemoServiceImpl implements DemoService {
-
-    @Resource
-    private DemoProvider demoProvider;
+public class DemoProviderFallback implements DemoProvider {
 
     @Override
     public ResponseVO<Object> postForm(DemoDTO dto) {
-        return demoProvider.postForm(dto);
+        return ResponseVO.of("fallback.");
     }
 
     @Override
     public DemoDTO postBody(DemoDTO dto) {
-        return demoProvider.postBody(dto);
+        return dto;
     }
 
     @Override
     public String pathVariable(Long id, String title) {
-        return demoProvider.pathVariable(id, title);
+        return "str(" + id + '-' + title + ')';
     }
 
     @Override
     public void deleteById(Long id) {
-        demoProvider.deleteById(id);
+        System.out.println("fallback.");
     }
 
     @Override
     public List<DemoDTO> findDemoList(DemoDTO dto) {
-        return demoProvider.findDemoList(dto);
+        return Collections.singletonList(dto);
     }
 
     @Override
     public List<Integer> findIdList(DemoDTO dto) {
-        return demoProvider.findIdList(dto);
+        return Collections.singletonList(dto.getAge());
     }
 
     @Override
     public List<String> findTitleList(DemoDTO dto) {
-        return demoProvider.findTitleList(dto);
+        return Collections.singletonList(dto.getName());
     }
 
     @Override
     public ResponseVO<Map<String, List<DemoDTO>>> complexObject() {
-        return demoProvider.complexObject();
+        return ResponseVO.of(new HashMap<>());
     }
 }

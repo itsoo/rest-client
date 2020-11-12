@@ -3,19 +3,19 @@ package com.cupshe.restclient.exception;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * NotFoundException
+ * UnauthorizedException
  *
  * @author zxy
  */
-public class NotFoundException extends AbstractHttpException {
+public class UnauthorizedException extends AbstractHttpException {
 
     @Override
     public int getStatusCode() {
-        return HttpServletResponse.SC_NOT_FOUND;
+        return HttpServletResponse.SC_UNAUTHORIZED;
     }
 
     @Override
     public String getMessage() {
-        return "Not found";
+        return "Unauthorized";
     }
 }

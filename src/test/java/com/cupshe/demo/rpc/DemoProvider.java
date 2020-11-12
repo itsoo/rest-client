@@ -2,6 +2,7 @@ package com.cupshe.demo.rpc;
 
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
+import com.cupshe.demo.fallback.DemoProviderFallback;
 import com.cupshe.restclient.RestClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,7 +15,7 @@ import java.util.Map;
  * @author zxy
  */
 @RestClient(value = "comment", path = "/api/v1/comment", maxAutoRetries = 3,
-        fallback = "@com.cupshe.demo.service.DemoServiceImpl#fallback", readTimeout = 1000)
+        fallback = DemoProviderFallback.class, readTimeout = 1000)
 public interface DemoProvider {
 
     @PostMapping("/form")

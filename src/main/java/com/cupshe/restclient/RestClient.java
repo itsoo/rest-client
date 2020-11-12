@@ -16,6 +16,13 @@ import java.lang.annotation.*;
 public @interface RestClient {
 
     /**
+     * Spring 容器中对象的名称（默认为目标类名称的首字母小写）
+     *
+     * @return bean name
+     */
+    String id() default "";
+
+    /**
      * 服务名称
      * <ol>
      * <li>name 与 value 不能同时为空</li>
@@ -61,12 +68,12 @@ public @interface RestClient {
     int maxAutoRetries() default 0;
 
     /**
-     * 失败时的兜底方法（无参数有返回值方法）e.g.'@com.examples.Demo#abc'
+     * 失败时的兜底类类型
      *
-     * @return @类的全限定名#方法名称
+     * @return Class
      * @throws ConnectTimeoutException 若未设置 fallback 失败将抛出异常
      */
-    String fallback() default "";
+    Class<?> fallback() default void.class;
 
     /**
      * 请求连接超时时间（ms）
