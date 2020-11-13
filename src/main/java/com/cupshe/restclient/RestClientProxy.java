@@ -90,29 +90,32 @@ public class RestClientProxy implements InvocationHandler {
 
     @SneakyThrows
     private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
-        URI uri = RequestGenerator.genericUriOf(getTargetHost(name), uriPath);
-        ResponseEntity<byte[]> res = sendRequestAndGetResponse(new RequestEntity<>(body, headers, method, uri));
+        ResponseEntity<byte[]> res;
+
+        do {
+            // Try again after the call fails, and auto load balancing.
+            URI uri = RequestGenerator.genericUriOf(getTargetHost(name), uriPath);
+            res = sendRequestAndGetResponse(new RequestEntity<>(body, headers, method, uri));
+            counter.set(counter.get() + 1);
+        } while (counter.get() <= maxAutoRetries);
+
         byte[] b;
         return (res != null && (b = res.getBody()) != null) ? new String(b, StandardCharsets.UTF_8) : null;
     }
 
     private ResponseEntity<byte[]> sendRequestAndGetResponse(RequestEntity<?> requestEntity) {
-        do {
-            try {
-                Logging.debug(requestEntity);
-                return client.exchange(requestEntity, byte[].class);
-            } catch (HttpClientErrorException.BadRequest e) {
-                Logging.error(new BadRequestException(), requestEntity);
-            } catch (HttpClientErrorException.Unauthorized e) {
-                Logging.error(new UnauthorizedException(), requestEntity);
-            } catch (HttpClientErrorException.NotFound e) {
-                Logging.error(new NotFoundException(), requestEntity);
-            } catch (ResourceAccessException e) { // Timeout
-                Logging.error(e.getMessage());
-            } finally {
-                counter.set(counter.get() + 1);
-            }
-        } while (counter.get() <= maxAutoRetries);
+        try {
+            Logging.debug(requestEntity);
+            return client.exchange(requestEntity, byte[].class);
+        } catch (HttpClientErrorException.BadRequest e) {
+            Logging.error(new BadRequestException(), requestEntity);
+        } catch (HttpClientErrorException.Unauthorized e) {
+            Logging.error(new UnauthorizedException(), requestEntity);
+        } catch (HttpClientErrorException.NotFound e) {
+            Logging.error(new NotFoundException(), requestEntity);
+        } catch (ResourceAccessException e) { // Timeout
+            Logging.error(e.getMessage());
+        }
 
         return null;
     }
@@ -147,6 +150,7 @@ public class RestClientProxy implements InvocationHandler {
         String result = UriUtils.processStandardUri(prefix, uri);
         result = UriUtils.processPathVariableOf(result, processPathVariablesOf(params, args));
         result = UriUtils.processRequestParamOf(result, processRequestParamsOf(params, args));
-        return UriUtils.processParamsOfUri(result, defParams);
+        result = UriUtils.processParamsOfUri(result, defParams);
+        return StringUtils.trimAllWhitespace(result);
     }
 }

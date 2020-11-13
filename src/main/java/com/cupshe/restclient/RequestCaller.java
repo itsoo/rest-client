@@ -20,8 +20,8 @@ class RequestCaller {
 
     private String name;
     private List<String> services;
-    private AbstractCall roundRobin;
-    private AbstractCall random;
+    private final AbstractCall roundRobin;
+    private final AbstractCall random;
 
     private RequestCaller() {
         roundRobin = new CallRoundRobin();

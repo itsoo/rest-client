@@ -25,8 +25,8 @@ public @interface RestClient {
     /**
      * 服务名称
      * <ol>
-     * <li>name 与 value 不能同时为空</li>
-     * <li>与 value 同时设置时权重高于 value</li>
+     *   <li>name 与 value 不能同时为空</li>
+     *   <li>与 value 同时设置时权重高于 value</li>
      * </ol>
      *
      * @return service name
@@ -37,8 +37,8 @@ public @interface RestClient {
     /**
      * 服务名称
      * <ol>
-     * <li>name 与 value 不能同时为空</li>
-     * <li>与 name 同时设置时权重低于 name</li>
+     *   <li>name 与 value 不能同时为空</li>
+     *   <li>与 name 同时设置时权重低于 name</li>
      * </ol>
      *
      * @return service name
@@ -56,7 +56,7 @@ public @interface RestClient {
     /**
      * 负载均衡策略
      *
-     * @return com.cupshe.restclient.RestClient.LoadBalanceType
+     * @return {@link com.cupshe.restclient.RestClient.LoadBalanceType#RR}
      */
     LoadBalanceType loadBalanceType() default LoadBalanceType.RR;
 
