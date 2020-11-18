@@ -1,5 +1,6 @@
 package com.cupshe.restclient;
 
+import com.cupshe.restclient.exception.NoSupportMethodException;
 import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
@@ -7,6 +8,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+
+import static org.springframework.http.HttpMethod.*;
 
 /**
  * AnnotationMethodAttribute
@@ -32,49 +35,56 @@ class AnnotationMethodAttribute {
         return of(getMethodAnnotation(method));
     }
 
-    private static AnnotationMethodAttribute of(Annotation annotation) {
-        if (annotation.annotationType().isAssignableFrom(GetMapping.class)) {
-            return of((GetMapping) annotation);
-        } else if (annotation.annotationType().isAssignableFrom(PostMapping.class)) {
-            return of((PostMapping) annotation);
-        } else if (annotation.annotationType().isAssignableFrom(PutMapping.class)) {
-            return of((PutMapping) annotation);
-        } else if (annotation.annotationType().isAssignableFrom(PatchMapping.class)) {
-            return of((PatchMapping) annotation);
-        } else if (annotation.annotationType().isAssignableFrom(DeleteMapping.class)) {
-            return of((DeleteMapping) annotation);
-        } else if (annotation.annotationType().isAssignableFrom(RequestMapping.class)) {
-            return of((RequestMapping) annotation);
-        }
+    boolean isPassingParamsOfUrl() {
+        return GET.equals(method) || DELETE.equals(method);
+    }
 
-        // GET, HEAD, POST, PUT, PATCH, DELETE, OPTIONS, TRACE
-        throw new IllegalArgumentException("No support type of @RequestMapping.");
+    boolean isPassingParamsOfForm() {
+        return POST.equals(method) || PUT.equals(method) || PATCH.equals(method);
+    }
+
+    private static AnnotationMethodAttribute of(Annotation annotation) {
+        if (GetMapping.class.isAssignableFrom(annotation.annotationType())) {
+            return of((GetMapping) annotation);
+        } else if (PostMapping.class.isAssignableFrom(annotation.annotationType())) {
+            return of((PostMapping) annotation);
+        } else if (PutMapping.class.isAssignableFrom(annotation.annotationType())) {
+            return of((PutMapping) annotation);
+        } else if (PatchMapping.class.isAssignableFrom(annotation.annotationType())) {
+            return of((PatchMapping) annotation);
+        } else if (DeleteMapping.class.isAssignableFrom(annotation.annotationType())) {
+            return of((DeleteMapping) annotation);
+        } else if (RequestMapping.class.isAssignableFrom(annotation.annotationType())) {
+            return of((RequestMapping) annotation);
+        } else {
+            throw new NoSupportMethodException();
+        }
     }
 
     private static AnnotationMethodAttribute of(GetMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), HttpMethod.GET);
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), GET);
     }
 
     private static AnnotationMethodAttribute of(PostMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), HttpMethod.POST);
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), POST);
     }
 
     private static AnnotationMethodAttribute of(PutMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), HttpMethod.PUT);
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), PUT);
     }
 
     private static AnnotationMethodAttribute of(PatchMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), HttpMethod.PATCH);
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), PATCH);
     }
 
     private static AnnotationMethodAttribute of(DeleteMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), HttpMethod.DELETE);
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), DELETE);
     }
 
     private static AnnotationMethodAttribute of(RequestMapping t) {
         RequestMethod[] m = t.method();
-        Assert.isTrue(m.length == 1, "@RequestMapping method is wrong (only one parameter).");
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), HttpMethod.resolve(m[0].name()));
+        Assert.isTrue(m.length == 1, "@RequestMapping property 'method' can only one.");
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), resolve(m[0].name()));
     }
 
     private static AnnotationMethodAttribute of(String[] path, String[] headers, String[] params, HttpMethod method) {
@@ -86,11 +96,16 @@ class AnnotationMethodAttribute {
     }
 
     private static Annotation getMethodAnnotation(Method method) {
-        Annotation[] annotations = method.getAnnotations();
-        if (annotations == null || annotations.length != 1) {
-            throw new IllegalArgumentException("@RequestMapping required and only one.");
+        Annotation[] annotations = method.getDeclaredAnnotations();
+        int count = 0;
+        for (Annotation annotation : annotations) {
+            try {
+                of(annotation);
+                count++;
+            } catch (NoSupportMethodException ignore) {}
         }
 
+        Assert.isTrue(count == 1, "@RequestMapping is required and only one.");
         return annotations[0];
     }
 }

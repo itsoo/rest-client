@@ -2,6 +2,7 @@ package com.cupshe.restclient;
 
 import com.cupshe.ak.json.JsonUtils;
 import com.cupshe.restclient.exception.ClassConvertException;
+import com.cupshe.restclient.util.BeanUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 
@@ -17,7 +18,7 @@ import java.util.List;
 class ResponseProcessor {
 
     static Object convertToObject(String res, Method method) {
-        if (isInconvertibleType(method.getReturnType())) {
+        if (isNotInconvertibleType(method.getReturnType()) || isNotJsonFormatString(res)) {
             return res;
         }
 
@@ -37,7 +38,11 @@ class ResponseProcessor {
         return JsonUtils.jsonToObject(res, targetJavaType);
     }
 
-    private static boolean isInconvertibleType(Class<?> returnType) {
-        return returnType.isPrimitive() || returnType.isAssignableFrom(String.class);
+    private static boolean isNotInconvertibleType(Class<?> returnType) {
+        return !BeanUtils.isInconvertibleClass(returnType);
+    }
+
+    private static boolean isNotJsonFormatString(String json) {
+        return json.charAt(0) != '{' && json.charAt(0) != '[';
     }
 }

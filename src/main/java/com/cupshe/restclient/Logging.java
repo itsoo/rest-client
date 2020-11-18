@@ -12,16 +12,12 @@ import org.springframework.http.RequestEntity;
 @Slf4j
 class Logging {
 
-    static void debug(String data) {
-        if (log.isDebugEnabled()) {
-            log.debug("Rest-client response data is ===> {}", data);
-        }
+    static void info(String data) {
+        log.info("Rest-client response data is ===> {}", data);
     }
 
-    static void debug(RequestEntity<?> entity) {
-        if (log.isDebugEnabled()) {
-            log.debug("Rest-client request params ===> {}", entity.toString());
-        }
+    static void info(RequestEntity<?> entity) {
+        log.info("Rest-client request params ===> {}", entity.toString());
     }
 
     static void error(String message) {

@@ -1,10 +1,10 @@
 package com.cupshe.restclient;
 
-import com.cupshe.ak.net.UriUtils;
 import com.cupshe.restclient.exception.BadRequestException;
 import com.cupshe.restclient.exception.ConnectTimeoutException;
 import com.cupshe.restclient.exception.NotFoundException;
 import com.cupshe.restclient.exception.UnauthorizedException;
+import com.cupshe.restclient.util.BeanUtils;
 import lombok.SneakyThrows;
 import org.springframework.cglib.proxy.InvocationHandler;
 import org.springframework.http.*;
@@ -13,6 +13,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Method;
@@ -56,19 +57,15 @@ public class RestClientProxy implements InvocationHandler {
             checkParamsValidity(method);
             String res = sendRequestAndGetResponse(AnnotationMethodAttribute.of(method), method, args);
             if (res != null) {
-                Logging.debug(res);
+                Logging.info(res);
                 return ResponseProcessor.convertToObject(res, method);
-            }
-            // is void
-            if (method.getReturnType().isAssignableFrom(Void.TYPE)) {
-                return Void.TYPE;
-            }
-            // not primitive
-            if (!fallback.isPrimitive()) {
+            } else if (method.getReturnType().isAssignableFrom(void.class)) {
+                return null;
+            } else if (BeanUtils.isInconvertibleClass(fallback)) {
                 return FallbackInvoker.of(fallback, method).invoke(args);
+            } else {
+                throw new ConnectTimeoutException();
             }
-
-            throw new ConnectTimeoutException();
         } finally {
             counter.remove();
         }
@@ -76,27 +73,35 @@ public class RestClientProxy implements InvocationHandler {
 
     private void checkParamsValidity(Method method) {
         long count = Arrays.stream(method.getParameters())
-                .filter(t -> t.getAnnotation(RequestBody.class) != null)
+                .filter(t -> t.getDeclaredAnnotation(RequestBody.class) != null)
                 .count();
-        Assert.isTrue(count <= 1, "@RequestBody of the method cannot have more than one.");
+        Assert.isTrue(count <= 1L, "@RequestBody of the method cannot have more than one.");
     }
 
     private String sendRequestAndGetResponse(AnnotationMethodAttribute attr, Method method, Object[] args) {
-        String uriPath = getUriPath(path, attr.path, attr.params, method.getParameters(), args);
         Object body = processRequestBodyOf(method.getParameters(), args);
-        HttpHeaders headers = getHttpHeaders(attr, body);
+        boolean isApplicationJsonType = body != null;
+        HttpHeaders headers = getHttpHeaders(attr, isApplicationJsonType);
+        if (!isApplicationJsonType && attr.isPassingParamsOfForm()) {
+            body = RequestProcessor.convertObjectsToMultiValueMap(args);
+        }
+
+        String uriPath = getUriPath(path, attr, method.getParameters(), args);
         return sendRequestAndGetResponse(uriPath, attr.method, body, headers);
     }
 
     @SneakyThrows
     private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
-        ResponseEntity<byte[]> res;
+        ResponseEntity<byte[]> res = null;
 
         do {
-            // Try again after the call fails, and auto load balancing.
-            URI uri = RequestGenerator.genericUriOf(getTargetHost(name), uriPath);
-            res = sendRequestAndGetResponse(new RequestEntity<>(body, headers, method, uri));
-            counter.set(counter.get() + 1);
+            try {
+                URI uri = RequestGenerator.genericUriOf(getTargetHost(name), uriPath);
+                res = sendRequestAndGetResponse(new RequestEntity<>(body, headers, method, uri));
+                break;
+            } catch (RestClientException e) {
+                counter.set(counter.get() + 1);
+            }
         } while (counter.get() <= maxAutoRetries);
 
         byte[] b;
@@ -105,22 +110,24 @@ public class RestClientProxy implements InvocationHandler {
 
     private ResponseEntity<byte[]> sendRequestAndGetResponse(RequestEntity<?> requestEntity) {
         try {
-            Logging.debug(requestEntity);
+            Logging.info(requestEntity);
             return client.exchange(requestEntity, byte[].class);
         } catch (HttpClientErrorException.BadRequest e) {
             Logging.error(new BadRequestException(), requestEntity);
+            throw e;
         } catch (HttpClientErrorException.Unauthorized e) {
             Logging.error(new UnauthorizedException(), requestEntity);
+            throw e;
         } catch (HttpClientErrorException.NotFound e) {
             Logging.error(new NotFoundException(), requestEntity);
+            throw e;
         } catch (ResourceAccessException e) { // Timeout
             Logging.error(e.getMessage());
+            throw e;
         }
-
-        return null;
     }
 
-    private HttpHeaders getHttpHeaders(AnnotationMethodAttribute attr, Object body) {
+    private HttpHeaders getHttpHeaders(AnnotationMethodAttribute attr, boolean isApplicationJsonType) {
         HttpHeaders result = RequestGenerator.genericHttpHeaders();
         for (String header : attr.headers) {
             String[] kv = StringUtils.split(header, "=");
@@ -129,10 +136,9 @@ public class RestClientProxy implements InvocationHandler {
             }
         }
 
-        if (body != null) {
-            result.setContentType(MediaType.APPLICATION_JSON);
-        }
-
+        result.setContentType(isApplicationJsonType
+                ? MediaType.APPLICATION_JSON
+                : MediaType.APPLICATION_FORM_URLENCODED);
         return result;
     }
 
@@ -146,11 +152,15 @@ public class RestClientProxy implements InvocationHandler {
         return null;
     }
 
-    private String getUriPath(String prefix, String uri, String[] defParams, Parameter[] params, Object[] args) {
-        String result = UriUtils.processStandardUri(prefix, uri);
-        result = UriUtils.processPathVariableOf(result, processPathVariablesOf(params, args));
-        result = UriUtils.processRequestParamOf(result, processRequestParamsOf(params, args));
-        result = UriUtils.processParamsOfUri(result, defParams);
+    private String getUriPath(String prefix, AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
+        String result = processStandardUri(prefix, attr.path);
+        result = processPathVariableOf(result, processPathVariablesOf(params, args));
+        result = attr.isPassingParamsOfUrl() ? getUriPath(result, attr.params, params, args) : result;
         return StringUtils.trimAllWhitespace(result);
+    }
+
+    private String getUriPath(String uri, String[] defParams, Parameter[] mthParams, Object[] args) {
+        String result = processRequestParamOf(uri, processRequestParamsOf(mthParams, args));
+        return processParamsOfUri(result, defParams);
     }
 }

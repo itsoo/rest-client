@@ -1,5 +1,6 @@
 package com.cupshe.restclient;
 
+import com.cupshe.restclient.util.BeanUtils;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Method;
@@ -32,6 +33,6 @@ class FallbackInvoker {
     }
 
     private static void assertInconvertibleValue(Class<?> arg) {
-        Assert.isTrue(!arg.isPrimitive(), "The fallback class cannot be primitive.");
+        Assert.isTrue(BeanUtils.isInconvertibleClass(arg), "The fallback class cannot be primitive.");
     }
 }

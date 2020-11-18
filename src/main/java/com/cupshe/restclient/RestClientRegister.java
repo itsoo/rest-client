@@ -1,6 +1,6 @@
 package com.cupshe.restclient;
 
-import com.cupshe.ak.bean.BeanUtils;
+import com.cupshe.restclient.util.BeanUtils;
 import com.cupshe.ak.text.StringUtils;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
