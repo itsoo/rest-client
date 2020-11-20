@@ -18,21 +18,22 @@ import static org.springframework.http.HttpMethod.*;
  */
 class AnnotationMethodAttribute {
 
+    String[] paths;
     String path;
     HttpMethod method;
     String[] headers;
     String[] params;
 
     private AnnotationMethodAttribute(String[] path, String[] headers, String[] params, HttpMethod method) {
-        Assert.isTrue(path.length <= 1, "@RequestMapping value is wrong (only one parameter).");
-        this.path = path.length == 1 ? path[0] : "";
+        this.paths = path;
+        this.path = paths.length == 1 ? paths[0] : "";
         this.headers = headers;
         this.params = params;
         this.method = method;
     }
 
     static AnnotationMethodAttribute of(Method method) {
-        return of(getMethodAnnotation(method));
+        return of(method.getDeclaredAnnotations()[0]);
     }
 
     boolean isPassingParamsOfUrl() {
@@ -43,7 +44,7 @@ class AnnotationMethodAttribute {
         return POST.equals(method) || PUT.equals(method) || PATCH.equals(method);
     }
 
-    private static AnnotationMethodAttribute of(Annotation annotation) {
+    static AnnotationMethodAttribute of(Annotation annotation) {
         if (GetMapping.class.isAssignableFrom(annotation.annotationType())) {
             return of((GetMapping) annotation);
         } else if (PostMapping.class.isAssignableFrom(annotation.annotationType())) {
@@ -82,9 +83,7 @@ class AnnotationMethodAttribute {
     }
 
     private static AnnotationMethodAttribute of(RequestMapping t) {
-        RequestMethod[] m = t.method();
-        Assert.isTrue(m.length == 1, "@RequestMapping property 'method' can only one.");
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), resolve(m[0].name()));
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), resolve(t.method()[0].name()));
     }
 
     private static AnnotationMethodAttribute of(String[] path, String[] headers, String[] params, HttpMethod method) {
@@ -93,19 +92,5 @@ class AnnotationMethodAttribute {
 
     private static String[] getOrDefault(@NonNull String[] arg, @NonNull String[] def) {
         return arg.length == 0 ? def : arg;
-    }
-
-    private static Annotation getMethodAnnotation(Method method) {
-        Annotation[] annotations = method.getDeclaredAnnotations();
-        int count = 0;
-        for (Annotation annotation : annotations) {
-            try {
-                of(annotation);
-                count++;
-            } catch (NoSupportMethodException ignore) {}
-        }
-
-        Assert.isTrue(count == 1, "@RequestMapping is required and only one.");
-        return annotations[0];
     }
 }

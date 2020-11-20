@@ -1,6 +1,5 @@
 package com.cupshe.restclient;
 
-import com.cupshe.restclient.exception.AbstractHttpException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.RequestEntity;
 
@@ -24,7 +23,7 @@ class Logging {
         log.error("Rest-client request timeout: {}", message);
     }
 
-    static void error(AbstractHttpException e, RequestEntity<?> entity) {
-        log.error("Rest-client failed request {} {} ===> {}", e.getStatusCode(), e.getMessage(), entity.getUrl());
+    static void error(String message, RequestEntity<?> entity) {
+        log.error("Rest-client failed request {} ===> {}", message, entity.getUrl());
     }
 }

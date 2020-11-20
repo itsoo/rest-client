@@ -4,10 +4,7 @@ import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.rpc.DemoProvider;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * DemoProviderFallback
@@ -37,8 +34,13 @@ public class DemoProviderFallback implements DemoProvider {
     }
 
     @Override
-    public List<DemoDTO> findDemoList(DemoDTO dto) {
-        return Collections.singletonList(dto);
+    public ArrayList<Map<String, List<DemoDTO>>> findDemoList(ArrayList<Map<String, List<DemoDTO>>> dto) {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Map<String, List<DemoDTO>>> findDemoListPost(ArrayList<Map<String, List<DemoDTO>>> dto) {
+        return null;
     }
 
     @Override

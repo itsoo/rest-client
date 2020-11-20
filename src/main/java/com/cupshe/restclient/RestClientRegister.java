@@ -1,7 +1,7 @@
 package com.cupshe.restclient;
 
-import com.cupshe.restclient.util.BeanUtils;
 import com.cupshe.ak.text.StringUtils;
+import com.cupshe.restclient.util.ObjectClassUtils;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -15,12 +15,9 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
-import org.springframework.util.Assert;
 import org.springframework.util.ClassUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -38,31 +35,28 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         this.resourceLoader = resourceLoader;
     }
 
-    @SneakyThrows
     @Override
+    @SneakyThrows
     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
         ClassPathScanningCandidateComponentProvider scanner = getComponentProviderScanner();
         for (String basePackage : getBasePackages(metadata)) {
             for (BeanDefinition component : scanner.findCandidateComponents(basePackage)) {
                 if (component instanceof AnnotatedBeanDefinition) {
-                    Map<String, Object> attrs = ((AnnotatedBeanDefinition) component).getMetadata()
-                            .getAnnotationAttributes(RestClient.class.getCanonicalName());
-                    Assert.notNull(attrs, "Cannot found interface with @RestClient.");
-
                     String clazz = component.getBeanClassName();
-                    String classBeanName = StringUtils.defaultString(BeanUtils.getBeanName(clazz), '$' + clazz);
-                    String beanName = getOrDefault(attrs.get("id"), classBeanName).toString();
-                    BeanDefinitionBuilder bb = BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class);
-                    bb.addConstructorArgValue(Class.forName(clazz));
-                    bb.addConstructorArgValue(getOrDefault(attrs.get("name"), attrs.get("value")));
-                    bb.addConstructorArgValue(attrs.get("path"));
-                    bb.addConstructorArgValue(attrs.get("loadBalanceType"));
-                    bb.addConstructorArgValue(attrs.get("maxAutoRetries"));
-                    bb.addConstructorArgValue(attrs.get("fallback"));
-                    bb.addConstructorArgValue(attrs.get("connectTimeout"));
-                    bb.addConstructorArgValue(attrs.get("readTimeout"));
+                    String classBeanName = ObjectClassUtils.getBeanName(clazz);
+                    RestClient annotation = AssertBeforeRegister.assertAndGetAnnotation(clazz);
+                    String beanName = StringUtils.defaultIfBlank(annotation.id(), classBeanName);
+                    BeanDefinitionBuilder b = BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class);
+                    b.addConstructorArgValue(Class.forName(clazz));
+                    b.addConstructorArgValue(annotation.name());
+                    b.addConstructorArgValue(annotation.path());
+                    b.addConstructorArgValue(annotation.loadBalanceType());
+                    b.addConstructorArgValue(annotation.maxAutoRetries());
+                    b.addConstructorArgValue(annotation.fallback());
+                    b.addConstructorArgValue(annotation.connectTimeout());
+                    b.addConstructorArgValue(annotation.readTimeout());
                     BeanDefinitionReaderUtils.registerBeanDefinition(
-                            new BeanDefinitionHolder(bb.getBeanDefinition(), beanName, ofArray(clazz)), registry);
+                            new BeanDefinitionHolder(b.getBeanDefinition(), beanName, ofArray(clazz)), registry);
                 }
             }
         }
@@ -82,12 +76,8 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
     }
 
     private Set<String> getBasePackages(AnnotationMetadata metadata) {
-        Map<String, Object> attrs = metadata.getAnnotationAttributes(EnableRestClient.class.getCanonicalName());
-        if (attrs == null) {
-            return Collections.emptySet();
-        }
-
-        Set<String> result = Arrays.stream((String[]) attrs.get("basePackages"))
+        EnableRestClient clazz = metadata.getAnnotations().get(EnableRestClient.class).synthesize();
+        Set<String> result = Arrays.stream(clazz.basePackages())
                 .filter(StringUtils::isNotEmpty)
                 .collect(Collectors.toSet());
         if (result.isEmpty()) {
@@ -95,15 +85,6 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         }
 
         return result;
-    }
-
-    private Object getOrDefault(Object arg, Object def) {
-        Assert.isTrue(anyoneIsNotEmpty(arg, def), "Property 'value' or 'defaultValue' cannot be all empty.");
-        return StringUtils.isEmpty(arg) ? def : arg;
-    }
-
-    private boolean anyoneIsNotEmpty(Object arg, Object oth) {
-        return !StringUtils.isEmpty(arg) || !StringUtils.isEmpty(oth);
     }
 
     private String[] ofArray(String... args) {

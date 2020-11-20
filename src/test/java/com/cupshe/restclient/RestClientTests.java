@@ -11,6 +11,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -57,7 +59,8 @@ public class RestClientTests {
         DemoDTO dto = new DemoDTO();
         dto.setAge(12);
         dto.setName("zhang %20$3san");
-        List<DemoDTO> res = demoService.findDemoList(dto);
+
+        ArrayList<Map<String, List<DemoDTO>>> res = demoService.findDemoList(dto);
         System.out.println(res);
     }
 

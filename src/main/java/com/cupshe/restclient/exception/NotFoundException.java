@@ -7,15 +7,13 @@ import javax.servlet.http.HttpServletResponse;
  *
  * @author zxy
  */
-public class NotFoundException extends AbstractHttpException {
+public class NotFoundException extends RuntimeException {
 
-    @Override
-    public int getStatusCode() {
-        return HttpServletResponse.SC_NOT_FOUND;
-    }
+    private static final int STATUS_CODE = HttpServletResponse.SC_NOT_FOUND;
 
-    @Override
-    public String getMessage() {
-        return "Not found";
+    private static final String MESSAGE = "Not found";
+
+    public NotFoundException() {
+        super(STATUS_CODE + " " + MESSAGE);
     }
 }

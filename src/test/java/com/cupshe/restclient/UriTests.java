@@ -1,11 +1,12 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.core.Kv;
-import com.cupshe.restclient.util.BeanUtils;
+import com.cupshe.restclient.util.ObjectClassUtils;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.junit.Test;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,18 +43,26 @@ public class UriTests {
         efgs.add(efg);
         kvs.add(new Kv("efgs", new Abc(efgs)));
 
-        MultiValueMap<String, Object> map = RequestProcessor.convertObjectToMultiValueMap(kvs);
+        MultiValueMap<String, Object> map = RequestProcessor.convertObjectToMultiValueMap("kvs", kvs);
         System.out.println(map);
         System.out.println("================================================");
-        String s = RequestProcessor.convertObjectToQueryUrl(kvs);
+        String s = RequestProcessor.convertObjectToQueryUrl("kvs", kvs);
         System.out.println(s);
+        System.out.println("================================================");
+        String s1 = RequestProcessor.processRequestParamOf("http://127.0.0.1:8080?t=123&abc=1", kvs);
+        System.out.println(s1);
     }
 
     @Test
     public void testClasses() {
-        System.out.println(BeanUtils.isInconvertibleClass(String.class));
-        System.out.println(BeanUtils.isInconvertibleClass(Integer.class));
-        System.out.println(BeanUtils.isInconvertibleClass(Abc.class));
+        System.out.println(ObjectClassUtils.isInconvertibleClass(String.class));
+        System.out.println(ObjectClassUtils.isInconvertibleClass(Integer.class));
+        System.out.println(ObjectClassUtils.isInconvertibleClass(Abc.class));
+    }
+
+    @Test
+    public void testStringUtils() {
+        System.out.println(StringUtils.trimTrailingCharacter("abc&&&", '&'));
     }
 
     @Data

@@ -6,8 +6,7 @@ import com.cupshe.demo.rpc.DemoProvider;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * CommentServiceImpl
@@ -41,8 +40,11 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public List<DemoDTO> findDemoList(DemoDTO dto) {
-        return demoProvider.findDemoList(dto);
+    public ArrayList<Map<String, List<DemoDTO>>> findDemoList(DemoDTO dto) {
+        Map<String, List<DemoDTO>> map = new HashMap<>(2);
+        map.put("demo", Collections.singletonList(dto));
+//        return demoProvider.findDemoList(new ArrayList<>(Collections.singletonList(map)));
+        return demoProvider.findDemoListPost(new ArrayList<>(Collections.singletonList(map)));
     }
 
     @Override

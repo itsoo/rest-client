@@ -2,10 +2,11 @@ package com.cupshe.demo.rpc;
 
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
-import com.cupshe.demo.fallback.DemoProviderFallback;
 import com.cupshe.restclient.RestClient;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -14,8 +15,7 @@ import java.util.Map;
  *
  * @author zxy
  */
-@RestClient(value = "comment", path = "/api/v1/comment", maxAutoRetries = 3,
-        fallback = DemoProviderFallback.class, readTimeout = 1000)
+@RestClient(value = "comment", path = "/api/v1/comment", maxAutoRetries = 3, readTimeout = 1000)
 public interface DemoProvider {
 
     @PostMapping("/form")
@@ -31,7 +31,10 @@ public interface DemoProvider {
     void deleteById(@PathVariable("id") Long id);
 
     @GetMapping("/demo-list")
-    List<DemoDTO> findDemoList(DemoDTO dto);
+    ArrayList<Map<String, List<DemoDTO>>> findDemoList(ArrayList<Map<String, List<DemoDTO>>> dtos);
+
+    @PostMapping("/demo-list-post")
+    ArrayList<Map<String, List<DemoDTO>>> findDemoListPost(ArrayList<Map<String, List<DemoDTO>>> dtos);
 
     @GetMapping("/age-list")
     List<Integer> findIdList(DemoDTO dto);

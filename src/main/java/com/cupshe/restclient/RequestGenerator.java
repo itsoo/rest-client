@@ -1,11 +1,11 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.net.UuidUtils;
+import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.Assert;
 
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Optional;
 
 import static com.cupshe.ak.common.BaseConstant.*;
@@ -24,8 +24,9 @@ class RequestGenerator {
         return headers;
     }
 
-    static URI genericUriOf(String targetHost, String path) throws URISyntaxException {
-        Assert.notNull(targetHost, "Param <targetHost> cannot be null.");
+    @SneakyThrows
+    static URI genericUriOf(String targetHost, String path) {
+        Assert.notNull(targetHost, "Param 'targetHost' cannot be null.");
 
         String url = targetHost;
         if (!url.startsWith(PROTOCOL)) {

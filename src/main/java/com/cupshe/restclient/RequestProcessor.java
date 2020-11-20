@@ -2,11 +2,10 @@ package com.cupshe.restclient;
 
 import com.cupshe.ak.core.Kv;
 import com.cupshe.ak.text.StringUtils;
-import com.cupshe.restclient.util.BeanUtils;
-import com.cupshe.restclient.util.UriUtils;
+import com.cupshe.restclient.util.ObjectClassUtils;
+import com.cupshe.ak.net.UriUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
-import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -28,41 +27,36 @@ import java.util.stream.Collectors;
  */
 class RequestProcessor {
 
-    private static final Pattern PATTERN = Pattern.compile("(\\{[^}]*})");
+    private static final Pattern PATH_VARIABLE_PATTERN = Pattern.compile("(\\{[^}]*})");
+
+    private static final String EMPTY = StringUtils.EMPTY;
+
+    private static final String ROOT_PROPERTY = EMPTY;
 
     static String processRequestParamOf(String url, List<Kv> args) {
-        if (url == null) {
-            return null;
+        String rel = StringUtils.trimTrailingCharacter(url, '&');
+        if (rel == null || CollectionUtils.isEmpty(args)) {
+            return rel;
         }
 
-        if (CollectionUtils.isEmpty(args)) {
-            return url;
-        }
-
-        char sp = getQuerySeparator(url);
-        StringBuilder result = new StringBuilder(url);
-        for (int i = 0, size = args.size(); i < size; i++) {
-            if (i > 0) {
-                sp = '&';
-            }
-
-            String key = args.get(i).getKey();
-            if (StringUtils.isNotBlank(key)) {
-                result.append(sp).append(convertObjectToQueryUrl(args.get(i).getValue()));
+        StringJoiner q = new StringJoiner("&");
+        for (Kv kv : args) {
+            if (StringUtils.isNotBlank(kv.getKey())) {
+                q.add(convertObjectToQueryUrl(kv.getKey(), kv.getValue()));
             }
         }
 
-        return result.toString();
+        return rel + getQuerySeparator(rel) + q.toString();
     }
 
     static String processPathVariableOf(String url, List<Kv> args) {
-        if (url == null || args == null) {
+        if (url == null || CollectionUtils.isEmpty(args)) {
             return url;
         }
 
         String result = url;
         Map<String, String> map = convertKvsToMap(args);
-        Matcher m = PATTERN.matcher(result);
+        Matcher m = PATH_VARIABLE_PATTERN.matcher(result);
         while (m.find()) {
             String key = m.group(1);
             String value = map.get(key.substring(1, key.length() - 1).trim());
@@ -71,7 +65,6 @@ class RequestProcessor {
             }
         }
 
-        Assert.isTrue(!result.contains("{"), "Wrong parameter defined by request path.");
         return result;
     }
 
@@ -126,79 +119,73 @@ class RequestProcessor {
         for (int i = 0; i < params.length; i++) {
             RequestParam da = AnnotationUtils.findAnnotation(params[i], RequestParam.class);
             if (da != null) {
-                result.add(new Kv(da.value(), args[i]));
+                result.addAll(convertToSampleKvs(da.value(), args[i]));
             }
 
             if (isEmptyAnnotations(params[i].getDeclaredAnnotations())) {
-                result.addAll(BeanUtils.getObjectProperties(args[i]));
+                result.addAll(convertToSampleKvs(params[i].getName(), args[i]));
             }
         }
 
         return result;
     }
 
-    static MultiValueMap<String, Object> convertObjectsToMultiValueMap(Object... args) {
+    static MultiValueMap<String, Object> convertObjectsToMultiValueMap(Parameter[] params, Object[] args) {
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>();
-        for (Object arg : args) {
-            result.addAll(convertObjectToMultiValueMap(arg));
+        for (int i = 0; i < params.length; i++) {
+//            result.addAll(convertObjectToMultiValueMap(ROOT_PROPERTY, args[i]));
+            result.addAll(convertObjectToMultiValueMap(params[i].getName(), args[i]));
         }
 
         return result;
     }
 
-    static MultiValueMap<String, Object> convertObjectToMultiValueMap(Object arg) {
+    static MultiValueMap<String, Object> convertObjectToMultiValueMap(String property, Object arg) {
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>();
-        for (Kv kv : convertKvToSampleKv("", arg)) {
+        for (Kv kv : convertToSampleKvs(property, arg)) {
             result.add(kv.getKey(), kv.getValue());
         }
 
         return result;
     }
 
-    static String convertObjectToQueryUrl(Object arg) {
+    static String convertObjectToQueryUrl(String property, Object arg) {
         StringJoiner joiner = new StringJoiner("&");
-        convertKvToSampleKv("", arg)
+        convertToSampleKvs(property, arg)
                 .stream()
                 .map(t -> t.getKey() + '=' + UriUtils.encode(t.getValue()))
                 .forEach(joiner::add);
         return joiner.toString();
     }
 
-    private static List<Kv> convertKvToSampleKv(String property, Object arg) {
+    private static List<Kv> convertToSampleKvs(String property, Object arg) {
         if (arg == null) {
             return Collections.emptyList();
         }
 
         List<Kv> result = new ArrayList<>();
-        if (!BeanUtils.isInconvertibleClass(arg.getClass())) {
+        if (!ObjectClassUtils.isInconvertibleClass(arg.getClass())) {
             result.add(new Kv(property, arg));
             return result;
         }
 
-        if (Kv.class.isAssignableFrom(arg.getClass())) { // Kv.class
-            Kv kv = (Kv) arg;
-            result.addAll(convertKvToSampleKv(getPropertyKey(property, kv.getKey()), kv.getValue()));
-        } else if (Map.class.isAssignableFrom(arg.getClass())) { // Map.class
-            Map<?, ?> map = (Map<?, ?>) arg;
-            for (Map.Entry<?, ?> me : map.entrySet()) {
-                result.addAll(convertKvToSampleKv(getContainerKey(property, me.getKey()), me.getValue()));
+        if (Kv.class.isAssignableFrom(arg.getClass())) {
+            result.addAll(convertToSampleKvs(getObjectKey(property, ((Kv) arg).getKey()), ((Kv) arg).getValue()));
+        } else if (Map.class.isAssignableFrom(arg.getClass())) {
+            for (Map.Entry<?, ?> me : ((Map<?, ?>) arg).entrySet()) {
+                result.addAll(convertToSampleKvs(getCollectionKey(property, me.getKey()), me.getValue()));
             }
-        } else if (List.class.isAssignableFrom(arg.getClass())) { // List.class
-            List<?> list = (List<?>) arg;
-            for (int i = 0, size = list.size(); i < size; i++) {
-                Object obj = list.get(i);
-                result.addAll(convertKvToSampleKv(getContainerKey(property, i), obj));
+        } else if (List.class.isAssignableFrom(arg.getClass())) {
+            for (int i = 0, size = ((List<?>) arg).size(); i < size; i++) {
+                result.addAll(convertToSampleKvs(getCollectionKey(property, i), ((List<?>) arg).get(i)));
             }
-        } else if (arg.getClass().isArray()) { // array
-            int length = Array.getLength(arg);
-            for (int i = 0; i < length; i++) {
-                Object obj = Array.get(arg, i);
-                result.addAll(convertKvToSampleKv(getContainerKey(property, i), obj));
+        } else if (arg.getClass().isArray()) {
+            for (int i = 0, length = Array.getLength(arg); i < length; i++) {
+                result.addAll(convertToSampleKvs(getArrayKey(property), Array.get(arg, i)));
             }
-        } else { // pojo
-            List<Kv> kvs = BeanUtils.getObjectProperties(arg);
-            for (Kv kv : kvs) {
-                result.addAll(convertKvToSampleKv(getPropertyKey(property, kv.getKey()), kv.getValue()));
+        } else {
+            for (Kv kv : ObjectClassUtils.getObjectProperties(arg)) {
+                result.addAll(convertToSampleKvs(getObjectKey(property, kv.getKey()), kv.getValue()));
             }
         }
 
@@ -209,18 +196,22 @@ class RequestProcessor {
         Map<String, String> result = new HashMap<>(args.size() << 1);
         Map<String, Object> map = args.stream().collect(Collectors.toMap(Kv::getKey, Kv::getValue));
         for (Map.Entry<String, Object> entry : map.entrySet()) {
-            result.put(entry.getKey(), entry.getValue() == null ? "" : entry.getValue().toString());
+            result.put(entry.getKey(), StringUtils.getOrEmpty(entry.getValue()));
         }
 
         return result;
     }
 
-    private static String getPropertyKey(String prefix, String key) {
+    private static String getObjectKey(String prefix, String key) {
         return StringUtils.isBlank(prefix) ? key : prefix + '.' + key;
     }
 
-    private static String getContainerKey(String prefix, Object key) {
+    private static String getCollectionKey(String prefix, Object key) {
         return StringUtils.isBlank(prefix) ? "[" + key + ']' : prefix + '[' + key + ']';
+    }
+
+    private static String getArrayKey(String prefix) {
+        return StringUtils.isBlank(prefix) ? "[]" : prefix + "[]";
     }
 
     private static char getQuerySeparator(String uri) {

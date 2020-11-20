@@ -10,11 +10,11 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * BeanUtils
+ * ObjectClassUtils
  *
  * @author zxy
  */
-public class BeanUtils {
+public class ObjectClassUtils {
 
     public static List<Kv> getObjectProperties(Object obj) {
         if (obj == null) {
