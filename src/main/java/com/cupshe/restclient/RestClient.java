@@ -16,7 +16,7 @@ import java.lang.annotation.*;
 public @interface RestClient {
 
     /**
-     * Spring 容器中对象的名称（默认为目标类名称的首字母小写）
+     * Spring 容器中对象的名称（默认为目标类对应的属性名）
      *
      * @return bean name
      */
