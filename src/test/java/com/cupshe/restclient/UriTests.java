@@ -1,6 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.core.Kv;
+import com.cupshe.restclient.exception.ClassConvertException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.junit.Test;
@@ -55,6 +56,8 @@ public class UriTests {
     @Test
     public void testStringUtils() {
         System.out.println(StringUtils.trimTrailingCharacter("abc&&&", '&'));
+        ClassConvertException e = new ClassConvertException("abc{}", new RuntimeException("{}test stack message"));
+        System.out.println(e.toString());
     }
 
     @Data
