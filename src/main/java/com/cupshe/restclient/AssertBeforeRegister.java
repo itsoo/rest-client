@@ -34,32 +34,32 @@ class AssertBeforeRegister {
         assertIsTrue(clazz.isInterface(), clazz, "@RestClient component can only be interface.");
         RestClient annotation = AnnotationUtils.findAnnotation(clazz, RestClient.class);
         assertNotNull(annotation, clazz, "Cannot found interface with @RestClient.");
-        assertNameOrValueIsNotEmpty(clazz, annotation);
-        assertMaxAutoRetriesValue(clazz, annotation);
-        assertFallbackClass(clazz, annotation);
+        assertNameOrValueIsNotEmpty(annotation, clazz);
+        assertMaxAutoRetriesValue(annotation, clazz);
+        assertFallbackClass(annotation, clazz);
         // assert all methods
         for (Method method : clazz.getDeclaredMethods()) {
-            assertRequestBodyOnlyOne(clazz, method);
-            assertRequestMappingMethod(clazz, method);
-            assertRequestMappingPath(clazz, method);
-            assertXxxMappingOnlyOne(clazz, method);
-            assertPathVariableParams(clazz, method);
+            assertRequestBodyOnlyOne(method, clazz);
+            assertRequestMappingMethod(method, clazz);
+            assertRequestMappingPath(method, clazz);
+            assertXxxMappingOnlyOne(method, clazz);
+            assertPathVariableParams(method, clazz);
         }
 
         return annotation;
     }
 
-    static void assertNameOrValueIsNotEmpty(Class<?> clazz, RestClient annotation) {
+    static void assertNameOrValueIsNotEmpty(RestClient annotation, Class<?> clazz) {
         String serviceName = StringUtils.defaultIfBlank(annotation.name(), annotation.value());
         assertIsTrue(StringUtils.isNotBlank(serviceName), clazz, "@RestClient 'name' or 'value' cannot be all empty.");
     }
 
-    static void assertMaxAutoRetriesValue(Class<?> clazz, RestClient annotation) {
+    static void assertMaxAutoRetriesValue(RestClient annotation, Class<?> clazz) {
         boolean checkAutoRetries = annotation.maxAutoRetries() >= 0;
         assertIsTrue(checkAutoRetries, clazz, "@RestClient 'maxAutoRetries' range [0, Integer.MAX_VALUE].");
     }
 
-    static void assertFallbackClass(Class<?> clazz, RestClient annotation) {
+    static void assertFallbackClass(RestClient annotation, Class<?> clazz) {
         boolean checkIsSubclass = clazz.isAssignableFrom(annotation.fallback())
                 || void.class.isAssignableFrom(annotation.fallback());
         assertIsTrue(checkIsSubclass, clazz, "Fallback class must implement the interface annotated by @RestClient.");
@@ -68,25 +68,25 @@ class AssertBeforeRegister {
         assertIsTrue(checkClassType, clazz, "Fallback class cannot be interface or abstract class.");
     }
 
-    static void assertRequestBodyOnlyOne(Class<?> clazz, Method method) {
+    static void assertRequestBodyOnlyOne(Method method, Class<?> clazz) {
         long count = Arrays.stream(method.getParameters())
                 .filter(t -> t.getDeclaredAnnotation(RequestBody.class) != null)
                 .count();
         assertIsTrue(count <= 1L, clazz, "@RequestBody of the method cannot have that more than one.");
     }
 
-    static void assertRequestMappingMethod(Class<?> clazz, Method method) {
-        RequestMapping annotation = getRequestMappingOfMethod(clazz, method);
+    static void assertRequestMappingMethod(Method method, Class<?> clazz) {
+        RequestMapping annotation = getRequestMappingOfMethod(method, clazz);
         assertIsTrue(annotation.method().length > 0, clazz, "@RequestMapping property 'method' cannot be empty.");
         assertIsTrue(annotation.method().length == 1, clazz, "@RequestMapping property 'method' can only one.");
     }
 
-    static void assertRequestMappingPath(Class<?> clazz, Method method) {
+    static void assertRequestMappingPath(Method method, Class<?> clazz) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
         assertIsTrue(attr.paths.length <= 1, clazz, "@RequestMapping value is wrong (only one parameter).");
     }
 
-    static void assertXxxMappingOnlyOne(Class<?> clazz, Method method) {
+    static void assertXxxMappingOnlyOne(Method method, Class<?> clazz) {
         int count = 0;
         for (Annotation annotation : method.getDeclaredAnnotations()) {
             try {
@@ -98,7 +98,7 @@ class AssertBeforeRegister {
         assertIsTrue(count == 1, clazz, "@RequestMapping is required and only one.");
     }
 
-    static void assertPathVariableParams(Class<?> clazz, Method method) {
+    static void assertPathVariableParams(Method method, Class<?> clazz) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
         long pathParamsCount = StringUtils.findSubstringCountOf(attr.path, "{");
         long methodParamsCount = Arrays.stream(method.getParameters())
@@ -108,7 +108,7 @@ class AssertBeforeRegister {
     }
 
     @NonNull
-    private static RequestMapping getRequestMappingOfMethod(Class<?> clazz, Method method) {
+    private static RequestMapping getRequestMappingOfMethod(Method method, Class<?> clazz) {
         RequestMapping annotation = AnnotationUtils.findAnnotation(method, RequestMapping.class);
         assertNotNull(annotation, clazz, "Cannot found anyone @RequestMapping class.");
         return annotation;

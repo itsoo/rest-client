@@ -6,6 +6,7 @@ import com.cupshe.ak.text.StringUtils;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
 
 import java.lang.reflect.Parameter;
@@ -23,13 +24,10 @@ import static com.cupshe.restclient.RequestProcessor.*;
  */
 class RequestGenerator {
 
-    /*** 调用来源头部标识 */
     private static final String CALL_SOURCE_KEY = "Call-Source";
 
-    /*** 调用来源头部标识 */
     private static final String CALL_SOURCE_VALUE = "REST-CLIENT";
 
-    /*** HTTP 请求协议 */
     private static final String PROTOCOL = "http://";
 
     static HttpHeaders genericHttpHeaders() {
@@ -78,6 +76,7 @@ class RequestGenerator {
         return URI.create(url);
     }
 
+    @NonNull
     private static String genericTranceId() {
         try {
             return Optional.ofNullable(TRACE_ID_STORE.get()).orElse(UuidUtils.createUuid());

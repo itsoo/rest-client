@@ -43,8 +43,8 @@ public class DemoServiceImpl implements DemoService {
     public ArrayList<Map<String, List<DemoDTO>>> findDemoList(DemoDTO dto) {
         Map<String, List<DemoDTO>> map = new HashMap<>(2);
         map.put("demo", Collections.singletonList(dto));
-//        return demoProvider.findDemoList(new ArrayList<>(Collections.singletonList(map)));
-        return demoProvider.findDemoListPost(new ArrayList<>(Collections.singletonList(map)));
+        return demoProvider.findDemoList(new ArrayList<>(Collections.singletonList(map)));
+//        return demoProvider.findDemoListPost(new ArrayList<>(Collections.singletonList(map)));
     }
 
     @Override

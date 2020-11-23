@@ -27,11 +27,11 @@ import java.util.stream.Collectors;
  */
 class RequestProcessor {
 
-    static final String ROOT_PROPERTY = StringUtils.EMPTY;
+    private static final Pattern PATH_VARIABLE_PATTERN = Pattern.compile("(\\{[^}]*})");
 
     private static final String EMPTY = StringUtils.EMPTY;
 
-    private static final Pattern PATH_VARIABLE_PATTERN = Pattern.compile("(\\{[^}]*})");
+    private static final String ROOT_PROPERTY = EMPTY;
 
     static String processRequestParamOf(String url, List<Kv> args) {
         String rel = StringUtils.trimTrailingCharacter(url, '&');
@@ -104,14 +104,7 @@ class RequestProcessor {
     static List<Kv> getRequestParamsOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         List<Kv> result = new ArrayList<>();
         for (int i = 0; i < params.length; i++) {
-            RequestParam da = AnnotationUtils.findAnnotation(params[i], RequestParam.class);
-            if (da != null) {
-                result.addAll(getSampleKvs(da.value(), args[i]));
-            }
-
-            if (isEmptyAnnotations(params[i].getDeclaredAnnotations())) {
-                result.addAll(getSampleKvs(getPropertyName(params[i]), args[i]));
-            }
+            result.addAll(getSampleKvs(getPropertyName(params[i]), args[i]));
         }
 
         return result;
@@ -185,8 +178,12 @@ class RequestProcessor {
         List<Kv> result = new ArrayList<>();
         if (!ObjectClassUtils.isInconvertibleClass(arg.getClass())) {
             result.add(new Kv(property, arg));
-        } else if (Kv.class.isAssignableFrom(arg.getClass())) {
-            result.addAll(getSampleKvs(getObjectKey(property, ((Kv) arg).getKey()), ((Kv) arg).getValue()));
+            return result;
+        }
+
+        if (Kv.class.isAssignableFrom(arg.getClass())) {
+            Kv kv = (Kv) arg;
+            result.addAll(getSampleKvs(getObjectKey(property, kv.getKey()), kv.getValue()));
         } else if (Map.class.isAssignableFrom(arg.getClass())) {
             for (Map.Entry<?, ?> me : ((Map<?, ?>) arg).entrySet()) {
                 result.addAll(getSampleKvs(getCollectionKey(property, me.getKey()), me.getValue()));
@@ -208,8 +205,12 @@ class RequestProcessor {
         return result;
     }
 
-    private static String getPropertyName(Parameter parameter) {
-        RequestParam annotation = AnnotationUtils.findAnnotation(parameter, RequestParam.class);
+    private static char getQuerySeparator(String uri) {
+        return uri.lastIndexOf('?') != -1 ? '&' : '?';
+    }
+
+    private static String getPropertyName(Parameter param) {
+        RequestParam annotation = AnnotationUtils.findAnnotation(param, RequestParam.class);
         return annotation == null ? ROOT_PROPERTY : annotation.name();
     }
 
@@ -223,14 +224,5 @@ class RequestProcessor {
 
     private static String getArrayKey(String prefix) {
         return StringUtils.isBlank(prefix) ? "[]" : prefix + "[]";
-    }
-
-    private static char getQuerySeparator(String uri) {
-        return uri.lastIndexOf('?') > -1 ? '&' : '?';
-    }
-
-    @SafeVarargs
-    private static <T> boolean isEmptyAnnotations(T... annotations) {
-        return annotations == null || annotations.length == 0;
     }
 }

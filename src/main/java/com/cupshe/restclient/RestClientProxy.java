@@ -52,13 +52,17 @@ public class RestClientProxy implements InvocationHandler {
             if (res != null) {
                 Logging.info(res);
                 return ResponseProcessor.convertToObject(res, method);
-            } else if (method.getReturnType().isAssignableFrom(void.class)) {
-                return null;
-            } else if (ObjectClassUtils.isInconvertibleClass(fallback)) {
-                return FallbackInvoker.of(fallback, method).invoke(args);
-            } else {
-                throw new ConnectTimeoutException();
             }
+            // void
+            if (method.getReturnType().isAssignableFrom(void.class)) {
+                return null;
+            }
+            // fallback
+            if (ObjectClassUtils.isInconvertibleClass(fallback)) {
+                return FallbackInvoker.of(fallback, method).invoke(args);
+            }
+
+            throw new ConnectTimeoutException();
         } finally {
             retries.remove();
         }
@@ -79,13 +83,12 @@ public class RestClientProxy implements InvocationHandler {
 
     private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
         ResponseEntity<String> re = null;
-
         do {
             try {
                 URI uri = RequestGenerator.genericUriOf(getTargetHost(name), uriPath);
                 re = sendRequestAndGetResponse(new RequestEntity<>(body, headers, method, uri));
                 break;
-            } catch (ResourceAccessException e) {
+            } catch (ResourceAccessException e) { // retry
                 retries.set(retries.get() + 1);
             }
         } while (retries.get() <= maxAutoRetries);
