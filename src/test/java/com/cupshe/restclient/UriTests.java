@@ -42,7 +42,7 @@ public class UriTests {
         efgs.add(efg);
         kvs.add(new Kv("efgs", new Abc(efgs)));
 
-        MultiValueMap<String, Object> map = RequestProcessor.convertObjectToMultiValueMap("kvs", kvs);
+        MultiValueMap<String, Object> map = RequestGenerator.genericMultiValueMapOf("kvs", kvs);
         System.out.println(map);
         System.out.println("================================================");
         String s = RequestProcessor.convertObjectToQueryUri("kvs", kvs);

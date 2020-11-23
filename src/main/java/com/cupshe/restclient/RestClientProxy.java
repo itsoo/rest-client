@@ -73,7 +73,7 @@ public class RestClientProxy implements InvocationHandler {
         Object body = RequestProcessor.getRequestBodyOf(params, args);
         boolean isApplicationJson = body != null;
         if (!isApplicationJson && attr.isPassingParamsOfForm()) {
-            body = RequestProcessor.convertObjectsToMultiValueMap(params, args);
+            body = RequestGenerator.genericMultiValueMapOf(params, args);
         }
 
         HttpHeaders headers = RequestGenerator.genericHttpHeaders(attr, isApplicationJson);
