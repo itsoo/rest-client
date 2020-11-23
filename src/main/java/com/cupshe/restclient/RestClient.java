@@ -71,7 +71,7 @@ public @interface RestClient {
      * 失败时的兜底类类型
      *
      * @return Class
-     * @throws ConnectTimeoutException 若未设置 fallback 失败将抛出异常
+     * @throws ConnectTimeoutException 若未设置 fallback 请求失败时将抛出异常
      */
     Class<?> fallback() default void.class;
 

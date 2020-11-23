@@ -61,7 +61,7 @@ public class RestClientProxy implements InvocationHandler {
             if (ObjectClassUtils.isInconvertibleClass(fallback)) {
                 return FallbackInvoker.of(fallback, method).invoke(args);
             }
-
+            // timeout
             throw new ConnectTimeoutException();
         } finally {
             retries.remove();

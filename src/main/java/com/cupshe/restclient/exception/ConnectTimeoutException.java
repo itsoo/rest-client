@@ -1,7 +1,7 @@
 package com.cupshe.restclient.exception;
 
 /**
- * NotFoundException
+ * ConnectTimeoutException
  *
  * @author zxy
  */
