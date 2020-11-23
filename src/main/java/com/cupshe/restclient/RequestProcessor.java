@@ -1,9 +1,9 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.core.Kv;
+import com.cupshe.ak.net.UriUtils;
 import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.util.ObjectClassUtils;
-import com.cupshe.ak.net.UriUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.util.CollectionUtils;
@@ -27,11 +27,11 @@ import java.util.stream.Collectors;
  */
 class RequestProcessor {
 
-    private static final Pattern PATH_VARIABLE_PATTERN = Pattern.compile("(\\{[^}]*})");
+    static final String ROOT_PROPERTY = StringUtils.EMPTY;
 
     private static final String EMPTY = StringUtils.EMPTY;
 
-    private static final String ROOT_PROPERTY = EMPTY;
+    private static final Pattern PATH_VARIABLE_PATTERN = Pattern.compile("(\\{[^}]*})");
 
     static String processRequestParamOf(String url, List<Kv> args) {
         String rel = StringUtils.trimTrailingCharacter(url, '&');
@@ -42,7 +42,7 @@ class RequestProcessor {
         StringJoiner q = new StringJoiner("&");
         for (Kv kv : args) {
             if (StringUtils.isNotBlank(kv.getKey())) {
-                q.add(convertObjectToQueryUrl(kv.getKey(), kv.getValue()));
+                q.add(convertObjectToQueryUri(kv.getKey(), kv.getValue()));
             }
         }
 
@@ -69,29 +69,16 @@ class RequestProcessor {
     }
 
     static String processStandardUri(String prefix, String path) {
-        String result = '/' + prefix + '/' + path;
+        String result = "/" + prefix + '/' + path;
         for (String repeatSp = "//"; result.contains(repeatSp); ) {
             result = StringUtils.replace(result, repeatSp, "/");
         }
 
-        result = "/".equals(result) ? "" : result;
+        result = "/".equals(result) ? EMPTY : result;
         return result.endsWith("/") ? result.substring(0, result.length() - 1) : result;
     }
 
-    static String processParamsOfUri(String uri, String[] params) {
-        // query params
-        String[] qps = params.clone();
-        for (int i = 0; i < qps.length; i++) {
-            String[] kv = StringUtils.split(qps[i], "=");
-            if (kv != null) {
-                qps[i] = kv[0] + '=' + UriUtils.encode(kv[1]);
-            }
-        }
-
-        return uri + (qps.length == 0 ? "" : getQuerySeparator(uri) + String.join("&", qps));
-    }
-
-    static Object processRequestBodyOf(Parameter[] params, Object[] args) {
+    static Object getRequestBodyOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         for (int i = 0; i < params.length; i++) {
             RequestBody da = AnnotationUtils.findAnnotation(params[i], RequestBody.class);
             if (da != null) {
@@ -102,7 +89,7 @@ class RequestProcessor {
         return null;
     }
 
-    static List<Kv> processPathVariablesOf(Parameter[] params, Object[] args) {
+    static List<Kv> getPathVariablesOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         List<Kv> result = new ArrayList<>();
         for (int i = 0; i < params.length; i++) {
             PathVariable da = AnnotationUtils.findAnnotation(params[i], PathVariable.class);
@@ -114,27 +101,37 @@ class RequestProcessor {
         return result;
     }
 
-    static List<Kv> processRequestParamsOf(Parameter[] params, Object[] args) {
+    static List<Kv> getRequestParamsOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         List<Kv> result = new ArrayList<>();
         for (int i = 0; i < params.length; i++) {
             RequestParam da = AnnotationUtils.findAnnotation(params[i], RequestParam.class);
             if (da != null) {
-                result.addAll(convertToSampleKvs(da.value(), args[i]));
+                result.addAll(getSampleKvs(da.value(), args[i]));
             }
 
             if (isEmptyAnnotations(params[i].getDeclaredAnnotations())) {
-                result.addAll(convertToSampleKvs(params[i].getName(), args[i]));
+                result.addAll(getSampleKvs(getPropertyName(params[i]), args[i]));
             }
         }
 
         return result;
     }
 
+    static List<Kv> getRequestParamsOf(@NonNull String[] params) {
+        return convertStringToKvs(params)
+                .stream()
+                .map(t -> new Kv(t.getKey(), UriUtils.encode(t.getValue())))
+                .collect(Collectors.toList());
+    }
+
+    static List<Kv> getRequestHeadersOf(@NonNull String[] params) {
+        return convertStringToKvs(params);
+    }
+
     static MultiValueMap<String, Object> convertObjectsToMultiValueMap(Parameter[] params, Object[] args) {
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>();
         for (int i = 0; i < params.length; i++) {
-//            result.addAll(convertObjectToMultiValueMap(ROOT_PROPERTY, args[i]));
-            result.addAll(convertObjectToMultiValueMap(params[i].getName(), args[i]));
+            result.addAll(convertObjectToMultiValueMap(getPropertyName(params[i]), args[i]));
         }
 
         return result;
@@ -142,50 +139,28 @@ class RequestProcessor {
 
     static MultiValueMap<String, Object> convertObjectToMultiValueMap(String property, Object arg) {
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>();
-        for (Kv kv : convertToSampleKvs(property, arg)) {
+        for (Kv kv : getSampleKvs(property, arg)) {
             result.add(kv.getKey(), kv.getValue());
         }
 
         return result;
     }
 
-    static String convertObjectToQueryUrl(String property, Object arg) {
+    static String convertObjectToQueryUri(String property, Object arg) {
         StringJoiner joiner = new StringJoiner("&");
-        convertToSampleKvs(property, arg)
+        getSampleKvs(property, arg)
                 .stream()
                 .map(t -> t.getKey() + '=' + UriUtils.encode(t.getValue()))
                 .forEach(joiner::add);
         return joiner.toString();
     }
 
-    private static List<Kv> convertToSampleKvs(String property, Object arg) {
-        if (arg == null) {
-            return Collections.emptyList();
-        }
-
-        List<Kv> result = new ArrayList<>();
-        if (!ObjectClassUtils.isInconvertibleClass(arg.getClass())) {
-            result.add(new Kv(property, arg));
-            return result;
-        }
-
-        if (Kv.class.isAssignableFrom(arg.getClass())) {
-            result.addAll(convertToSampleKvs(getObjectKey(property, ((Kv) arg).getKey()), ((Kv) arg).getValue()));
-        } else if (Map.class.isAssignableFrom(arg.getClass())) {
-            for (Map.Entry<?, ?> me : ((Map<?, ?>) arg).entrySet()) {
-                result.addAll(convertToSampleKvs(getCollectionKey(property, me.getKey()), me.getValue()));
-            }
-        } else if (List.class.isAssignableFrom(arg.getClass())) {
-            for (int i = 0, size = ((List<?>) arg).size(); i < size; i++) {
-                result.addAll(convertToSampleKvs(getCollectionKey(property, i), ((List<?>) arg).get(i)));
-            }
-        } else if (arg.getClass().isArray()) {
-            for (int i = 0, length = Array.getLength(arg); i < length; i++) {
-                result.addAll(convertToSampleKvs(getArrayKey(property), Array.get(arg, i)));
-            }
-        } else {
-            for (Kv kv : ObjectClassUtils.getObjectProperties(arg)) {
-                result.addAll(convertToSampleKvs(getObjectKey(property, kv.getKey()), kv.getValue()));
+    private static List<Kv> convertStringToKvs(@NonNull String[] params) {
+        List<Kv> result = new ArrayList<>(params.length);
+        for (String param : params) {
+            String[] kv = StringUtils.split(param, "=");
+            if (kv != null) {
+                result.add(new Kv(kv[0], kv[1]));
             }
         }
 
@@ -200,6 +175,42 @@ class RequestProcessor {
         }
 
         return result;
+    }
+
+    private static List<Kv> getSampleKvs(String property, Object arg) {
+        if (arg == null) {
+            return Collections.emptyList();
+        }
+
+        List<Kv> result = new ArrayList<>();
+        if (!ObjectClassUtils.isInconvertibleClass(arg.getClass())) {
+            result.add(new Kv(property, arg));
+        } else if (Kv.class.isAssignableFrom(arg.getClass())) {
+            result.addAll(getSampleKvs(getObjectKey(property, ((Kv) arg).getKey()), ((Kv) arg).getValue()));
+        } else if (Map.class.isAssignableFrom(arg.getClass())) {
+            for (Map.Entry<?, ?> me : ((Map<?, ?>) arg).entrySet()) {
+                result.addAll(getSampleKvs(getCollectionKey(property, me.getKey()), me.getValue()));
+            }
+        } else if (List.class.isAssignableFrom(arg.getClass())) {
+            for (int i = 0, size = ((List<?>) arg).size(); i < size; i++) {
+                result.addAll(getSampleKvs(getCollectionKey(property, i), ((List<?>) arg).get(i)));
+            }
+        } else if (arg.getClass().isArray()) {
+            for (int i = 0, length = Array.getLength(arg); i < length; i++) {
+                result.addAll(getSampleKvs(getArrayKey(property), Array.get(arg, i)));
+            }
+        } else {
+            for (Kv kv : ObjectClassUtils.getObjectProperties(arg)) {
+                result.addAll(getSampleKvs(getObjectKey(property, kv.getKey()), kv.getValue()));
+            }
+        }
+
+        return result;
+    }
+
+    private static String getPropertyName(Parameter parameter) {
+        RequestParam annotation = AnnotationUtils.findAnnotation(parameter, RequestParam.class);
+        return annotation == null ? ROOT_PROPERTY : annotation.name();
     }
 
     private static String getObjectKey(String prefix, String key) {

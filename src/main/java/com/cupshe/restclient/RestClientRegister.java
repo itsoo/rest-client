@@ -6,6 +6,7 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
+import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -15,6 +16,7 @@ import org.springframework.context.annotation.ImportBeanDefinitionRegistrar;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.core.type.AnnotationMetadata;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ClassUtils;
 
 import java.util.Arrays;
@@ -36,27 +38,18 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
     }
 
     @Override
-    @SneakyThrows
     public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
         ClassPathScanningCandidateComponentProvider scanner = getComponentProviderScanner();
         for (String basePackage : getBasePackages(metadata)) {
             for (BeanDefinition component : scanner.findCandidateComponents(basePackage)) {
                 if (component instanceof AnnotatedBeanDefinition) {
                     String clazz = component.getBeanClassName();
-                    String classBeanName = ObjectClassUtils.getBeanName(clazz);
+                    String classBeanName = ObjectClassUtils.getShortNameAsProperty(clazz);
                     RestClient annotation = AssertBeforeRegister.assertAndGetAnnotation(clazz);
+                    AbstractBeanDefinition beanDefinition = getBeanDefinition(clazz, annotation);
                     String beanName = StringUtils.defaultIfBlank(annotation.id(), classBeanName);
-                    BeanDefinitionBuilder b = BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class);
-                    b.addConstructorArgValue(Class.forName(clazz));
-                    b.addConstructorArgValue(annotation.name());
-                    b.addConstructorArgValue(annotation.path());
-                    b.addConstructorArgValue(annotation.loadBalanceType());
-                    b.addConstructorArgValue(annotation.maxAutoRetries());
-                    b.addConstructorArgValue(annotation.fallback());
-                    b.addConstructorArgValue(annotation.connectTimeout());
-                    b.addConstructorArgValue(annotation.readTimeout());
                     BeanDefinitionReaderUtils.registerBeanDefinition(
-                            new BeanDefinitionHolder(b.getBeanDefinition(), beanName, ofArray(clazz)), registry);
+                            new BeanDefinitionHolder(beanDefinition, beanName, ofArray(clazz)), registry);
                 }
             }
         }
@@ -87,6 +80,21 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         return result;
     }
 
+    @SneakyThrows
+    private AbstractBeanDefinition getBeanDefinition(String clazz, RestClient annotation) {
+        BeanDefinitionBuilder b = BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class);
+        b.addConstructorArgValue(Class.forName(clazz));
+        b.addConstructorArgValue(annotation.name());
+        b.addConstructorArgValue(annotation.path());
+        b.addConstructorArgValue(annotation.loadBalanceType());
+        b.addConstructorArgValue(annotation.maxAutoRetries());
+        b.addConstructorArgValue(annotation.fallback());
+        b.addConstructorArgValue(annotation.connectTimeout());
+        b.addConstructorArgValue(annotation.readTimeout());
+        return b.getBeanDefinition();
+    }
+
+    @NonNull
     private String[] ofArray(String... args) {
         return args;
     }

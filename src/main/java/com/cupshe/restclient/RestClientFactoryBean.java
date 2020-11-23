@@ -2,11 +2,10 @@ package com.cupshe.restclient;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cglib.proxy.Proxy;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.util.Assert;
+import org.springframework.lang.NonNull;
 
 import static com.cupshe.restclient.RestClient.LoadBalanceType;
 
@@ -15,7 +14,7 @@ import static com.cupshe.restclient.RestClient.LoadBalanceType;
  *
  * @author zxy
  */
-public class RestClientFactoryBean implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
+public class RestClientFactoryBean implements FactoryBean<Object>, ApplicationContextAware {
 
     private final Class<?> clazz;
     private final String name;
@@ -49,7 +48,7 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
     public Object getObject() {
         // loaded only config properties
         applicationContext.getBean(RestClientProperties.class);
-        return Proxy.newProxyInstance(this.clazz.getClassLoader(), ofArray(this.clazz),
+        return Proxy.newProxyInstance(clazz.getClassLoader(), ofArray(clazz),
                 new RestClientProxy(name, path, loadBalanceType, maxAutoRetries, fallback, connectTimeout, readTimeout));
     }
 
@@ -58,11 +57,7 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
         return clazz;
     }
 
-    @Override
-    public void afterPropertiesSet() {
-        Assert.notNull(this.clazz, "Proxy class cannot be null.");
-    }
-
+    @NonNull
     private Class<?>[] ofArray(Class<?>... args) {
         return args;
     }

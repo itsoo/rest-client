@@ -5,6 +5,7 @@ import com.cupshe.ak.text.StringUtils;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -16,19 +17,19 @@ import java.util.List;
  */
 public class ObjectClassUtils {
 
-    public static List<Kv> getObjectProperties(Object obj) {
-        if (obj == null) {
+    public static List<Kv> getObjectProperties(Object object) {
+        if (object == null) {
             return Collections.emptyList();
         }
 
-        Field[] fields = obj.getClass().getDeclaredFields();
+        Field[] fields = object.getClass().getDeclaredFields();
         if (fields.length == 0) {
             return Collections.emptyList();
         }
 
         List<Kv> result = new ArrayList<>();
         for (Field f : fields) {
-            result.add(new Kv(f.getName(), getFieldValueByName(f.getName(), obj)));
+            result.add(new Kv(f.getName(), getFieldValueByName(f.getName(), object)));
         }
 
         return result;
@@ -36,24 +37,19 @@ public class ObjectClassUtils {
 
     public static Object getFieldValueByName(String filedName, Object o) {
         try {
-            Method method = o.getClass().getDeclaredMethod(getterMethodName(filedName));
-
-            try {
+            String getter = getterMethodName(filedName);
+            Method method = o.getClass().getDeclaredMethod(getter);
+            if (isNotPublic(method) && !method.isAccessible()) {
                 method.setAccessible(true);
-                return method.invoke(o);
-            } finally {
-                method.setAccessible(false);
             }
+
+            return method.invoke(o);
         } catch (Exception e) {
             return null;
         }
     }
 
-    public static String getterMethodName(String fieldName) {
-        return "get" + StringUtils.upperFirstLetter(fieldName);
-    }
-
-    public static String getBeanName(String qualifier) {
+    public static String getShortNameAsProperty(String qualifier) {
         if (qualifier == null) {
             return null;
         }
@@ -79,5 +75,14 @@ public class ObjectClassUtils {
                 && !clazz.isAssignableFrom(Void.class)
                 && !clazz.isAssignableFrom(String.class)
                 && !clazz.isAnnotation();
+    }
+
+    private static String getterMethodName(String fieldName) {
+        return "get" + StringUtils.upperFirstLetter(fieldName);
+    }
+
+    private static boolean isNotPublic(Method method) {
+        return !Modifier.isPublic(method.getModifiers())
+                || !Modifier.isPublic(method.getDeclaringClass().getModifiers());
     }
 }

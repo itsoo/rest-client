@@ -3,7 +3,6 @@ package com.cupshe.restclient;
 import com.cupshe.restclient.exception.NoSupportMethodException;
 import org.springframework.http.HttpMethod;
 import org.springframework.lang.NonNull;
-import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.annotation.Annotation;
@@ -20,12 +19,12 @@ class AnnotationMethodAttribute {
 
     String[] paths;
     String path;
-    HttpMethod method;
     String[] headers;
     String[] params;
+    HttpMethod method;
 
-    private AnnotationMethodAttribute(String[] path, String[] headers, String[] params, HttpMethod method) {
-        this.paths = path;
+    private AnnotationMethodAttribute(String[] paths, String[] headers, String[] params, HttpMethod method) {
+        this.paths = paths;
         this.path = paths.length == 1 ? paths[0] : "";
         this.headers = headers;
         this.params = params;
@@ -90,6 +89,7 @@ class AnnotationMethodAttribute {
         return new AnnotationMethodAttribute(path, headers, params, method);
     }
 
+    @NonNull
     private static String[] getOrDefault(@NonNull String[] arg, @NonNull String[] def) {
         return arg.length == 0 ? def : arg;
     }
