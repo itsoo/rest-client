@@ -1,12 +1,14 @@
 package com.cupshe.restclient;
 
 import com.cupshe.restclient.exception.ConnectTimeoutException;
+import com.cupshe.restclient.exception.NotFoundException;
 import com.cupshe.restclient.util.ObjectClassUtils;
 import org.springframework.cglib.proxy.InvocationHandler;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
@@ -110,6 +112,7 @@ public class RestClientProxy implements InvocationHandler {
         }
     }
 
+    @NonNull
     private String getTargetHost(String name) {
         for (RequestCaller rm : RestClientProperties.getRouters()) {
             if (rm.getName().equals(name)) {
@@ -117,6 +120,6 @@ public class RestClientProxy implements InvocationHandler {
             }
         }
 
-        return null;
+        throw new NotFoundException();
     }
 }

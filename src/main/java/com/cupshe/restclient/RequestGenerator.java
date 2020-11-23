@@ -7,7 +7,6 @@ import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
-import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -104,7 +103,6 @@ class RequestGenerator {
 
     @SneakyThrows
     static URI genericUriOf(String targetHost, String path) {
-        Assert.notNull(targetHost, "Parameter 'targetHost' cannot be null.");
         String url = targetHost.startsWith(PROTOCOL) ? targetHost : (PROTOCOL + targetHost);
         url = url.endsWith("/") || path.startsWith("/") ? (url + path) : (url + '/' + path);
         return URI.create(url);
