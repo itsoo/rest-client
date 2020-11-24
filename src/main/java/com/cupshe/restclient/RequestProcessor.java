@@ -111,6 +111,14 @@ class RequestProcessor {
         return result;
     }
 
+    static List<Kv> getRequestParamsOf(@NonNull String[] params, boolean neededEncode) {
+        if (neededEncode) {
+            return getRequestParamsOf(params);
+        } else {
+            return convertStringToKvs(params);
+        }
+    }
+
     static List<Kv> getRequestParamsOf(@NonNull String[] params) {
         return convertStringToKvs(params)
                 .stream()

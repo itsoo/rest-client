@@ -83,22 +83,25 @@ class RequestGenerator {
         return result;
     }
 
-    static MultiValueMap<String, Object> genericMultiValueMapOf(Parameter[] params, Object[] args) {
+    static MultiValueMap<String, Object> genericFormDataOf(String[] defParams, Parameter[] mthParams, Object[] args) {
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>();
-        for (Kv kv : getRequestParamsOf(params, args)) {
+        for (Kv kv : getRequestParamsOf(mthParams, args)) {
+            result.add(kv.getKey(), kv.getValue());
+        }
+        for (Kv kv : getRequestParamsOf(defParams, false)) {
             result.add(kv.getKey(), kv.getValue());
         }
         // request context params
         if (REQ_PARAMS_STORE.get() != null) {
             for (Kv kv : REQ_PARAMS_STORE.get()) {
-                result.addAll(genericMultiValueMapOf(ROOT_PROPERTY, kv));
+                result.addAll(genericFormDataOf(ROOT_PROPERTY, kv));
             }
         }
 
         return result;
     }
 
-    static MultiValueMap<String, Object> genericMultiValueMapOf(String property, Object arg) {
+    static MultiValueMap<String, Object> genericFormDataOf(String property, Object arg) {
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>();
         for (Kv kv : getRequestParamsOf(property, arg)) {
             result.add(kv.getKey(), kv.getValue());
