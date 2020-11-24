@@ -60,8 +60,11 @@ class AssertBeforeRegister {
     }
 
     static void assertFallbackClass(RestClient annotation, Class<?> clazz) {
-        boolean checkIsSubclass = clazz.isAssignableFrom(annotation.fallback())
-                || void.class.isAssignableFrom(annotation.fallback());
+        if (annotation.fallback() == void.class) {
+            return;
+        }
+
+        boolean checkIsSubclass = clazz.isAssignableFrom(annotation.fallback());
         assertIsTrue(checkIsSubclass, clazz, "Fallback class must implement the interface annotated by @RestClient.");
         boolean checkClassType = !annotation.fallback().isInterface()
                 && !Modifier.isAbstract(annotation.fallback().getModifiers());
@@ -70,7 +73,7 @@ class AssertBeforeRegister {
 
     static void assertRequestBodyOnlyOne(Method method, Class<?> clazz) {
         long count = Arrays.stream(method.getParameters())
-                .filter(t -> t.getDeclaredAnnotation(RequestBody.class) != null)
+                .filter(t -> AnnotationUtils.findAnnotation(t, RequestBody.class) != null)
                 .count();
         assertIsTrue(count <= 1L, clazz, "@RequestBody of the method cannot have that more than one.");
     }
