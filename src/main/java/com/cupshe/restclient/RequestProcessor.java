@@ -9,6 +9,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.lang.reflect.Array;
@@ -73,13 +74,15 @@ class RequestProcessor {
         }
 
         result = "/".equals(result) ? EMPTY : result;
-        return result.endsWith("/") ? result.substring(0, result.length() - 1) : result;
+        return result.endsWith("/")
+                ? result.substring(0, result.length() - 1)
+                : result;
     }
 
     static Object getRequestBodyOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         for (int i = 0; i < params.length; i++) {
-            RequestBody da = AnnotationUtils.findAnnotation(params[i], RequestBody.class);
-            if (da != null) {
+            RequestBody annotation = AnnotationUtils.findAnnotation(params[i], RequestBody.class);
+            if (annotation != null) {
                 return args[i];
             }
         }
@@ -90,9 +93,9 @@ class RequestProcessor {
     static List<Kv> getPathVariablesOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         List<Kv> result = new ArrayList<>();
         for (int i = 0; i < params.length; i++) {
-            PathVariable da = AnnotationUtils.findAnnotation(params[i], PathVariable.class);
-            if (da != null) {
-                result.add(new Kv(da.value(), args[i]));
+            PathVariable annotation = AnnotationUtils.findAnnotation(params[i], PathVariable.class);
+            if (annotation != null) {
+                result.add(new Kv(annotation.name(), args[i]));
             }
         }
 
@@ -115,57 +118,33 @@ class RequestProcessor {
                 .collect(Collectors.toList());
     }
 
-    static List<Kv> getRequestHeadersOf(@NonNull String[] params) {
-        return convertStringToKvs(params);
+    static List<Kv> getRequestParamsOf(String property, Object arg) {
+        return getSampleKvs(property, arg);
     }
 
-    static String convertObjectToQueryUri(String property, Object arg) {
-        StringJoiner joiner = new StringJoiner("&");
-        getSampleKvs(property, arg)
-                .stream()
-                .map(t -> t.getKey() + '=' + UriUtils.encode(t.getValue()))
-                .forEach(joiner::add);
-        return joiner.toString();
-    }
-
-    static List<Kv> getSampleKvs(String property, Object arg) {
-        if (arg == null) {
-            return Collections.emptyList();
-        }
-
+    static List<Kv> getRequestHeadersOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         List<Kv> result = new ArrayList<>();
-        if (!ObjectClassUtils.isInconvertibleClass(arg.getClass())) {
-            result.add(new Kv(property, arg));
-            return result;
-        }
-
-        if (Kv.class.isAssignableFrom(arg.getClass())) {
-            Kv kv = (Kv) arg;
-            result.addAll(getSampleKvs(getObjectKey(property, kv.getKey()), kv.getValue()));
-        } else if (Map.class.isAssignableFrom(arg.getClass())) {
-            for (Map.Entry<?, ?> me : ((Map<?, ?>) arg).entrySet()) {
-                result.addAll(getSampleKvs(getCollectionKey(property, me.getKey()), me.getValue()));
-            }
-        } else if (List.class.isAssignableFrom(arg.getClass())) {
-            for (int i = 0, size = ((List<?>) arg).size(); i < size; i++) {
-                result.addAll(getSampleKvs(getCollectionKey(property, i), ((List<?>) arg).get(i)));
-            }
-        } else if (arg.getClass().isArray()) {
-            for (int i = 0, length = Array.getLength(arg); i < length; i++) {
-                result.addAll(getSampleKvs(getArrayKey(property), Array.get(arg, i)));
-            }
-        } else {
-            for (Kv kv : ObjectClassUtils.getObjectProperties(arg)) {
-                result.addAll(getSampleKvs(getObjectKey(property, kv.getKey()), kv.getValue()));
+        for (int i = 0; i < params.length; i++) {
+            RequestHeader annotation = AnnotationUtils.findAnnotation(params[i], RequestHeader.class);
+            if (annotation != null) {
+                result.add(new Kv(annotation.name(), StringUtils.getOrEmpty(args[i])));
             }
         }
 
         return result;
     }
 
-    static String getPropertyName(Parameter param) {
-        RequestParam annotation = AnnotationUtils.findAnnotation(param, RequestParam.class);
-        return annotation == null ? ROOT_PROPERTY : annotation.name();
+    static List<Kv> getRequestHeadersOf(@NonNull String[] params) {
+        return convertStringToKvs(params);
+    }
+
+    private static String convertObjectToQueryUri(String property, Object arg) {
+        StringJoiner joiner = new StringJoiner("&");
+        getSampleKvs(property, arg)
+                .stream()
+                .map(t -> t.getKey() + '=' + UriUtils.encode(t.getValue()))
+                .forEach(joiner::add);
+        return joiner.toString();
     }
 
     private static List<Kv> convertStringToKvs(@NonNull String[] params) {
@@ -190,19 +169,56 @@ class RequestProcessor {
         return result;
     }
 
+    private static List<Kv> getSampleKvs(String property, Object arg) {
+        if (arg == null) {
+            return Collections.emptyList();
+        }
+
+        List<Kv> result = new ArrayList<>();
+        if (!ObjectClassUtils.isInconvertibleClass(arg.getClass())) {
+            result.add(new Kv(property, arg));
+        } else if (arg instanceof Kv) {
+            Kv kv = (Kv) arg;
+            result.addAll(getSampleKvs(getObjectKey(property, kv.getKey()), kv.getValue()));
+        } else if (arg instanceof Map) {
+            for (Map.Entry<?, ?> me : ((Map<?, ?>) arg).entrySet()) {
+                result.addAll(getSampleKvs(getCollectionKey(property, me.getKey()), me.getValue()));
+            }
+        } else if (arg instanceof List) {
+            for (int i = 0, size = ((List<?>) arg).size(); i < size; i++) {
+                result.addAll(getSampleKvs(getCollectionKey(property, i), ((List<?>) arg).get(i)));
+            }
+        } else if (arg.getClass().isArray()) {
+            for (int i = 0, length = Array.getLength(arg); i < length; i++) {
+                result.addAll(getSampleKvs(getArrayKey(property), Array.get(arg, i)));
+            }
+        } else {
+            for (Kv kv : ObjectClassUtils.getObjectProperties(arg)) {
+                result.addAll(getSampleKvs(getObjectKey(property, kv.getKey()), kv.getValue()));
+            }
+        }
+
+        return result;
+    }
+
+    private static String getPropertyName(Parameter param) {
+        RequestParam annotation = AnnotationUtils.findAnnotation(param, RequestParam.class);
+        return annotation == null ? ROOT_PROPERTY : annotation.name();
+    }
+
     private static char getQuerySeparator(String uri) {
         return uri.lastIndexOf('?') != -1 ? '&' : '?';
     }
 
     private static String getObjectKey(String prefix, String key) {
-        return StringUtils.isBlank(prefix) ? key : prefix + '.' + key;
+        return StringUtils.defaultIfBlank(prefix, EMPTY) + '.' + key;
     }
 
     private static String getCollectionKey(String prefix, Object key) {
-        return StringUtils.isBlank(prefix) ? "[" + key + ']' : prefix + '[' + key + ']';
+        return StringUtils.defaultIfBlank(prefix, EMPTY) + '[' + key + ']';
     }
 
     private static String getArrayKey(String prefix) {
-        return StringUtils.isBlank(prefix) ? "[]" : prefix + "[]";
+        return StringUtils.defaultIfBlank(prefix, EMPTY) + "[]";
     }
 }

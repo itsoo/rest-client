@@ -29,7 +29,7 @@ public interface DemoProvider {
     String pathVariable(@PathVariable("id") Long id, @RequestParam("title") String title);
 
     @DeleteMapping("/{id}")
-    void deleteById(@PathVariable("id") Long id);
+    void deleteById(@PathVariable("id") Long id/*, @RequestHeader("token") String token*/);
 
     @GetMapping("/demo-list")
     ArrayList<Map<String, List<DemoDTO>>> findDemoList(@RequestParam("dtos") ArrayList<Map<String, List<DemoDTO>>> dtos);

@@ -90,7 +90,7 @@ class AnnotationMethodAttribute {
     }
 
     @NonNull
-    private static String[] getOrDefault(@NonNull String[] arg, @NonNull String[] def) {
+    private static String[] getOrDefault(String[] arg, String[] def) {
         return arg.length == 0 ? def : arg;
     }
 }

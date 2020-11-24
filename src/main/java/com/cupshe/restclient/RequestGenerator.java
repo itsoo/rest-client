@@ -44,9 +44,15 @@ class RequestGenerator {
         return result;
     }
 
-    static HttpHeaders genericHttpHeaders(AnnotationMethodAttribute attr, boolean isApplicationJson) {
+    static HttpHeaders genericHttpHeaders(
+            AnnotationMethodAttribute attr, Parameter[] params, Object[] args, boolean isApplicationJson) {
+
         HttpHeaders result = genericHttpHeaders();
         for (Kv kv : getRequestHeadersOf(attr.headers)) {
+            result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
+        }
+        // maybe override for request headers
+        for (Kv kv : getRequestHeadersOf(params, args)) {
             result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
         }
 
@@ -79,8 +85,8 @@ class RequestGenerator {
 
     static MultiValueMap<String, Object> genericMultiValueMapOf(Parameter[] params, Object[] args) {
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>();
-        for (int i = 0; i < params.length; i++) {
-            result.addAll(genericMultiValueMapOf(getPropertyName(params[i]), args[i]));
+        for (Kv kv : getRequestParamsOf(params, args)) {
+            result.add(kv.getKey(), kv.getValue());
         }
         // request context params
         if (REQ_PARAMS_STORE.get() != null) {
@@ -94,7 +100,7 @@ class RequestGenerator {
 
     static MultiValueMap<String, Object> genericMultiValueMapOf(String property, Object arg) {
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>();
-        for (Kv kv : getSampleKvs(property, arg)) {
+        for (Kv kv : getRequestParamsOf(property, arg)) {
             result.add(kv.getKey(), kv.getValue());
         }
 
@@ -103,9 +109,17 @@ class RequestGenerator {
 
     @SneakyThrows
     static URI genericUriOf(String targetHost, String path) {
-        String url = targetHost.startsWith(PROTOCOL) ? targetHost : (PROTOCOL + targetHost);
-        url = url.endsWith("/") || path.startsWith("/") ? (url + path) : (url + '/' + path);
-        return URI.create(url);
+        return URI.create(getUrl(targetHost, path));
+    }
+
+    @NonNull
+    private static String getUrl(String targetHost, String path) {
+        String url = targetHost.startsWith(PROTOCOL)
+                ? targetHost
+                : PROTOCOL + targetHost;
+        return (url.endsWith("/") || path.startsWith("/"))
+                ? url + path
+                : url + '/' + path;
     }
 
     @NonNull

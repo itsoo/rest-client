@@ -46,9 +46,6 @@ public class UriTests {
         MultiValueMap<String, Object> map = RequestGenerator.genericMultiValueMapOf("kvs", kvs);
         System.out.println(map);
         System.out.println("================================================");
-        String s = RequestProcessor.convertObjectToQueryUri("kvs", kvs);
-        System.out.println(s);
-        System.out.println("================================================");
         String s1 = RequestProcessor.processRequestParamOf("http://127.0.0.1:8080?t=123&abc=1", kvs);
         System.out.println(s1);
     }
