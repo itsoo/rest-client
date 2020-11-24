@@ -61,7 +61,7 @@ class AssertBeforeRegister {
 
     static void assertFallbackClass(RestClient annotation, Class<?> clazz) {
         boolean checkIsSubclass = clazz.isAssignableFrom(annotation.fallback())
-                || annotation.fallback() == void.class;
+                || void.class.isAssignableFrom(annotation.fallback());
         assertIsTrue(checkIsSubclass, clazz, "Fallback class must implement the interface annotated by @RestClient.");
         boolean checkClassType = !annotation.fallback().isInterface()
                 && !Modifier.isAbstract(annotation.fallback().getModifiers());
