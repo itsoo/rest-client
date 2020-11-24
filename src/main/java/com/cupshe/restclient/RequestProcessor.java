@@ -111,9 +111,9 @@ class RequestProcessor {
         return result;
     }
 
-    static List<Kv> getRequestParamsOf(@NonNull String[] params, boolean neededEncode) {
+    static List<Kv> getRequestParamsOf(@NonNull String[] params, boolean needEncode) {
         List<Kv> result = convertStringToKvs(params);
-        if (!neededEncode) {
+        if (!needEncode) {
             return result;
         }
 
