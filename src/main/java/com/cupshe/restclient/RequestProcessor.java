@@ -211,7 +211,7 @@ class RequestProcessor {
     }
 
     private static String getObjectKey(String prefix, String key) {
-        return StringUtils.defaultIfBlank(prefix, EMPTY) + '.' + key;
+        return StringUtils.isBlank(prefix) ? key : prefix + '.' + key;
     }
 
     private static String getCollectionKey(String prefix, Object key) {
