@@ -112,18 +112,19 @@ class RequestProcessor {
     }
 
     static List<Kv> getRequestParamsOf(@NonNull String[] params, boolean neededEncode) {
-        if (neededEncode) {
-            return getRequestParamsOf(params);
-        } else {
-            return convertStringToKvs(params);
+        List<Kv> result = convertStringToKvs(params);
+        if (!neededEncode) {
+            return result;
         }
-    }
 
-    static List<Kv> getRequestParamsOf(@NonNull String[] params) {
-        return convertStringToKvs(params)
+        return result
                 .stream()
                 .map(t -> new Kv(t.getKey(), UriUtils.encode(t.getValue())))
                 .collect(Collectors.toList());
+    }
+
+    static List<Kv> getRequestParamsOf(@NonNull String[] params) {
+        return getRequestParamsOf(params, true);
     }
 
     static List<Kv> getRequestParamsOf(String property, Object arg) {
