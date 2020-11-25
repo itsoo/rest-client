@@ -78,8 +78,8 @@ class RequestGenerator {
 
     static String genericUriOf(String uri, String[] defParams, Parameter[] mthParams, Object[] args) {
         // space for time
-        int initialCapacity = (mthParams.length + defParams.length) << 1;
-        List<Kv> params = new ArrayList<>(initialCapacity);
+        int capacity = (mthParams.length + defParams.length) << 1;
+        List<Kv> params = new ArrayList<>(capacity);
         params.addAll(getRequestParamsOf(mthParams, args));
         params.addAll(getRequestParamsOf(defParams));
         return processRequestParamOf(uri, params);
