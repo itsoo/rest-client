@@ -86,7 +86,9 @@ class RequestGenerator {
     }
 
     static MultiValueMap<String, Object> genericFormDataOf(String[] defParams, Parameter[] mthParams, Object[] args) {
-        MultiValueMap<String, Object> result = new LinkedMultiValueMap<>();
+        // space for time
+        int capacity = (mthParams.length + defParams.length) << 1;
+        MultiValueMap<String, Object> result = new LinkedMultiValueMap<>(capacity);
         for (Kv kv : getRequestParamsOf(mthParams, args)) {
             result.add(kv.getKey(), kv.getValue());
         }
