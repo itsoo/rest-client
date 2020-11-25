@@ -23,15 +23,6 @@ public class RestClientTests {
     @Autowired
     private DemoService demoService;
 
-    // todo 待测试场景
-    //  1. 硬编码请求头设置 @RequestHeader
-    //  2. 转发带过来的请求头（ThreadLocal 请求头）
-    //  3. 转发带过来的请求参数（ThreadLocal 请求参数）
-    //  4. @RequestBody 注解的场景测试
-    //  5. @RequestParam 注解的场景测试
-    //  6. @PathVariable 注解的场景测试
-    //  7. 硬编码的 @RequestMapping 中的 params 和 headers
-
     @Test
     public void testPostForm() {
         DemoDTO dto = new DemoDTO();

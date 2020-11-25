@@ -112,7 +112,7 @@ class RequestProcessor {
     }
 
     static List<Kv> getRequestParamsOf(@NonNull String[] params, boolean needEncode) {
-        List<Kv> result = convertStringToKvs(params);
+        List<Kv> result = convertStringToKvs(params, "=");
         if (!needEncode) {
             return result;
         }
@@ -144,7 +144,7 @@ class RequestProcessor {
     }
 
     static List<Kv> getRequestHeadersOf(@NonNull String[] params) {
-        return convertStringToKvs(params);
+        return convertStringToKvs(params, ":");
     }
 
     private static String convertObjectToQueryUri(String property, Object arg) {
@@ -156,12 +156,12 @@ class RequestProcessor {
         return joiner.toString();
     }
 
-    private static List<Kv> convertStringToKvs(@NonNull String[] params) {
+    private static List<Kv> convertStringToKvs(@NonNull String[] params, String sp) {
         List<Kv> result = new ArrayList<>(params.length);
         for (String param : params) {
-            String[] kv = StringUtils.split(param, "=");
+            String[] kv = StringUtils.split(param, sp);
             if (kv != null) {
-                result.add(new Kv(kv[0], kv[1]));
+                result.add(new Kv(kv[0], StringUtils.trimToEmpty(kv[1])));
             }
         }
 
