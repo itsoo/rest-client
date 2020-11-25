@@ -97,14 +97,16 @@ public class DemoServiceImpl implements DemoService {
 └─ basePackages   // 扫描包路径（数组）
 
 @RestClient
-├─ name           // 服务名称：1.name 与 value 不能同时为空；2.与 value 同时设置时权重高于 value
-├─ value          // 服务名称：1.name 与 value 不能同时为空；2.与 name 同时设置时权重低于 name
+│                 // 服务名称：name 与 value 不能同时为空
+├─ name           // 当与 value 同时设置时权重高于 value
+├─ value          // 当与 name  同时设置时权重低于 name
+│
 ├─ path           // 请求 URI 上下文（即 path 的前缀部分）
 ├─ maxAutoRetries // 最大重试次数，第一次请求不计入重试次数（即存在失败情况下的总请求次数为 maxAutoRetries + 1）
-├─ fallback       // 失败时的兜底方法（无参数有返回值方法）格式：@类的全限定名#方法名称：e.g.'@com.examples.Demo#abc'
-│                    若未设置 fallback 失败将抛出异常 com.cupshe.restclient.exception.ConnectTimeoutException
+├─ fallback       // 失败时的兜底方法 Class<?> 类型，若未设置 fallback 失败将抛出异常：
+│                     com.cupshe.restclient.exception.ConnectTimeoutException
 ├─ connectTimeout // 连接超时时间（ms），默认值：1000L
-└─ readTimeout    // 等待响应超时时间（ms），默认值：-1L（即不超时，一直等待直到响应）
+└─ readTimeout    // 等待响应超时时间（ms），默认值：-1L（即未设置，采用客户端默认）
 ```
 
 
@@ -152,22 +154,23 @@ public class DemoServiceImpl implements DemoService {
 3. 对 @RequestBody 的有效性校验
 4. 对 @RequestMapping 及相关的注解（如：@GetMapping 等）参数有效性校验
 5. 对 @PathVariable 的有效性校验
+6. 对其它相关参数的有效性校验
 
 
 #### 三、日志打印更详细
 
-1. 打印入参，日志级别 INFO
-2. 打印返回值，日志级别 INFO
-3. 打印错误信息，日志级别 ERROR
+- 打印入参，日志级别 INFO
+- 打印返回值，日志级别 INFO
+- 打印错误信息，日志级别 ERROR
 
 #### 四、POST 请求的对象支持序列化 FormData 请求
 
 #### 五、新增对 @RequestHeader 注解的支持
 
-#### 六、支持上游请求过来的 HttpHeaders 的透传
+#### 六、支持上游请求过来的 HttpHeaders 透传
 
 #### 七、代码的重构与优化
 
-1. 可读性更好
-2. 运行时性能更好
-3. 抽象更彻底
+- 可读性更好
+- 运行时性能更好
+- 抽象更彻底
