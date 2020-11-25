@@ -111,20 +111,8 @@ class RequestProcessor {
         return result;
     }
 
-    static List<Kv> getRequestParamsOf(@NonNull String[] params, boolean needEncode) {
-        List<Kv> result = convertStringToKvs(params, "=");
-        if (!needEncode) {
-            return result;
-        }
-
-        return result
-                .stream()
-                .map(t -> new Kv(t.getKey(), UriUtils.encode(t.getValue())))
-                .collect(Collectors.toList());
-    }
-
     static List<Kv> getRequestParamsOf(@NonNull String[] params) {
-        return getRequestParamsOf(params, true);
+        return convertStringToKvs(params, "=");
     }
 
     static List<Kv> getRequestHeadersOf(@NonNull Parameter[] params, @NonNull Object[] args) {

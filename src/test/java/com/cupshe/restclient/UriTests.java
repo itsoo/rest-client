@@ -5,7 +5,6 @@ import com.cupshe.restclient.exception.ClassConvertException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.junit.Test;
-import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;

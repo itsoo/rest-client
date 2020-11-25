@@ -12,6 +12,8 @@ import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.Parameter;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static com.cupshe.ak.common.BaseConstant.*;
@@ -75,10 +77,10 @@ class RequestGenerator {
     }
 
     static String genericUriOf(String uri, String[] defParams, Parameter[] mthParams, Object[] args) {
-        String result = uri;
-        result = processRequestParamOf(result, getRequestParamsOf(mthParams, args));
-        result = processRequestParamOf(result, getRequestParamsOf(defParams));
-        return result;
+        List<Kv> params = new ArrayList<>(mthParams.length);
+        params.addAll(getRequestParamsOf(mthParams, args));
+        params.addAll(getRequestParamsOf(defParams));
+        return processRequestParamOf(uri, params);
     }
 
     static MultiValueMap<String, Object> genericFormDataOf(String[] defParams, Parameter[] mthParams, Object[] args) {
@@ -86,7 +88,7 @@ class RequestGenerator {
         for (Kv kv : getRequestParamsOf(mthParams, args)) {
             result.add(kv.getKey(), kv.getValue());
         }
-        for (Kv kv : getRequestParamsOf(defParams, false)) {
+        for (Kv kv : getRequestParamsOf(defParams)) {
             result.add(kv.getKey(), kv.getValue());
         }
 
