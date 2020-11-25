@@ -28,16 +28,16 @@
 # 路由的配置信息
 rest-client:
   routers:
-    - name: "demo"
+    - name: demo
       services:
-        - "127.0.0.1:8080"
-        - "127.0.0.1:8081"
-        - "127.0.0.1:8082"
-        - "127.0.0.1:8083"
-    - name: "test"
+        - 127.0.0.1:8080
+        - 127.0.0.1:8081
+        - 127.0.0.1:8082
+        - 127.0.0.1:8083
+    - name: test
       services:
-        - "127.0.0.1:8090"
-        - "127.0.0.1:8091"
+        - 127.0.0.1:8090
+        - 127.0.0.1:8091
 ```
 
 
@@ -77,15 +77,6 @@ public class DemoServiceImpl implements DemoService {
     public String findOne() {
         return demoProvider.findOne(2L, "demo");
     }
-
-    /**
-     * 自定义 fallback 兜底方法，如果需要单独处理的话（必须为无参数方法）
-     *
-     * @return T
-     */
-    public String fallback() {
-        return "test fallback method.";
-    }
 }
 ```
 
@@ -112,8 +103,7 @@ public class DemoServiceImpl implements DemoService {
 
 #### 注意事项
 
-- fallback 方法接收字符串类型的值，描述为 "@类的全限定名#方法名称" 例如："@com.examples.Demo#abc"
-- fallback 的实现方法必须为无参数方法，返回值类型不做约束，也可以是 static 方法
+- fallback 方法接收 Class<?> 类型，必须实现标注 @RestClient 注解的接口
 - 接口的实现类是动态代理对象，使用 @Autowired 注解会报红色告警，建议使用 @Resource 注解来避免告警
 - 接口的返回参数类型如果包含泛型的，必须指定正确的泛型类型，否则将会在反序列化过程中报错
 - @RequestMapping 等注解中 headers 为请求携带的头信息，与标准注解不同
