@@ -131,3 +131,43 @@ public class DemoServiceImpl implements DemoService {
 6. 无请求参数的请求场景（接口方法无入参）
 7. 测试本工程打包为 jar 文件后与各工程的整合，及联调是否可以正常工作
 8. 测试标准 URI 路径的处理
+
+
+---------------------------------------
+
+
+### RPC 0.2.0 版本新特性总览
+
+#### 一、fallback 重构，支持以下新特性
+
+1. 入参类型改为 Class<?> 以适配接口的全部签名 
+2. fallback 指定的类型支持注入 Spring 容器
+3. 新增 @Fallback 注解，作用等同 Component 语义化更好
+
+
+#### 二、容器启动时对所有 Provider 进行有效性校验（0.1.X 版本是运行时校验）
+
+1. fallback 的有效性校验（必须是接口的实现类、不能为抽象类，且是受支持的组件类型）
+2. 对 @RestClient 的 maxAutoRetries、name、value 等参数的有效性校验
+3. 对 @RequestBody 的有效性校验
+4. 对 @RequestMapping 及相关的注解（如：@GetMapping 等）参数有效性校验
+5. 对 @PathVariable 的有效性校验
+
+
+#### 三、日志打印更详细
+
+1. 打印入参，日志级别 INFO
+2. 打印返回值，日志级别 INFO
+3. 打印错误信息，日志级别 ERROR
+
+#### 四、POST 请求的对象支持序列化 FormData 请求
+
+#### 五、新增对 @RequestHeader 注解的支持
+
+#### 六、支持上游请求过来的 HttpHeaders 的透传
+
+#### 七、代码的重构与优化
+
+1. 可读性更好
+2. 运行时性能更好
+3. 抽象更彻底
