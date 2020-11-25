@@ -41,7 +41,8 @@ public class RestClientFactoryBean implements FactoryBean<Object>, ApplicationCo
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
+        // register fallback application context
+        FallbackInvoker.setApplicationContext((this.applicationContext = applicationContext));
     }
 
     @Override

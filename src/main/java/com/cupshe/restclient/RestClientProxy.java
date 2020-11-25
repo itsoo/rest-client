@@ -1,8 +1,8 @@
 package com.cupshe.restclient;
 
+import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.restclient.exception.ConnectTimeoutException;
 import com.cupshe.restclient.exception.NotFoundException;
-import com.cupshe.restclient.util.ObjectClassUtils;
 import org.springframework.cglib.proxy.InvocationHandler;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -60,7 +60,7 @@ public class RestClientProxy implements InvocationHandler {
                 return null;
             }
             // fallback
-            if (ObjectClassUtils.isInconvertibleClass(fallback)) {
+            if (ObjectClasses.isInconvertibleClass(fallback)) {
                 return FallbackInvoker.of(fallback, method).invoke(args);
             }
             // timeout

@@ -3,6 +3,8 @@ package com.cupshe.demo.fallback;
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.rpc.DemoProvider;
+import com.cupshe.restclient.lang.Fallback;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.*;
 
@@ -11,11 +13,15 @@ import java.util.*;
  *
  * @author zxy
  */
+@Fallback
 public class DemoProviderFallback implements DemoProvider {
+
+    @Value("${fallback.tips}")
+    private String fallbackTips;
 
     @Override
     public ResponseVO<Object> postForm(DemoDTO dto) {
-        return ResponseVO.of("fallback.");
+        return ResponseVO.of(fallbackTips);
     }
 
     @Override

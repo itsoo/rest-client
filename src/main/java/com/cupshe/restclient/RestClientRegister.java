@@ -1,7 +1,7 @@
 package com.cupshe.restclient;
 
+import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.ak.text.StringUtils;
-import com.cupshe.restclient.util.ObjectClassUtils;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -44,7 +44,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
             for (BeanDefinition component : scanner.findCandidateComponents(basePackage)) {
                 if (component instanceof AnnotatedBeanDefinition) {
                     String clazz = component.getBeanClassName();
-                    String classBeanName = ObjectClassUtils.getShortNameAsProperty(clazz);
+                    String classBeanName = ObjectClasses.getShortNameAsProperty(clazz);
                     RestClient annotation = AssertBeforeRegister.assertAndGetAnnotation(clazz);
                     AbstractBeanDefinition beanDefinition = getBeanDefinition(clazz, annotation);
                     String beanName = StringUtils.defaultIfBlank(annotation.id(), classBeanName);

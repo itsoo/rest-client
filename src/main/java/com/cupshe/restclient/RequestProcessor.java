@@ -2,8 +2,8 @@ package com.cupshe.restclient;
 
 import com.cupshe.ak.core.Kv;
 import com.cupshe.ak.net.UriUtils;
+import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.ak.text.StringUtils;
-import com.cupshe.restclient.util.ObjectClassUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.util.CollectionUtils;
@@ -184,7 +184,7 @@ class RequestProcessor {
         }
 
         List<Kv> result = new ArrayList<>();
-        if (!ObjectClassUtils.isInconvertibleClass(arg.getClass())) {
+        if (!ObjectClasses.isInconvertibleClass(arg.getClass())) {
             result.add(new Kv(property, arg));
         } else if (arg instanceof Kv) {
             Kv kv = (Kv) arg;
@@ -202,7 +202,7 @@ class RequestProcessor {
                 result.addAll(getSampleKvs(getArrayKey(property), Array.get(arg, i)));
             }
         } else {
-            for (Kv kv : ObjectClassUtils.getObjectProperties(arg)) {
+            for (Kv kv : ObjectClasses.getObjectProperties(arg)) {
                 result.addAll(getSampleKvs(getObjectKey(property, kv.getKey()), kv.getValue()));
             }
         }

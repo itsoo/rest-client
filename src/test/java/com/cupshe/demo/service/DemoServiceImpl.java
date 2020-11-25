@@ -3,6 +3,7 @@ package com.cupshe.demo.service;
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.rpc.DemoProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -16,7 +17,7 @@ import java.util.*;
 @Service
 public class DemoServiceImpl implements DemoService {
 
-    @Resource
+    @Autowired
     private DemoProvider demoProvider;
 
     @Override

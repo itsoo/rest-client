@@ -1,17 +1,20 @@
 # 路由的配置信息
 rest-client:
   routers:
-    - name: "comment"
+    - name: comment
       services:
-        - "127.0.0.1:8080"
-        - "127.0.0.1:8081"
-        - "127.0.0.1:8082"
-        - "127.0.0.1:8083"
-    - name: "product"
+        - 127.0.0.1:8080
+        - 127.0.0.1:8081
+        - 127.0.0.1:8082
+        - 127.0.0.1:8083
+    - name: product
       services:
-        - "127.0.0.1:8090"
-        - "127.0.0.1:8091"
+        - 127.0.0.1:8090
+        - 127.0.0.1:8091
 
 logging:
   level:
     com.cupshe: debug
+
+fallback:
+  tips: FALLBACK TIPS!

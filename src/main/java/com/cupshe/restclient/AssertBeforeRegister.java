@@ -2,6 +2,7 @@ package com.cupshe.restclient;
 
 import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.exception.NoSupportMethodException;
+import com.cupshe.restclient.lang.SupportedAnnotations;
 import lombok.SneakyThrows;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
@@ -60,15 +61,23 @@ class AssertBeforeRegister {
     }
 
     static void assertFallbackClass(RestClient annotation, Class<?> clazz) {
-        if (annotation.fallback() == void.class) {
+        Class<?> fallback = annotation.fallback();
+        if (fallback == void.class) {
             return;
         }
 
-        boolean checkIsSubclass = clazz.isAssignableFrom(annotation.fallback());
+        boolean checkIsSubclass = clazz.isAssignableFrom(fallback);
         assertIsTrue(checkIsSubclass, clazz, "Fallback class must implement the interface annotated by @RestClient.");
-        boolean checkClassType = !annotation.fallback().isInterface()
-                && !Modifier.isAbstract(annotation.fallback().getModifiers());
+        boolean checkClassType = !fallback.isInterface()
+                && !Modifier.isAbstract(fallback.getModifiers());
         assertIsTrue(checkClassType, clazz, "Fallback class cannot be interface or abstract class.");
+
+        long count = Arrays.stream(fallback.getDeclaredAnnotations())
+                .filter(t -> SupportedAnnotations.isSupport(t.annotationType()))
+                .count();
+        String types = SupportedAnnotations.supportTypes();
+        String message = StringUtils.getFormatString("Fallback annotation only supports one of [{}].", types);
+        assertIsTrue(count <= 1L, clazz, message);
     }
 
     static void assertRequestBodyOnlyOne(Method method, Class<?> clazz) {
@@ -117,11 +126,11 @@ class AssertBeforeRegister {
         return annotation;
     }
 
-    private static void assertNotNull(Object object, Class<?> clazz, String message) {
-        Assert.notNull(object, clazz.getCanonicalName() + ": " + message);
+    private static void assertNotNull(Object obj, Class<?> clazz, String message) {
+        Assert.notNull(obj, clazz.getCanonicalName() + ": " + message);
     }
 
-    private static void assertIsTrue(boolean expression, Class<?> clazz, String message) {
-        Assert.isTrue(expression, clazz.getCanonicalName() + ": " + message);
+    private static void assertIsTrue(boolean exp, Class<?> clazz, String message) {
+        Assert.isTrue(exp, clazz.getCanonicalName() + ": " + message);
     }
 }
