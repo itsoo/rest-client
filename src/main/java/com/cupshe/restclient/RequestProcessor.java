@@ -127,10 +127,6 @@ class RequestProcessor {
         return getRequestParamsOf(params, true);
     }
 
-    static List<Kv> getRequestParamsOf(String property, Object arg) {
-        return getSampleKvs(property, arg);
-    }
-
     static List<Kv> getRequestHeadersOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         List<Kv> result = new ArrayList<>();
         for (int i = 0; i < params.length; i++) {

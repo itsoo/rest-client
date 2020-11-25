@@ -78,8 +78,6 @@ class RequestGenerator {
         String result = uri;
         result = processRequestParamOf(result, getRequestParamsOf(mthParams, args));
         result = processRequestParamOf(result, getRequestParamsOf(defParams));
-        // request context params
-        result = processRequestParamOf(result, REQ_PARAMS_STORE.get());
         return result;
     }
 
@@ -89,21 +87,6 @@ class RequestGenerator {
             result.add(kv.getKey(), kv.getValue());
         }
         for (Kv kv : getRequestParamsOf(defParams, false)) {
-            result.add(kv.getKey(), kv.getValue());
-        }
-        // request context params
-        if (REQ_PARAMS_STORE.get() != null) {
-            for (Kv kv : REQ_PARAMS_STORE.get()) {
-                result.addAll(genericFormDataOf(ROOT_PROPERTY, kv));
-            }
-        }
-
-        return result;
-    }
-
-    static MultiValueMap<String, Object> genericFormDataOf(String property, Object arg) {
-        MultiValueMap<String, Object> result = new LinkedMultiValueMap<>();
-        for (Kv kv : getRequestParamsOf(property, arg)) {
             result.add(kv.getKey(), kv.getValue());
         }
 
