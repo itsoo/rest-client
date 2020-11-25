@@ -77,7 +77,7 @@ class RequestGenerator {
     }
 
     static String genericUriOf(String uri, String[] defParams, Parameter[] mthParams, Object[] args) {
-        // space for time
+        // trade space for time
         int capacity = (mthParams.length + defParams.length) << 1;
         List<Kv> params = new ArrayList<>(capacity);
         params.addAll(getRequestParamsOf(mthParams, args));
@@ -86,7 +86,7 @@ class RequestGenerator {
     }
 
     static MultiValueMap<String, Object> genericFormDataOf(String[] defParams, Parameter[] mthParams, Object[] args) {
-        // space for time
+        // trade space for time
         int capacity = (mthParams.length + defParams.length) << 1;
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>(capacity);
         for (Kv kv : getRequestParamsOf(mthParams, args)) {
