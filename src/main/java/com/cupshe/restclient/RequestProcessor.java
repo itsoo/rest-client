@@ -17,7 +17,6 @@ import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * RequestProcessor
@@ -152,11 +151,11 @@ class RequestProcessor {
         return result;
     }
 
-    private static Map<String, String> convertKvsToMap(@NonNull List<Kv> args) {
-        Map<String, String> result = new HashMap<>(args.size() << 1);
-        Map<String, Object> map = args.parallelStream().collect(Collectors.toMap(Kv::getKey, Kv::getValue));
-        for (Map.Entry<String, Object> entry : map.entrySet()) {
-            result.put(entry.getKey(), StringUtils.getOrEmpty(entry.getValue()));
+    private static Map<String, String> convertKvsToMap(@NonNull List<Kv> kvs) {
+        // maybe contains repeat keys
+        Map<String, String> result = new HashMap<>(kvs.size() << 1);
+        for (Kv kv : kvs) {
+            result.put(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
         }
 
         return result;
