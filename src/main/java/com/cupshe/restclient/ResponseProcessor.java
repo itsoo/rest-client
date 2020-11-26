@@ -17,25 +17,25 @@ import java.util.List;
  */
 class ResponseProcessor {
 
-    static Object convertToObject(String res, Method method) {
+    static Object convertToObject(String json, Method method) {
         if (isNotInconvertibleType(method.getReturnType())) {
-            return res;
+            return json;
         }
 
         try {
-            return convertToObject(res, method.getGenericReturnType());
+            return convertToObject(json, method.getGenericReturnType());
         } catch (JsonProcessingException e) {
-            throw new ClassConvertException(res, e);
+            throw new ClassConvertException(json, e);
         }
     }
 
-    private static Object convertToObject(String res, Type genericType) throws JsonProcessingException {
+    private static Object convertToObject(String json, Type genericType) throws JsonProcessingException {
         if (List.class.isAssignableFrom(genericType.getClass())) {
-            return JsonUtils.convertList(res, genericType.getClass());
+            return JsonUtils.convertList(json, genericType.getClass());
         }
 
         JavaType targetJavaType = JsonUtils.getJavaType(genericType);
-        return JsonUtils.jsonToObject(res, targetJavaType);
+        return JsonUtils.jsonToObject(json, targetJavaType);
     }
 
     private static boolean isNotInconvertibleType(Class<?> returnType) {
