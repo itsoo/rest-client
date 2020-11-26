@@ -73,6 +73,7 @@ class AssertBeforeRegister {
         assertIsTrue(checkClassType, clazz, "Fallback class cannot be interface or abstract class.");
 
         long count = Arrays.stream(fallback.getDeclaredAnnotations())
+                .parallel()
                 .filter(t -> SupportedAnnotations.isSupport(t.annotationType()))
                 .count();
         String types = SupportedAnnotations.supportTypes();
@@ -82,6 +83,7 @@ class AssertBeforeRegister {
 
     static void assertRequestBodyOnlyOne(Method method, Class<?> clazz) {
         long count = Arrays.stream(method.getParameters())
+                .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, RequestBody.class) != null)
                 .count();
         assertIsTrue(count <= 1L, clazz, "@RequestBody of the method cannot have that more than one.");
@@ -114,6 +116,7 @@ class AssertBeforeRegister {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
         long pathParamsCount = StringUtils.findSubstringCountOf(attr.path, "{");
         long methodParamsCount = Arrays.stream(method.getParameters())
+                .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, PathVariable.class) != null)
                 .count();
         assertIsTrue(pathParamsCount == methodParamsCount, clazz, "Wrong params defined by request path variables.");

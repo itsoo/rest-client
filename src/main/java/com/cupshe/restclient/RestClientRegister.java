@@ -22,6 +22,7 @@ import org.springframework.util.ClassUtils;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * RestClientRegister
@@ -71,6 +72,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
     private Set<String> getBasePackages(AnnotationMetadata metadata) {
         EnableRestClient clazz = metadata.getAnnotations().get(EnableRestClient.class).synthesize();
         Set<String> result = Arrays.stream(clazz.basePackages())
+                .parallel()
                 .filter(StringUtils::isNotEmpty)
                 .collect(Collectors.toSet());
         if (result.isEmpty()) {

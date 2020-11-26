@@ -134,7 +134,7 @@ class RequestProcessor {
     private static String convertObjectToQueryUri(String property, Object arg) {
         StringJoiner joiner = new StringJoiner("&");
         getSampleKvs(property, arg)
-                .stream()
+                .parallelStream()
                 .map(t -> t.getKey() + '=' + UriUtils.encode(t.getValue()))
                 .forEach(joiner::add);
         return joiner.toString();
@@ -154,7 +154,7 @@ class RequestProcessor {
 
     private static Map<String, String> convertKvsToMap(@NonNull List<Kv> args) {
         Map<String, String> result = new HashMap<>(args.size() << 1);
-        Map<String, Object> map = args.stream().collect(Collectors.toMap(Kv::getKey, Kv::getValue));
+        Map<String, Object> map = args.parallelStream().collect(Collectors.toMap(Kv::getKey, Kv::getValue));
         for (Map.Entry<String, Object> entry : map.entrySet()) {
             result.put(entry.getKey(), StringUtils.getOrEmpty(entry.getValue()));
         }

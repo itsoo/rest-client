@@ -34,7 +34,7 @@ public class SupportedAnnotations {
 
     public static String supportTypes() {
         return ALL_TYPES
-                .stream()
+                .parallelStream()
                 .map(Class::getCanonicalName)
                 .collect(Collectors.joining(", "));
     }
