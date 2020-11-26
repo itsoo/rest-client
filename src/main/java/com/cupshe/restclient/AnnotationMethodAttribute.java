@@ -2,6 +2,7 @@ package com.cupshe.restclient;
 
 import com.cupshe.restclient.exception.NoSupportMethodException;
 import org.springframework.http.HttpMethod;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.annotation.Annotation;
@@ -61,30 +62,35 @@ class AnnotationMethodAttribute {
     }
 
     private static AnnotationMethodAttribute of(GetMapping t) {
-        return of(t.path(), t.headers(), t.params(), GET);
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), GET);
     }
 
     private static AnnotationMethodAttribute of(PostMapping t) {
-        return of(t.path(), t.headers(), t.params(), POST);
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), POST);
     }
 
     private static AnnotationMethodAttribute of(PutMapping t) {
-        return of(t.path(), t.headers(), t.params(), PUT);
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), PUT);
     }
 
     private static AnnotationMethodAttribute of(PatchMapping t) {
-        return of(t.path(), t.headers(), t.params(), PATCH);
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), PATCH);
     }
 
     private static AnnotationMethodAttribute of(DeleteMapping t) {
-        return of(t.path(), t.headers(), t.params(), DELETE);
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), DELETE);
     }
 
     private static AnnotationMethodAttribute of(RequestMapping t) {
-        return of(t.path(), t.headers(), t.params(), resolve(t.method()[0].name()));
+        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), resolve(t.method()[0].name()));
     }
 
     private static AnnotationMethodAttribute of(String[] paths, String[] headers, String[] params, HttpMethod method) {
         return new AnnotationMethodAttribute(paths, headers, params, method);
+    }
+
+    @NonNull
+    private static String[] getOrDefault(String[] arg, String[] def) {
+        return arg.length == 0 ? def : arg;
     }
 }
