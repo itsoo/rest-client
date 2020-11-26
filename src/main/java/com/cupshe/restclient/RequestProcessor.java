@@ -31,7 +31,7 @@ class RequestProcessor {
 
     private static final Pattern PATH_VARIABLE_PATTERN = Pattern.compile("(\\{[^}]*})");
 
-    static String processRequestParamOf(String url, List<Kv> args) {
+    static String processRequestParams(String url, List<Kv> args) {
         String rel = StringUtils.trimTrailingCharacter(url, '&');
         if (rel == null || CollectionUtils.isEmpty(args)) {
             return rel;
@@ -47,7 +47,7 @@ class RequestProcessor {
         return rel + getQuerySeparator(rel) + q.toString();
     }
 
-    static String processPathVariableOf(String url, List<Kv> args) {
+    static String processPathVariables(String url, List<Kv> args) {
         if (url == null || CollectionUtils.isEmpty(args)) {
             return url;
         }

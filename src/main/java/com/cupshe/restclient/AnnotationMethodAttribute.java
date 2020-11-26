@@ -2,7 +2,6 @@ package com.cupshe.restclient;
 
 import com.cupshe.restclient.exception.NoSupportMethodException;
 import org.springframework.http.HttpMethod;
-import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.lang.annotation.Annotation;
@@ -17,15 +16,15 @@ import static org.springframework.http.HttpMethod.*;
  */
 class AnnotationMethodAttribute {
 
-    String[] paths;
     String path;
+    String[] paths;
     String[] headers;
     String[] params;
     HttpMethod method;
 
     private AnnotationMethodAttribute(String[] paths, String[] headers, String[] params, HttpMethod method) {
-        this.paths = paths;
         this.path = paths.length == 1 ? paths[0] : "";
+        this.paths = paths;
         this.headers = headers;
         this.params = params;
         this.method = method;
@@ -62,35 +61,30 @@ class AnnotationMethodAttribute {
     }
 
     private static AnnotationMethodAttribute of(GetMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), GET);
+        return of(t.path(), t.headers(), t.params(), GET);
     }
 
     private static AnnotationMethodAttribute of(PostMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), POST);
+        return of(t.path(), t.headers(), t.params(), POST);
     }
 
     private static AnnotationMethodAttribute of(PutMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), PUT);
+        return of(t.path(), t.headers(), t.params(), PUT);
     }
 
     private static AnnotationMethodAttribute of(PatchMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), PATCH);
+        return of(t.path(), t.headers(), t.params(), PATCH);
     }
 
     private static AnnotationMethodAttribute of(DeleteMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), DELETE);
+        return of(t.path(), t.headers(), t.params(), DELETE);
     }
 
     private static AnnotationMethodAttribute of(RequestMapping t) {
-        return of(getOrDefault(t.path(), t.value()), t.headers(), t.params(), resolve(t.method()[0].name()));
+        return of(t.path(), t.headers(), t.params(), resolve(t.method()[0].name()));
     }
 
-    private static AnnotationMethodAttribute of(String[] path, String[] headers, String[] params, HttpMethod method) {
-        return new AnnotationMethodAttribute(path, headers, params, method);
-    }
-
-    @NonNull
-    private static String[] getOrDefault(String[] arg, String[] def) {
-        return arg.length == 0 ? def : arg;
+    private static AnnotationMethodAttribute of(String[] paths, String[] headers, String[] params, HttpMethod method) {
+        return new AnnotationMethodAttribute(paths, headers, params, method);
     }
 }

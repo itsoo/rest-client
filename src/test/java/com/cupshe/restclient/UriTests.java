@@ -25,7 +25,7 @@ public class UriTests {
         kvs.add(new Kv("id", 1));
         kvs.add(new Kv("age", 20));
         kvs.add(new Kv("name", "ZhangSan"));
-        String s = RequestProcessor.processPathVariableOf("/{ id }/abc/{ name}/xyz/{age }", kvs);
+        String s = RequestProcessor.processPathVariables("/{ id }/abc/{ name}/xyz/{age }", kvs);
         System.out.println(s);
     }
 
@@ -42,7 +42,7 @@ public class UriTests {
         efgs.add(efg);
         kvs.add(new Kv("efgs", new Abc(efgs)));
 
-        String s1 = RequestProcessor.processRequestParamOf("http://127.0.0.1:8080?t=123&abc=1", kvs);
+        String s1 = RequestProcessor.processRequestParams("http://127.0.0.1:8080?t=123&abc=1", kvs);
         System.out.println(s1);
     }
 

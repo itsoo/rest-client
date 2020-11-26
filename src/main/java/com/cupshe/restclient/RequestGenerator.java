@@ -69,7 +69,7 @@ class RequestGenerator {
 
     static String genericUriOf(String prefix, AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
         String result = processStandardUri(prefix, attr.path);
-        result = processPathVariableOf(result, getPathVariablesOf(params, args));
+        result = processPathVariables(result, getPathVariablesOf(params, args));
         result = attr.isPassingParamsOfUrl()
                 ? genericUriOf(result, attr.params, params, args)
                 : result;
@@ -82,7 +82,7 @@ class RequestGenerator {
         List<Kv> params = new ArrayList<>(capacity);
         params.addAll(getRequestParamsOf(mthParams, args));
         params.addAll(getRequestParamsOf(defParams));
-        return processRequestParamOf(uri, params);
+        return processRequestParams(uri, params);
     }
 
     static MultiValueMap<String, Object> genericFormDataOf(String[] defParams, Parameter[] mthParams, Object[] args) {
