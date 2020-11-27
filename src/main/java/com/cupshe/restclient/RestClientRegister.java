@@ -45,9 +45,9 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
                 if (component instanceof AnnotatedBeanDefinition) {
                     String clazz = component.getBeanClassName();
                     String classBeanName = ObjectClasses.getShortNameAsProperty(clazz);
-                    RestClient annotation = AssertBeforeRegister.assertAndGetAnnotation(clazz);
-                    AbstractBeanDefinition beanDefinition = getBeanDefinition(clazz, annotation);
-                    String beanName = StringUtils.defaultIfBlank(annotation.id(), classBeanName);
+                    RestClient ann = AssertBeforeRegister.assertAndGetAnnotation(clazz);
+                    AbstractBeanDefinition beanDefinition = getBeanDefinition(clazz, ann);
+                    String beanName = StringUtils.defaultIfBlank(ann.id(), classBeanName);
                     BeanDefinitionReaderUtils.registerBeanDefinition(
                             new BeanDefinitionHolder(beanDefinition, beanName, ofArray(clazz)), registry);
                 }
@@ -82,16 +82,16 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
     }
 
     @SneakyThrows
-    private AbstractBeanDefinition getBeanDefinition(String clazz, RestClient annotation) {
+    private AbstractBeanDefinition getBeanDefinition(String clazz, RestClient ann) {
         BeanDefinitionBuilder b = BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class);
         b.addConstructorArgValue(Class.forName(clazz));
-        b.addConstructorArgValue(annotation.name());
-        b.addConstructorArgValue(annotation.path());
-        b.addConstructorArgValue(annotation.loadBalanceType());
-        b.addConstructorArgValue(annotation.maxAutoRetries());
-        b.addConstructorArgValue(annotation.fallback());
-        b.addConstructorArgValue(annotation.connectTimeout());
-        b.addConstructorArgValue(annotation.readTimeout());
+        b.addConstructorArgValue(ann.name());
+        b.addConstructorArgValue(ann.path());
+        b.addConstructorArgValue(ann.loadBalanceType());
+        b.addConstructorArgValue(ann.maxAutoRetries());
+        b.addConstructorArgValue(ann.fallback());
+        b.addConstructorArgValue(ann.connectTimeout());
+        b.addConstructorArgValue(ann.readTimeout());
         return b.getBeanDefinition();
     }
 

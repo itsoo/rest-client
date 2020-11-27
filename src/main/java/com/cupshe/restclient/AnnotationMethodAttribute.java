@@ -40,37 +40,37 @@ class AnnotationMethodAttribute {
     }
 
     static AnnotationMethodAttribute of(Method method) {
-        Annotation annotation;
-        if ((annotation = findAnnotation(method, GetMapping.class)) != null) {
-            return of(annotation);
-        } else if ((annotation = findAnnotation(method, PostMapping.class)) != null) {
-            return of(annotation);
-        } else if ((annotation = findAnnotation(method, PutMapping.class)) != null) {
-            return of(annotation);
-        } else if ((annotation = findAnnotation(method, PatchMapping.class)) != null) {
-            return of(annotation);
-        } else if ((annotation = findAnnotation(method, DeleteMapping.class)) != null) {
-            return of(annotation);
-        } else if ((annotation = findAnnotation(method, RequestMapping.class)) != null) {
-            return of(annotation);
+        Annotation ann;
+        if ((ann = findAnnotation(method, GetMapping.class)) != null) {
+            return of(ann);
+        } else if ((ann = findAnnotation(method, PostMapping.class)) != null) {
+            return of(ann);
+        } else if ((ann = findAnnotation(method, PutMapping.class)) != null) {
+            return of(ann);
+        } else if ((ann = findAnnotation(method, PatchMapping.class)) != null) {
+            return of(ann);
+        } else if ((ann = findAnnotation(method, DeleteMapping.class)) != null) {
+            return of(ann);
+        } else if ((ann = findAnnotation(method, RequestMapping.class)) != null) {
+            return of(ann);
         } else {
             throw new NoSupportMethodException();
         }
     }
 
-    static AnnotationMethodAttribute of(Annotation annotation) {
-        if (GetMapping.class.isAssignableFrom(annotation.annotationType())) {
-            return of((GetMapping) annotation);
-        } else if (PostMapping.class.isAssignableFrom(annotation.annotationType())) {
-            return of((PostMapping) annotation);
-        } else if (PutMapping.class.isAssignableFrom(annotation.annotationType())) {
-            return of((PutMapping) annotation);
-        } else if (PatchMapping.class.isAssignableFrom(annotation.annotationType())) {
-            return of((PatchMapping) annotation);
-        } else if (DeleteMapping.class.isAssignableFrom(annotation.annotationType())) {
-            return of((DeleteMapping) annotation);
-        } else if (RequestMapping.class.isAssignableFrom(annotation.annotationType())) {
-            return of((RequestMapping) annotation);
+    static AnnotationMethodAttribute of(Annotation ann) {
+        if (GetMapping.class.isAssignableFrom(ann.annotationType())) {
+            return of((GetMapping) ann);
+        } else if (PostMapping.class.isAssignableFrom(ann.annotationType())) {
+            return of((PostMapping) ann);
+        } else if (PutMapping.class.isAssignableFrom(ann.annotationType())) {
+            return of((PutMapping) ann);
+        } else if (PatchMapping.class.isAssignableFrom(ann.annotationType())) {
+            return of((PatchMapping) ann);
+        } else if (DeleteMapping.class.isAssignableFrom(ann.annotationType())) {
+            return of((DeleteMapping) ann);
+        } else if (RequestMapping.class.isAssignableFrom(ann.annotationType())) {
+            return of((RequestMapping) ann);
         } else {
             throw new NoSupportMethodException();
         }

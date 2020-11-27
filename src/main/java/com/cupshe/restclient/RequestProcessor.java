@@ -17,7 +17,6 @@ import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * RequestProcessor
@@ -81,8 +80,8 @@ class RequestProcessor {
 
     static Object getRequestBodyOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         for (int i = 0; i < params.length; i++) {
-            RequestBody annotation = AnnotationUtils.findAnnotation(params[i], RequestBody.class);
-            if (annotation != null) {
+            RequestBody ann = AnnotationUtils.findAnnotation(params[i], RequestBody.class);
+            if (ann != null) {
                 return args[i];
             }
         }
@@ -93,9 +92,9 @@ class RequestProcessor {
     static List<Kv> getPathVariablesOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         List<Kv> result = new ArrayList<>();
         for (int i = 0; i < params.length; i++) {
-            PathVariable annotation = AnnotationUtils.findAnnotation(params[i], PathVariable.class);
-            if (annotation != null) {
-                result.add(new Kv(annotation.name(), args[i]));
+            PathVariable ann = AnnotationUtils.findAnnotation(params[i], PathVariable.class);
+            if (ann != null) {
+                result.add(new Kv(ann.name(), args[i]));
             }
         }
 
@@ -105,10 +104,7 @@ class RequestProcessor {
     static List<Kv> getRequestParamsOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         List<Kv> result = new ArrayList<>();
         for (int i = 0; i < params.length; i++) {
-            result.addAll(getSampleKvs(getPropertyName(params[i]), args[i])
-                    .parallelStream()
-                    .filter(t -> StringUtils.isNotBlank(t.getKey()))
-                    .collect(Collectors.toList()));
+            result.addAll(getSampleKvs(getPropertyName(params[i]), args[i]));
         }
 
         return result;
@@ -121,9 +117,9 @@ class RequestProcessor {
     static List<Kv> getRequestHeadersOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         List<Kv> result = new ArrayList<>();
         for (int i = 0; i < params.length; i++) {
-            RequestHeader annotation = AnnotationUtils.findAnnotation(params[i], RequestHeader.class);
-            if (annotation != null) {
-                result.add(new Kv(annotation.name(), StringUtils.getOrEmpty(args[i])));
+            RequestHeader ann = AnnotationUtils.findAnnotation(params[i], RequestHeader.class);
+            if (ann != null) {
+                result.add(new Kv(ann.name(), StringUtils.getOrEmpty(args[i])));
             }
         }
 
@@ -170,8 +166,9 @@ class RequestProcessor {
             return Collections.emptyList();
         }
 
-        List<Kv> result = new ArrayList<>();
-        if (!ObjectClasses.isInconvertibleClass(arg.getClass())) {
+        List<Kv> result = new ArrayList<>(1 << 6);
+        if (!ObjectClasses.isInconvertibleClass(arg.getClass())
+                && StringUtils.isNotBlank(property)) { // is not literals
             result.add(new Kv(property, arg));
         } else if (arg instanceof Kv) {
             Kv kv = (Kv) arg;
@@ -198,8 +195,8 @@ class RequestProcessor {
     }
 
     private static String getPropertyName(Parameter param) {
-        RequestParam annotation = AnnotationUtils.findAnnotation(param, RequestParam.class);
-        return annotation == null ? ROOT_PROPERTY : annotation.name();
+        RequestParam ann = AnnotationUtils.findAnnotation(param, RequestParam.class);
+        return ann == null ? ROOT_PROPERTY : ann.name();
     }
 
     private static char getQuerySeparator(String uri) {

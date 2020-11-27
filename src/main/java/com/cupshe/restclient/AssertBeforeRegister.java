@@ -33,11 +33,11 @@ class AssertBeforeRegister {
     @NonNull
     static RestClient assertRestClientIsInterface(Class<?> clazz) {
         assertIsTrue(clazz.isInterface(), clazz, "@RestClient component can only be interface.");
-        RestClient annotation = AnnotationUtils.findAnnotation(clazz, RestClient.class);
-        assertNotNull(annotation, clazz, "Cannot found interface with @RestClient.");
-        assertNameOrValueIsNotEmpty(annotation, clazz);
-        assertMaxAutoRetriesValue(annotation, clazz);
-        assertFallbackClass(annotation, clazz);
+        RestClient ann = AnnotationUtils.findAnnotation(clazz, RestClient.class);
+        assertNotNull(ann, clazz, "Cannot found interface with @RestClient.");
+        assertNameOrValueIsNotEmpty(ann, clazz);
+        assertMaxAutoRetriesValue(ann, clazz);
+        assertFallbackClass(ann, clazz);
         // assert all methods
         for (Method method : clazz.getDeclaredMethods()) {
             assertRequestBodyOnlyOne(method, clazz);
@@ -47,21 +47,21 @@ class AssertBeforeRegister {
             assertPathVariableParams(method, clazz);
         }
 
-        return annotation;
+        return ann;
     }
 
-    static void assertNameOrValueIsNotEmpty(RestClient annotation, Class<?> clazz) {
-        String serviceName = StringUtils.defaultIfBlank(annotation.name(), annotation.value());
+    static void assertNameOrValueIsNotEmpty(RestClient ann, Class<?> clazz) {
+        String serviceName = StringUtils.defaultIfBlank(ann.name(), ann.value());
         assertIsTrue(StringUtils.isNotBlank(serviceName), clazz, "@RestClient 'name' or 'value' cannot be all empty.");
     }
 
-    static void assertMaxAutoRetriesValue(RestClient annotation, Class<?> clazz) {
-        boolean checkAutoRetries = annotation.maxAutoRetries() >= 0;
+    static void assertMaxAutoRetriesValue(RestClient ann, Class<?> clazz) {
+        boolean checkAutoRetries = ann.maxAutoRetries() >= 0;
         assertIsTrue(checkAutoRetries, clazz, "@RestClient 'maxAutoRetries' range [0, Integer.MAX_VALUE].");
     }
 
-    static void assertFallbackClass(RestClient annotation, Class<?> clazz) {
-        Class<?> fallback = annotation.fallback();
+    static void assertFallbackClass(RestClient ann, Class<?> clazz) {
+        Class<?> fallback = ann.fallback();
         if (fallback == void.class) {
             return;
         }
@@ -90,9 +90,9 @@ class AssertBeforeRegister {
     }
 
     static void assertRequestMappingMethod(Method method, Class<?> clazz) {
-        RequestMapping annotation = getRequestMappingOfMethod(method, clazz);
-        assertIsTrue(annotation.method().length > 0, clazz, "@RequestMapping property 'method' cannot be empty.");
-        assertIsTrue(annotation.method().length == 1, clazz, "@RequestMapping property 'method' can only one.");
+        RequestMapping ann = getRequestMappingOfMethod(method, clazz);
+        assertIsTrue(ann.method().length > 0, clazz, "@RequestMapping property 'method' cannot be empty.");
+        assertIsTrue(ann.method().length == 1, clazz, "@RequestMapping property 'method' can only one.");
     }
 
     static void assertRequestMappingPath(Method method, Class<?> clazz) {
@@ -102,9 +102,9 @@ class AssertBeforeRegister {
 
     static void assertXxxMappingOnlyOne(Method method, Class<?> clazz) {
         int count = 0;
-        for (Annotation annotation : method.getDeclaredAnnotations()) {
+        for (Annotation ann : method.getDeclaredAnnotations()) {
             try {
-                AnnotationMethodAttribute.of(annotation);
+                AnnotationMethodAttribute.of(ann);
                 count++;
             } catch (NoSupportMethodException ignore) {}
         }
@@ -124,9 +124,9 @@ class AssertBeforeRegister {
 
     @NonNull
     private static RequestMapping getRequestMappingOfMethod(Method method, Class<?> clazz) {
-        RequestMapping annotation = AnnotationUtils.findAnnotation(method, RequestMapping.class);
-        assertNotNull(annotation, clazz, "Cannot found anyone @RequestMapping class.");
-        return annotation;
+        RequestMapping result = AnnotationUtils.findAnnotation(method, RequestMapping.class);
+        assertNotNull(result, clazz, "Cannot found anyone @RequestMapping class.");
+        return result;
     }
 
     private static void assertNotNull(Object obj, Class<?> clazz, String message) {

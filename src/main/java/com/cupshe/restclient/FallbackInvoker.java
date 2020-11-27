@@ -62,8 +62,8 @@ class FallbackInvoker {
         }
 
         private void setBeanName(Class<?> clazz) {
-            for (Annotation annotation : clazz.getDeclaredAnnotations()) {
-                beanName = SupportedAnnotations.getValue(annotation);
+            for (Annotation ann : clazz.getDeclaredAnnotations()) {
+                beanName = SupportedAnnotations.getValue(ann);
                 if (StringUtils.isNotBlank(beanName)) {
                     return;
                 }
