@@ -17,6 +17,7 @@ import java.lang.reflect.Parameter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * RequestProcessor
@@ -104,7 +105,10 @@ class RequestProcessor {
     static List<Kv> getRequestParamsOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         List<Kv> result = new ArrayList<>();
         for (int i = 0; i < params.length; i++) {
-            result.addAll(getSampleKvs(getPropertyName(params[i]), args[i]));
+            result.addAll(getSampleKvs(getPropertyName(params[i]), args[i])
+                    .parallelStream()
+                    .filter(t -> StringUtils.isNotBlank(t.getKey()))
+                    .collect(Collectors.toList()));
         }
 
         return result;
