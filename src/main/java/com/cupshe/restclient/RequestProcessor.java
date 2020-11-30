@@ -15,8 +15,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.lang.reflect.Array;
 import java.lang.reflect.Parameter;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * RequestProcessor
@@ -25,11 +23,13 @@ import java.util.regex.Pattern;
  */
 class RequestProcessor {
 
+    static final String EXPRESSION_PREFIX = "{";
+
+    static final String EXPRESSION_SUFFIX = "}";
+
     static final String ROOT_PROPERTY = StringUtils.EMPTY;
 
     private static final String EMPTY = StringUtils.EMPTY;
-
-    private static final Pattern PATH_VARIABLE_PATTERN = Pattern.compile("(\\{[^}]*})");
 
     static String processRequestParams(String url, List<Kv> args) {
         String rel = StringUtils.trimTrailingCharacter(url, '&');
@@ -52,18 +52,22 @@ class RequestProcessor {
             return url;
         }
 
-        String result = url;
+        StringBuilder result = new StringBuilder();
         Map<String, String> map = convertKvsToMap(args);
-        Matcher m = PATH_VARIABLE_PATTERN.matcher(result);
-        while (m.find()) {
-            String key = m.group(1);
-            String value = map.get(key.substring(1, key.length() - 1).trim());
+        int i = 0, j = i;
+        while ((i = url.indexOf(EXPRESSION_PREFIX, i)) != -1) {
+            result.append(url, j, i); // no expression template string
+            j = url.indexOf(EXPRESSION_SUFFIX, i);
+            String key = url.substring(i, j);
+            String value = map.get(key.substring(1).trim());
             if (value != null) {
-                result = StringUtils.replace(result, key, value);
+                result.append(value);
             }
+
+            i = ++j;
         }
 
-        return result;
+        return result.append(url.substring(j)).toString();
     }
 
     static String processStandardUri(String prefix, String path) {

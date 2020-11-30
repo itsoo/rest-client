@@ -114,12 +114,14 @@ class AssertBeforeRegister {
 
     static void assertPathVariableParams(Method method, Class<?> clazz) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        long pathParamsCount = StringUtils.findSubstringCountOf(attr.path, "{");
+        long pathParamsCount1 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_PREFIX);
+        long pathParamsCount2 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_SUFFIX);
         long methodParamsCount = Arrays.stream(method.getParameters())
                 .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, PathVariable.class) != null)
                 .count();
-        assertIsTrue(pathParamsCount == methodParamsCount, clazz, "Wrong params defined by request path variables.");
+        assertIsTrue(pathParamsCount1 == pathParamsCount2, clazz, "Path variables expression format error.");
+        assertIsTrue(pathParamsCount1 == methodParamsCount, clazz, "Wrong params map to request path variables.");
     }
 
     @NonNull
