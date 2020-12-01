@@ -1,7 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.text.StringUtils;
-import com.cupshe.restclient.lang.SupportedAnnotations;
+import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.ClassUtils;
@@ -47,6 +47,7 @@ class FallbackInvoker {
     /**
      * FallbackInstance
      */
+    @PureFunction
     private static class FallbackInstance {
 
         private String beanName;

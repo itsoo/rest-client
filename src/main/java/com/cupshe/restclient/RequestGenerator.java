@@ -4,6 +4,7 @@ import com.cupshe.ak.core.Kv;
 import com.cupshe.ak.net.TraceIdUtils;
 import com.cupshe.ak.net.UuidUtils;
 import com.cupshe.ak.text.StringUtils;
+import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -25,6 +26,7 @@ import static com.cupshe.restclient.RequestProcessor.*;
  *
  * @author zxy
  */
+@PureFunction
 class RequestGenerator {
 
     private static final String CALL_SOURCE_KEY = "Call-Source";

@@ -1,4 +1,4 @@
-package com.cupshe.restclient;
+package com.cupshe.restclient.lang;
 
 import com.cupshe.restclient.exception.ConnectTimeoutException;
 import org.springframework.core.annotation.AliasFor;
@@ -56,7 +56,7 @@ public @interface RestClient {
     /**
      * 负载均衡策略
      *
-     * @return {@link com.cupshe.restclient.RestClient.LoadBalanceType#RR}
+     * @return {@link RestClient.LoadBalanceType#RR}
      */
     LoadBalanceType loadBalanceType() default LoadBalanceType.RR;
 

@@ -1,5 +1,6 @@
-package com.cupshe.restclient;
+package com.cupshe.restclient.lang;
 
+import com.cupshe.restclient.RestClientRegister;
 import org.springframework.context.annotation.Import;
 
 import java.lang.annotation.*;

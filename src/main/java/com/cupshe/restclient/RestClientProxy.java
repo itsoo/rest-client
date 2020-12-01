@@ -18,7 +18,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.net.URI;
 
-import static com.cupshe.restclient.RestClient.LoadBalanceType;
+import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
 
 /**
  * RestClientProxy

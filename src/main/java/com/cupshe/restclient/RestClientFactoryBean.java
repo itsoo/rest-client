@@ -7,7 +7,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.lang.NonNull;
 
-import static com.cupshe.restclient.RestClient.LoadBalanceType;
+import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
 
 /**
  * RestClientFactoryBean

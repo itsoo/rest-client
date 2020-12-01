@@ -1,6 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.restclient.exception.NoSupportMethodException;
+import com.cupshe.restclient.lang.PureFunction;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.bind.annotation.*;
@@ -31,14 +32,17 @@ class AnnotationMethodAttribute {
         this.method = method;
     }
 
+    @PureFunction
     boolean isPassingParamsOfUrl() {
         return GET.equals(method) || DELETE.equals(method);
     }
 
+    @PureFunction
     boolean isPassingParamsOfForm() {
         return POST.equals(method) || PUT.equals(method) || PATCH.equals(method);
     }
 
+    @PureFunction
     static AnnotationMethodAttribute of(Method method) {
         Annotation ann;
         if ((ann = findAnnotation(method, GetMapping.class)) != null) {
@@ -58,6 +62,7 @@ class AnnotationMethodAttribute {
         }
     }
 
+    @PureFunction
     static AnnotationMethodAttribute of(Annotation ann) {
         if (GetMapping.class.isAssignableFrom(ann.annotationType())) {
             return of((GetMapping) ann);

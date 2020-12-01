@@ -2,7 +2,8 @@ package com.cupshe.restclient;
 
 import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.exception.NoSupportMethodException;
-import com.cupshe.restclient.lang.SupportedAnnotations;
+import com.cupshe.restclient.lang.PureFunction;
+import com.cupshe.restclient.lang.RestClient;
 import lombok.SneakyThrows;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
@@ -21,6 +22,7 @@ import java.util.Arrays;
  *
  * @author zxy
  */
+@PureFunction
 class AssertBeforeRegister {
 
     @NonNull
@@ -85,18 +87,18 @@ class AssertBeforeRegister {
                 .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, RequestBody.class) != null)
                 .count();
-        assertIsTrue(count <= 1L, clazz, "@RequestBody of the method cannot have that more than one.");
+        assertIsTrue(count <= 1L, clazz, method, "@RequestBody of the method cannot have that more than one.");
     }
 
     static void assertRequestMappingMethod(Method method, Class<?> clazz) {
         RequestMapping ann = getRequestMappingOfMethod(method, clazz);
-        assertIsTrue(ann.method().length > 0, clazz, "@RequestMapping property 'method' cannot be empty.");
-        assertIsTrue(ann.method().length == 1, clazz, "@RequestMapping property 'method' can only one.");
+        assertIsTrue(ann.method().length > 0, clazz, method, "@RequestMapping property 'method' cannot be empty.");
+        assertIsTrue(ann.method().length == 1, clazz, method, "@RequestMapping property 'method' can only one.");
     }
 
     static void assertRequestMappingPath(Method method, Class<?> clazz) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        assertIsTrue(attr.paths.length <= 1, clazz, "@RequestMapping 'path' or 'value' is wrong (only one param).");
+        assertIsTrue(attr.paths.length <= 1, clazz, method, "@RequestMapping 'path' or 'value' is wrong (only one param).");
     }
 
     static void assertXxxMappingOnlyOne(Method method, Class<?> clazz) {
@@ -108,19 +110,19 @@ class AssertBeforeRegister {
             } catch (NoSupportMethodException ignore) {}
         }
 
-        assertIsTrue(count == 1, clazz, "@RequestMapping is required and only one.");
+        assertIsTrue(count == 1, clazz, method, "@RequestMapping is required and only one.");
     }
 
     static void assertPathVariableParams(Method method, Class<?> clazz) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        long pathParamsCount1 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_DELIMITER_PREFIX);
-        long pathParamsCount2 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_DELIMITER_SUFFIX);
-        long methodParamsCount = Arrays.stream(method.getParameters())
+        long pvCounts1 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_DELIMITER_PREFIX);
+        long pvCounts2 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_DELIMITER_SUFFIX);
+        long mpsCounts = Arrays.stream(method.getParameters())
                 .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, PathVariable.class) != null)
                 .count();
-        assertIsTrue(pathParamsCount1 == pathParamsCount2, clazz, "Path variable expression format error.");
-        assertIsTrue(pathParamsCount1 == methodParamsCount, clazz, "Wrong params map to request path variable.");
+        assertIsTrue(pvCounts1 == pvCounts2, clazz, method, "Path variable expression format error.");
+        assertIsTrue(pvCounts1 == mpsCounts, clazz, method, "Wrong params map to request path variable.");
     }
 
     @NonNull
@@ -136,5 +138,9 @@ class AssertBeforeRegister {
 
     private static void assertIsTrue(boolean exp, Class<?> clazz, String message) {
         Assert.isTrue(exp, clazz.getCanonicalName() + ": " + message);
+    }
+
+    private static void assertIsTrue(boolean exp, Class<?> clazz, Method method, String message) {
+        Assert.isTrue(exp, clazz.getCanonicalName() + '#' + method.toGenericString() + ": " + message);
     }
 }

@@ -4,6 +4,7 @@ import com.cupshe.ak.core.Kv;
 import com.cupshe.ak.net.UriUtils;
 import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.ak.text.StringUtils;
+import com.cupshe.restclient.lang.PureFunction;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.util.CollectionUtils;
@@ -21,6 +22,7 @@ import java.util.*;
  *
  * @author zxy
  */
+@PureFunction
 class RequestProcessor {
 
     static final String EXPRESSION_DELIMITER_PREFIX = "{";
@@ -102,7 +104,7 @@ class RequestProcessor {
             }
         }
 
-        return result;
+        return Collections.unmodifiableList(result);
     }
 
     static List<Kv> getRequestParamsOf(@NonNull Parameter[] params, @NonNull Object[] args) {
@@ -111,7 +113,7 @@ class RequestProcessor {
             result.addAll(getSampleKvs(getPropertyName(params[i]), args[i]));
         }
 
-        return result;
+        return Collections.unmodifiableList(result);
     }
 
     static List<Kv> getRequestParamsOf(@NonNull String[] params) {
@@ -127,7 +129,7 @@ class RequestProcessor {
             }
         }
 
-        return result;
+        return Collections.unmodifiableList(result);
     }
 
     static List<Kv> getRequestHeadersOf(@NonNull String[] params) {
@@ -152,7 +154,7 @@ class RequestProcessor {
             }
         }
 
-        return result;
+        return Collections.unmodifiableList(result);
     }
 
     private static Map<String, String> convertKvsToMap(@NonNull List<Kv> kvs) {
@@ -162,7 +164,7 @@ class RequestProcessor {
             result.put(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
         }
 
-        return result;
+        return Collections.unmodifiableMap(result);
     }
 
     private static List<Kv> getSampleKvs(String property, Object arg) {
@@ -195,7 +197,7 @@ class RequestProcessor {
             }
         }
 
-        return result;
+        return Collections.unmodifiableList(result);
     }
 
     private static String getPropertyName(Parameter param) {

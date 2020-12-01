@@ -1,5 +1,6 @@
 package com.cupshe.restclient;
 
+import com.cupshe.restclient.lang.PureFunction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.RequestEntity;
 
@@ -9,6 +10,7 @@ import org.springframework.http.RequestEntity;
  * @author zxy
  */
 @Slf4j
+@PureFunction
 class Logging {
 
     static void info(String data) {

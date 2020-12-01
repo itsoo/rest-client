@@ -1,5 +1,6 @@
 package com.cupshe.restclient;
 
+import com.cupshe.restclient.lang.PureFunction;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
@@ -11,6 +12,7 @@ import org.springframework.web.client.RestTemplate;
  */
 class RestTemplateUtils {
 
+    @PureFunction
     static RestTemplate createRestTemplate(int connectTimeout, int readTimeout) {
         return new RestTemplate(getClientFactory(connectTimeout, readTimeout));
     }

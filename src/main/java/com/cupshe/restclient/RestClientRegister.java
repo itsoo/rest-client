@@ -2,6 +2,8 @@ package com.cupshe.restclient;
 
 import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.ak.text.StringUtils;
+import com.cupshe.restclient.lang.EnableRestClient;
+import com.cupshe.restclient.lang.RestClient;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;

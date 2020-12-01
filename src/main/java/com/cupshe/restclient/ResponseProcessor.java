@@ -3,6 +3,7 @@ package com.cupshe.restclient;
 import com.cupshe.ak.json.JsonUtils;
 import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.restclient.exception.ClassConvertException;
+import com.cupshe.restclient.lang.PureFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 
@@ -15,6 +16,7 @@ import java.util.List;
  *
  * @author zxy
  */
+@PureFunction
 class ResponseProcessor {
 
     static Object convertToObject(String json, Method method) {
@@ -29,7 +31,9 @@ class ResponseProcessor {
         }
     }
 
-    private static Object convertToObject(String json, Type genericType) throws JsonProcessingException {
+    private static Object convertToObject(String json, Type genericType)
+            throws JsonProcessingException {
+
         if (List.class.isAssignableFrom(genericType.getClass())) {
             return JsonUtils.convertList(json, genericType.getClass());
         }

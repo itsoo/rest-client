@@ -9,6 +9,7 @@ import java.lang.annotation.*;
 
 /**
  * Fallback
+ * <p>Describes a component as a fallback function.
  *
  * @author zxy
  * @see Component

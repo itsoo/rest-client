@@ -3,7 +3,7 @@ package com.cupshe.demo.rpc;
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.fallback.DemoProviderFallback;
-import com.cupshe.restclient.RestClient;
+import com.cupshe.restclient.lang.RestClient;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -23,6 +23,7 @@ public interface DemoProvider {
     ResponseVO<Object> postForm(DemoDTO dto);
 
     @PostMapping("/body")
+    @GetMapping("/{id}")
     DemoDTO postBody(@RequestBody DemoDTO dto);
 
     @GetMapping("/{id}")

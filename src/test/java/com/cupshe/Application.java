@@ -1,6 +1,6 @@
 package com.cupshe;
 
-import com.cupshe.restclient.EnableRestClient;
+import com.cupshe.restclient.lang.EnableRestClient;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
