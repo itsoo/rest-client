@@ -23,7 +23,6 @@ public interface DemoProvider {
     ResponseVO<Object> postForm(DemoDTO dto);
 
     @PostMapping("/body")
-    @GetMapping("/{id}")
     DemoDTO postBody(@RequestBody DemoDTO dto);
 
     @GetMapping("/{id}")
