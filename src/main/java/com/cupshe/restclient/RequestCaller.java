@@ -1,6 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.restclient.exception.NotFoundException;
+import com.cupshe.restclient.lang.PureFunction;
 import lombok.Data;
 import org.springframework.util.CollectionUtils;
 
@@ -8,7 +9,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.cupshe.restclient.RestClient.LoadBalanceType;
+import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
 
 /**
  * RequestCaller
@@ -20,14 +21,15 @@ class RequestCaller {
 
     private String name;
     private List<String> services;
-    private AbstractCall roundRobin;
-    private AbstractCall random;
+    private final AbstractCall roundRobin;
+    private final AbstractCall random;
 
     private RequestCaller() {
         roundRobin = new CallRoundRobin();
         random = new CallRandom();
     }
 
+    @PureFunction
     String get(LoadBalanceType loadBalanceType) {
         int i = getCall(loadBalanceType).index();
         if (i == -1) {
@@ -41,7 +43,7 @@ class RequestCaller {
         return LoadBalanceType.R.equals(loadBalanceType) ? random : roundRobin;
     }
 
-    private abstract class AbstractCall {
+    private abstract static class AbstractCall {
         /**
          * 获取应访问服务列表索引
          *
@@ -51,7 +53,7 @@ class RequestCaller {
     }
 
     private class CallRoundRobin extends AbstractCall {
-        private AtomicInteger i = new AtomicInteger(0);
+        private final AtomicInteger i = new AtomicInteger(0);
 
         @Override
         int index() {

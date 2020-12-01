@@ -3,6 +3,7 @@ package com.cupshe.demo.service;
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -21,7 +22,7 @@ public interface DemoService {
 
     void deleteById(Long id);
 
-    List<DemoDTO> findDemoList(DemoDTO dto);
+    ArrayList<Map<String, List<DemoDTO>>> findDemoList(DemoDTO dto);
 
     List<Integer> findIdList(DemoDTO dto);
 

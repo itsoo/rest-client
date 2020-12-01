@@ -1,4 +1,4 @@
-package com.cupshe.restclient;
+package com.cupshe.restclient.lang;
 
 import com.cupshe.restclient.exception.ConnectTimeoutException;
 import org.springframework.core.annotation.AliasFor;
@@ -16,10 +16,17 @@ import java.lang.annotation.*;
 public @interface RestClient {
 
     /**
+     * Spring 容器中对象的名称（默认为目标类对应的属性名）
+     *
+     * @return bean name
+     */
+    String id() default "";
+
+    /**
      * 服务名称
      * <ol>
-     * <li>name 与 value 不能同时为空</li>
-     * <li>与 value 同时设置时权重高于 value</li>
+     *   <li>name 与 value 不能同时为空</li>
+     *   <li>与 value 同时设置时权重高于 value</li>
      * </ol>
      *
      * @return service name
@@ -30,8 +37,8 @@ public @interface RestClient {
     /**
      * 服务名称
      * <ol>
-     * <li>name 与 value 不能同时为空</li>
-     * <li>与 name 同时设置时权重低于 name</li>
+     *   <li>name 与 value 不能同时为空</li>
+     *   <li>与 name 同时设置时权重低于 name</li>
      * </ol>
      *
      * @return service name
@@ -49,7 +56,7 @@ public @interface RestClient {
     /**
      * 负载均衡策略
      *
-     * @return com.cupshe.restclient.RestClient.LoadBalanceType
+     * @return {@link RestClient.LoadBalanceType#RR}
      */
     LoadBalanceType loadBalanceType() default LoadBalanceType.RR;
 
@@ -61,12 +68,12 @@ public @interface RestClient {
     int maxAutoRetries() default 0;
 
     /**
-     * 失败时的兜底方法（无参数有返回值方法）e.g.'@com.examples.Demo#abc'
+     * 失败时的兜底类类型
      *
-     * @return @类的全限定名#方法名称
-     * @throws ConnectTimeoutException 若未设置 fallback 失败将抛出异常
+     * @return Class
+     * @throws ConnectTimeoutException 若未设置 fallback 请求失败时将抛出异常
      */
-    String fallback() default "";
+    Class<?> fallback() default void.class;
 
     /**
      * 请求连接超时时间（ms）

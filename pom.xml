@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.cupshe</groupId>
     <artifactId>rest-client</artifactId>
-    <version>0.1.1-RELEASE</version>
+    <version>0.2.0-SNAPSHOT</version>
 
     <properties>
         <java.version>1.8</java.version>
@@ -47,16 +47,37 @@
         <dependency>
             <groupId>com.cupshe</groupId>
             <artifactId>army-knife</artifactId>
-            <version>0.1.1-RELEASE</version>
+            <version>0.2.0-SNAPSHOT</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
 
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
     <distributionManagement>
         <repository>
-            <id>nexus-release</id>
+            <id>cupshe-releases</id>
             <name>releases</name>
             <url>http://nexus.kapeixi.cn/repository/cupshe-releases/</url>
         </repository>
+        <snapshotRepository>
+            <id>cupshe-snapshots</id>
+            <name>snapshots</name>
+            <url>http://nexus.kapeixi.cn/repository/cupshe-snapshots/</url>
+        </snapshotRepository>
     </distributionManagement>
 </project>

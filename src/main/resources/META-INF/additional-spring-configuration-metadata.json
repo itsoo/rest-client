@@ -13,22 +13,5 @@
       "sourceType": "com.cupshe.restclient.RestClientProperties",
       "description": "Remote service list."
     }
-  ],
-  "hints": [
-    {
-      "name": "rest-client.routers",
-      "values": [
-        {
-          "value": "name",
-          "type": "java.lang.String",
-          "description": "Service name."
-        },
-        {
-          "value": "services",
-          "type": "java.util.List<java.lang.String>",
-          "description": "Service location list."
-        }
-      ]
-    }
   ]
 }

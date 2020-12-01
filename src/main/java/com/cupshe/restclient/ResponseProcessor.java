@@ -1,7 +1,9 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.json.JsonUtils;
+import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.restclient.exception.ClassConvertException;
+import com.cupshe.restclient.lang.PureFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 
@@ -14,30 +16,33 @@ import java.util.List;
  *
  * @author zxy
  */
+@PureFunction
 class ResponseProcessor {
 
-    static Object convertToObject(String res, Method method) {
-        if (isInconvertibleType(method.getReturnType())) {
-            return res;
+    static Object convertToObject(String json, Method method) {
+        if (isNotInconvertibleType(method.getReturnType())) {
+            return json;
         }
 
         try {
-            return convertToObject(res, method.getGenericReturnType());
+            return convertToObject(json, method.getGenericReturnType());
         } catch (JsonProcessingException e) {
-            throw new ClassConvertException(res, e);
+            throw new ClassConvertException(json, e);
         }
     }
 
-    private static Object convertToObject(String res, Type genericType) throws JsonProcessingException {
-        if (genericType.getClass().isAssignableFrom(List.class)) {
-            return JsonUtils.convertList(res, genericType.getClass());
+    private static Object convertToObject(String json, Type genericType)
+            throws JsonProcessingException {
+
+        if (List.class.isAssignableFrom(genericType.getClass())) {
+            return JsonUtils.convertList(json, genericType.getClass());
         }
 
         JavaType targetJavaType = JsonUtils.getJavaType(genericType);
-        return JsonUtils.jsonToObject(res, targetJavaType);
+        return JsonUtils.jsonToObject(json, targetJavaType);
     }
 
-    private static boolean isInconvertibleType(Class<?> returnType) {
-        return returnType.isPrimitive() || returnType.isAssignableFrom(String.class);
+    private static boolean isNotInconvertibleType(Class<?> returnType) {
+        return !ObjectClasses.isInconvertibleClass(returnType);
     }
 }

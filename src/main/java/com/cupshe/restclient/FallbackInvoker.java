@@ -1,8 +1,12 @@
 package com.cupshe.restclient;
 
+import com.cupshe.ak.text.StringUtils;
+import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
-import org.springframework.util.Assert;
+import org.springframework.context.ApplicationContext;
+import org.springframework.util.ClassUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
@@ -12,38 +16,78 @@ import java.lang.reflect.Method;
  */
 class FallbackInvoker {
 
-    private Class<?> className;
-    private String methodName;
+    private final Class<?> reference;
+    private final Method method;
 
-    private FallbackInvoker(Class<?> className, String methodName) {
-        this.className = className;
-        this.methodName = methodName;
+    private static ApplicationContext applicationContext;
+
+    private FallbackInvoker(Class<?> reference, Method method) {
+        this.reference = reference;
+        this.method = method;
     }
 
-    static FallbackInvoker of(String reference) {
-        assertInconvertibleValue(reference);
-        Class<?> className = processClassNameOf(reference);
-        String methodName = processMethodNameOf(reference);
-        return new FallbackInvoker(className, methodName);
+    static void setApplicationContext(ApplicationContext applicationContext) {
+        if (FallbackInvoker.applicationContext == null) {
+            FallbackInvoker.applicationContext = applicationContext;
+        }
     }
 
-    Object invoke() throws Throwable {
-        Object target = this.className.newInstance();
-        Method method = this.className.getDeclaredMethod(this.methodName);
-        return method.invoke(target);
+    static FallbackInvoker of(Class<?> reference, Method method) {
+        return new FallbackInvoker(reference, method);
     }
 
-    private static void assertInconvertibleValue(String arg) {
-        Assert.isTrue(arg.lastIndexOf('#') != -1 && arg.charAt(0) == '@',
-                "Fallback value must like '@com.examples.Demo#abc', (@FullyQualified#MethodName).");
+    Object invoke(Object[] args) throws Throwable {
+        String methodName = method.getName();
+        Class<?>[] paramTypes = method.getParameterTypes();
+        Method fallback = reference.getDeclaredMethod(methodName, paramTypes);
+        FallbackInstance fi = new FallbackInstance(reference);
+        return fallback.invoke(fi.getInstance(), args);
     }
 
-    @SneakyThrows
-    private static Class<?> processClassNameOf(String reference) {
-        return Class.forName(reference.substring(1, reference.lastIndexOf('#')));
-    }
+    /**
+     * FallbackInstance
+     */
+    @PureFunction
+    private static class FallbackInstance {
 
-    private static String processMethodNameOf(String reference) {
-        return reference.substring(reference.lastIndexOf('#') + 1);
+        private String beanName;
+        private Object instance;
+
+        FallbackInstance(Class<?> clazz) {
+            setBeanName(clazz);
+            setInstance(clazz);
+        }
+
+        Object getInstance() {
+            return instance;
+        }
+
+        private void setBeanName(Class<?> clazz) {
+            for (Annotation ann : clazz.getDeclaredAnnotations()) {
+                beanName = SupportedAnnotations.getValue(ann);
+                if (StringUtils.isNotBlank(beanName)) {
+                    return;
+                }
+            }
+
+            beanName = ClassUtils.getShortNameAsProperty(clazz);
+        }
+
+        private void setInstance(Class<?> clazz) {
+            instance = applicationContext == null
+                    ? getDefaultBean(clazz)
+                    : getBeanOrDefault(beanName, clazz);
+        }
+
+        private Object getBeanOrDefault(String beanName, Class<?> clazz) {
+            return applicationContext.containsBean(beanName)
+                    ? applicationContext.getBean(beanName)
+                    : getDefaultBean(clazz);
+        }
+
+        @SneakyThrows
+        private Object getDefaultBean(Class<?> clazz) {
+            return clazz.newInstance();
+        }
     }
 }

@@ -17,7 +17,7 @@
 <dependency>
   <groupId>com.cupshe</groupId>
   <artifactId>rest-client</artifactId>
-  <version>0.0.2-RELEASE</version>
+  <version>0.1.1-RELEASE</version>
 </dependency>
 ```
 
@@ -28,16 +28,16 @@
 # 路由的配置信息
 rest-client:
   routers:
-    - name: "demo"
+    - name: demo
       services:
-        - "127.0.0.1:8080"
-        - "127.0.0.1:8081"
-        - "127.0.0.1:8082"
-        - "127.0.0.1:8083"
-    - name: "test"
+        - 127.0.0.1:8080
+        - 127.0.0.1:8081
+        - 127.0.0.1:8082
+        - 127.0.0.1:8083
+    - name: test
       services:
-        - "127.0.0.1:8090"
-        - "127.0.0.1:8091"
+        - 127.0.0.1:8090
+        - 127.0.0.1:8091
 ```
 
 
@@ -77,15 +77,6 @@ public class DemoServiceImpl implements DemoService {
     public String findOne() {
         return demoProvider.findOne(2L, "demo");
     }
-
-    /**
-     * 自定义 fallback 兜底方法，如果需要单独处理的话（必须为无参数方法）
-     *
-     * @return T
-     */
-    public String fallback() {
-        return "test fallback method.";
-    }
 }
 ```
 
@@ -97,21 +88,22 @@ public class DemoServiceImpl implements DemoService {
 └─ basePackages   // 扫描包路径（数组）
 
 @RestClient
-├─ name           // 服务名称：1.name 与 value 不能同时为空；2.与 value 同时设置时权重高于 value
-├─ value          // 服务名称：1.name 与 value 不能同时为空；2.与 name 同时设置时权重低于 name
+│                 // 服务名称：name 与 value 不能同时为空
+├─ name           // 当与 value 同时设置时权重高于 value
+├─ value          // 当与 name  同时设置时权重低于 name
+│
 ├─ path           // 请求 URI 上下文（即 path 的前缀部分）
 ├─ maxAutoRetries // 最大重试次数，第一次请求不计入重试次数（即存在失败情况下的总请求次数为 maxAutoRetries + 1）
-├─ fallback       // 失败时的兜底方法（无参数有返回值方法）格式：@类的全限定名#方法名称：e.g.'@com.examples.Demo#abc'
-│                    若未设置 fallback 失败将抛出异常 com.cupshe.restclient.exception.ConnectTimeoutException
+├─ fallback       // 失败时的兜底方法 Class<?> 类型，若未设置 fallback 失败将抛出异常：
+│                     com.cupshe.restclient.exception.ConnectTimeoutException
 ├─ connectTimeout // 连接超时时间（ms），默认值：1000L
-└─ readTimeout    // 等待响应超时时间（ms），默认值：-1L（即不超时，一直等待直到响应）
+└─ readTimeout    // 等待响应超时时间（ms），默认值：-1L（即未设置，采用客户端默认）
 ```
 
 
 #### 注意事项
 
-- fallback 方法接收字符串类型的值，描述为 "@类的全限定名#方法名称" 例如："@com.examples.Demo#abc"
-- fallback 的实现方法必须为无参数方法，返回值类型不做约束，也可以是 static 方法
+- fallback 方法接收 Class<?> 类型，必须实现标注 @RestClient 注解的接口
 - 接口的实现类是动态代理对象，使用 @Autowired 注解会报红色告警，建议使用 @Resource 注解来避免告警
 - 接口的返回参数类型如果包含泛型的，必须指定正确的泛型类型，否则将会在反序列化过程中报错
 - @RequestMapping 等注解中 headers 为请求携带的头信息，与标准注解不同
@@ -131,3 +123,44 @@ public class DemoServiceImpl implements DemoService {
 6. 无请求参数的请求场景（接口方法无入参）
 7. 测试本工程打包为 jar 文件后与各工程的整合，及联调是否可以正常工作
 8. 测试标准 URI 路径的处理
+
+
+---------------------------------------
+
+
+### RPC 0.2.0 版本新特性总览
+
+#### 一、fallback 重构，支持以下新特性
+
+1. 入参类型改为 Class<?> 以适配接口的全部签名 
+2. fallback 指定的类型支持注入 Spring 容器
+3. 新增 @Fallback 注解，作用等同 Component 语义化更好
+
+
+#### 二、容器启动时对所有 Provider 进行有效性校验（0.1.X 版本是运行时校验）
+
+1. fallback 的有效性校验（必须是接口的实现类、不能为抽象类，且是受支持的组件类型）
+2. 对 @RestClient 的 maxAutoRetries、name、value 等参数的有效性校验
+3. 对 @RequestBody 的有效性校验
+4. 对 @RequestMapping 及相关的注解（如：@GetMapping 等）参数有效性校验
+5. 对 @PathVariable 的有效性校验
+6. 对其它相关参数的有效性校验
+
+
+#### 三、日志打印更详细
+
+- 打印入参，日志级别 INFO
+- 打印返回值，日志级别 INFO
+- 打印错误信息，日志级别 ERROR
+
+#### 四、POST 请求的对象支持序列化 FormData 请求
+
+#### 五、新增对 @RequestHeader 注解的支持
+
+#### 六、支持上游请求过来的 HttpHeaders 透传
+
+#### 七、代码的重构与优化
+
+- 可读性更好
+- 运行时性能更好
+- 抽象更彻底

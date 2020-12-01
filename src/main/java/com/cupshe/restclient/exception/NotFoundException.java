@@ -1,5 +1,7 @@
 package com.cupshe.restclient.exception;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * NotFoundException
  *
@@ -7,9 +9,11 @@ package com.cupshe.restclient.exception;
  */
 public class NotFoundException extends RuntimeException {
 
-    private static final String MESSAGE = "Not found.";
+    private static final int STATUS_CODE = HttpServletResponse.SC_NOT_FOUND;
+
+    private static final String MESSAGE = "Not found";
 
     public NotFoundException() {
-        super(MESSAGE);
+        super(STATUS_CODE + " " + MESSAGE);
     }
 }

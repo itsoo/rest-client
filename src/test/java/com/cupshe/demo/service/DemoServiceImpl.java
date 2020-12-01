@@ -3,11 +3,10 @@ package com.cupshe.demo.service;
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.rpc.DemoProvider;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * CommentServiceImpl
@@ -17,7 +16,7 @@ import java.util.Map;
 @Service
 public class DemoServiceImpl implements DemoService {
 
-    @Resource
+    @Autowired
     private DemoProvider demoProvider;
 
     @Override
@@ -41,8 +40,11 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public List<DemoDTO> findDemoList(DemoDTO dto) {
-        return demoProvider.findDemoList(dto);
+    public ArrayList<Map<String, List<DemoDTO>>> findDemoList(DemoDTO dto) {
+        Map<String, List<DemoDTO>> map = new HashMap<>(2);
+        map.put("demo", Collections.singletonList(dto));
+        return demoProvider.findDemoList(new ArrayList<>(Collections.singletonList(map)));
+//        return demoProvider.findDemoListPost(new ArrayList<>(Collections.singletonList(map)));
     }
 
     @Override
@@ -58,9 +60,5 @@ public class DemoServiceImpl implements DemoService {
     @Override
     public ResponseVO<Map<String, List<DemoDTO>>> complexObject() {
         return demoProvider.complexObject();
-    }
-
-    public ResponseVO<Object> fallback() {
-        return ResponseVO.of("test fallback method.");
     }
 }

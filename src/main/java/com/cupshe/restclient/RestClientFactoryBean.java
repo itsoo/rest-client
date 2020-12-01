@@ -2,34 +2,33 @@ package com.cupshe.restclient;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.cglib.proxy.Proxy;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.util.Assert;
+import org.springframework.lang.NonNull;
 
-import static com.cupshe.restclient.RestClient.LoadBalanceType;
+import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
 
 /**
  * RestClientFactoryBean
  *
  * @author zxy
  */
-public class RestClientFactoryBean implements FactoryBean<Object>, InitializingBean, ApplicationContextAware {
+public class RestClientFactoryBean implements FactoryBean<Object>, ApplicationContextAware {
 
-    private Class<?> clazz;
-    private String name;
-    private String path;
-    private LoadBalanceType loadBalanceType;
-    private int maxAutoRetries;
-    private String fallback;
-    private int connectTimeout;
-    private int readTimeout;
+    private final Class<?> clazz;
+    private final String name;
+    private final String path;
+    private final LoadBalanceType loadBalanceType;
+    private final int maxAutoRetries;
+    private final Class<?> fallback;
+    private final int connectTimeout;
+    private final int readTimeout;
 
     private ApplicationContext applicationContext;
 
     public RestClientFactoryBean(Class<?> clazz, String name, String path, LoadBalanceType loadBalanceType,
-                                 int maxAutoRetries, String fallback, int connectTimeout, int readTimeout) {
+                                 int maxAutoRetries, Class<?> fallback, int connectTimeout, int readTimeout) {
         this.clazz = clazz;
         this.name = name;
         this.path = path;
@@ -42,14 +41,15 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
+        // register fallback application context
+        FallbackInvoker.setApplicationContext((this.applicationContext = applicationContext));
     }
 
     @Override
     public Object getObject() {
         // loaded only config properties
         applicationContext.getBean(RestClientProperties.class);
-        return Proxy.newProxyInstance(this.clazz.getClassLoader(), ofArray(this.clazz),
+        return Proxy.newProxyInstance(clazz.getClassLoader(), ofArray(clazz),
                 new RestClientProxy(name, path, loadBalanceType, maxAutoRetries, fallback, connectTimeout, readTimeout));
     }
 
@@ -58,12 +58,8 @@ public class RestClientFactoryBean implements FactoryBean<Object>, InitializingB
         return clazz;
     }
 
-    @Override
-    public void afterPropertiesSet() {
-        Assert.notNull(this.clazz, "Proxy class cannot be null.");
-    }
-
-    private Class[] ofArray(Class... args) {
+    @NonNull
+    private Class<?>[] ofArray(Class<?>... args) {
         return args;
     }
 }
