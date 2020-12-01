@@ -51,8 +51,7 @@ class AssertBeforeRegister {
     }
 
     static void assertNameOrValueIsNotEmpty(RestClient ann, Class<?> clazz) {
-        String serviceName = StringUtils.defaultIfBlank(ann.name(), ann.value());
-        assertIsTrue(StringUtils.isNotBlank(serviceName), clazz, "@RestClient 'name' or 'value' cannot be all empty.");
+        assertIsTrue(StringUtils.isNotBlank(ann.name()), clazz, "@RestClient 'name' or 'value' cannot be all empty.");
     }
 
     static void assertMaxAutoRetriesValue(RestClient ann, Class<?> clazz) {
@@ -97,7 +96,7 @@ class AssertBeforeRegister {
 
     static void assertRequestMappingPath(Method method, Class<?> clazz) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        assertIsTrue(attr.paths.length <= 1, clazz, "@RequestMapping value is wrong (only one parameter).");
+        assertIsTrue(attr.paths.length <= 1, clazz, "@RequestMapping 'path' or 'value' is wrong (only one param).");
     }
 
     static void assertXxxMappingOnlyOne(Method method, Class<?> clazz) {
@@ -114,14 +113,14 @@ class AssertBeforeRegister {
 
     static void assertPathVariableParams(Method method, Class<?> clazz) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        long pathParamsCount1 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_PREFIX);
-        long pathParamsCount2 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_SUFFIX);
+        long pathParamsCount1 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_DELIMITER_PREFIX);
+        long pathParamsCount2 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_DELIMITER_SUFFIX);
         long methodParamsCount = Arrays.stream(method.getParameters())
                 .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, PathVariable.class) != null)
                 .count();
-        assertIsTrue(pathParamsCount1 == pathParamsCount2, clazz, "Path variables expression format error.");
-        assertIsTrue(pathParamsCount1 == methodParamsCount, clazz, "Wrong params map to request path variables.");
+        assertIsTrue(pathParamsCount1 == pathParamsCount2, clazz, "Path variable expression format error.");
+        assertIsTrue(pathParamsCount1 == methodParamsCount, clazz, "Wrong params map to request path variable.");
     }
 
     @NonNull

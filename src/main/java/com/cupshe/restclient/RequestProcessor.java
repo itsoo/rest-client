@@ -23,9 +23,9 @@ import java.util.*;
  */
 class RequestProcessor {
 
-    static final String EXPRESSION_PREFIX = "{";
+    static final String EXPRESSION_DELIMITER_PREFIX = "{";
 
-    static final String EXPRESSION_SUFFIX = "}";
+    static final String EXPRESSION_DELIMITER_SUFFIX = "}";
 
     static final String ROOT_PROPERTY = StringUtils.EMPTY;
 
@@ -55,9 +55,9 @@ class RequestProcessor {
         StringBuilder result = new StringBuilder();
         Map<String, String> map = convertKvsToMap(args);
         int i = 0, j = i;
-        while ((i = url.indexOf(EXPRESSION_PREFIX, i)) != -1) {
-            result.append(url, j, i); // no expression template string
-            j = url.indexOf(EXPRESSION_SUFFIX, i);
+        while ((i = url.indexOf(EXPRESSION_DELIMITER_PREFIX, i)) != -1) {
+            result.append(url, j, i); // no expression template delimiter
+            j = url.indexOf(EXPRESSION_DELIMITER_SUFFIX, i);
             String key = url.substring(i, j);
             String value = map.get(key.substring(1).trim());
             if (value != null) {

@@ -1,6 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.core.Kv;
+import com.cupshe.ak.net.TraceIdUtils;
 import com.cupshe.ak.net.UuidUtils;
 import com.cupshe.ak.text.StringUtils;
 import lombok.SneakyThrows;
@@ -109,7 +110,7 @@ class RequestGenerator {
         String url = targetHost.startsWith(PROTOCOL)
                 ? targetHost
                 : PROTOCOL + targetHost;
-        return (url.endsWith("/") || path.startsWith("/"))
+        return url.endsWith("/") || path.startsWith("/")
                 ? url + path
                 : url + '/' + path;
     }
@@ -117,7 +118,7 @@ class RequestGenerator {
     @NonNull
     private static String genericTranceId() {
         try {
-            return Optional.ofNullable(TRACE_ID_STORE.get()).orElse(UuidUtils.createUuid());
+            return Optional.ofNullable(TraceIdUtils.getTraceId()).orElse(UuidUtils.createUuid());
         } finally {
             TRACE_ID_STORE.remove();
         }

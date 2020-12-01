@@ -11,7 +11,7 @@
     </parent>
     <groupId>com.cupshe</groupId>
     <artifactId>rest-client</artifactId>
-    <version>0.2.0-RELEASE</version>
+    <version>0.2.0-SNAPSHOTS</version>
 
     <properties>
         <java.version>1.8</java.version>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.cupshe</groupId>
             <artifactId>army-knife</artifactId>
-            <version>0.1.7-RELEASE</version>
+            <version>0.2.0-SNAPSHOTS</version>
             <optional>true</optional>
         </dependency>
     </dependencies>
