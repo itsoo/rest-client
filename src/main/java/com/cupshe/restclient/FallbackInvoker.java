@@ -32,10 +32,12 @@ class FallbackInvoker {
         }
     }
 
+    @PureFunction
     static FallbackInvoker of(Class<?> reference, Method method) {
         return new FallbackInvoker(reference, method);
     }
 
+    @PureFunction
     Object invoke(Object[] args) throws Throwable {
         String methodName = method.getName();
         Class<?>[] paramTypes = method.getParameterTypes();

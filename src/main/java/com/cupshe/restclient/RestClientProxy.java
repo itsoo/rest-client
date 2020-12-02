@@ -3,6 +3,7 @@ package com.cupshe.restclient;
 import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.restclient.exception.ConnectTimeoutException;
 import com.cupshe.restclient.exception.NotFoundException;
+import com.cupshe.restclient.lang.PureFunction;
 import org.springframework.cglib.proxy.InvocationHandler;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -70,6 +71,7 @@ public class RestClientProxy implements InvocationHandler {
         }
     }
 
+    @PureFunction
     private String sendRequestAndGetResponse(AnnotationMethodAttribute attr, Method method, Object[] args) {
         Parameter[] params = method.getParameters();
         Object payload = RequestProcessor.getRequestBodyOf(params, args);
@@ -83,6 +85,7 @@ public class RestClientProxy implements InvocationHandler {
         return sendRequestAndGetResponse(uriPath, attr.method, payload, headers);
     }
 
+    @PureFunction
     private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
         ResponseEntity<String> re = null;
         do {
@@ -99,6 +102,7 @@ public class RestClientProxy implements InvocationHandler {
         return (re != null && (result = re.getBody()) != null) ? result : null;
     }
 
+    @PureFunction
     private ResponseEntity<String> sendRequestAndGetResponse(RequestEntity<?> requestEntity) {
         try {
             Logging.info(requestEntity);

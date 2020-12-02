@@ -3,6 +3,7 @@ package com.cupshe.restclient;
 import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.lang.EnableRestClient;
+import com.cupshe.restclient.lang.PureFunction;
 import com.cupshe.restclient.lang.RestClient;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -35,12 +36,12 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
     private ResourceLoader resourceLoader;
 
     @Override
-    public void setResourceLoader(ResourceLoader resourceLoader) {
+    public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
     }
 
     @Override
-    public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+    public void registerBeanDefinitions(@NonNull AnnotationMetadata metadata, @NonNull BeanDefinitionRegistry registry) {
         ClassPathScanningCandidateComponentProvider scanner = getComponentProviderScanner();
         for (String basePackage : getBasePackages(metadata)) {
             for (BeanDefinition component : scanner.findCandidateComponents(basePackage)) {
@@ -50,6 +51,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
                     RestClient ann = AssertBeforeRegister.assertAndGetAnnotation(clazz);
                     AbstractBeanDefinition beanDefinition = getBeanDefinition(clazz, ann);
                     String beanName = StringUtils.defaultIfBlank(ann.id(), classBeanName);
+                    AssertBeforeRegister.assertSingletonRegister(beanName, clazz); // maybe contains repeated bean-name
                     BeanDefinitionReaderUtils.registerBeanDefinition(
                             new BeanDefinitionHolder(beanDefinition, beanName, ofArray(clazz)), registry);
                 }
@@ -57,6 +59,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         }
     }
 
+    @PureFunction
     private ClassPathScanningCandidateComponentProvider getComponentProviderScanner() {
         ClassPathScanningCandidateComponentProvider result = new ClassPathScanningCandidateComponentProvider(false) {
             @Override
@@ -70,6 +73,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         return result;
     }
 
+    @PureFunction
     private Set<String> getBasePackages(AnnotationMetadata metadata) {
         EnableRestClient clazz = metadata.getAnnotations().get(EnableRestClient.class).synthesize();
         Set<String> result = Arrays.stream(clazz.basePackages())

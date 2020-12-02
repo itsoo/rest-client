@@ -1,4 +1,4 @@
-package com.cupshe.demo.fallback;
+package com.cupshe.demo.rpc.fallback;
 
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
