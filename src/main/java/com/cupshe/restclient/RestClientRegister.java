@@ -57,6 +57,8 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
                 }
             }
         }
+
+        AssertBeforeRegister.clearCheckedRegisterCache();
     }
 
     @PureFunction
