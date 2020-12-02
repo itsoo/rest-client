@@ -16,8 +16,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * AssertBeforeRegister
@@ -27,11 +27,14 @@ import java.util.Set;
 @PureFunction
 class AssertBeforeRegister {
 
-    private static final Set<String> ALL_REGISTERED_BEANS = new HashSet<>();
+    private static final Map<String, String> ALL_REGISTERED_BEANS = new HashMap<>();
 
-    static void assertSingletonRegister(String beanName) {
-        Assert.isTrue(!ALL_REGISTERED_BEANS.contains(beanName), "Bean '" + beanName + "' is registered.");
-        ALL_REGISTERED_BEANS.add(beanName);
+    static void assertSingletonRegister(String beanName, String className) {
+        String repClassName = ALL_REGISTERED_BEANS.get(beanName);
+        String message = StringUtils.getFormatString("Not allow repeated bean name '{}', " +
+                "please check your providers 'id' attribute of: {} or {}.", beanName, className, repClassName);
+        Assert.isTrue(!ALL_REGISTERED_BEANS.containsKey(beanName), message);
+        ALL_REGISTERED_BEANS.put(beanName, className);
     }
 
     @NonNull
@@ -107,7 +110,7 @@ class AssertBeforeRegister {
 
     static void assertRequestMappingPath(Method method, Class<?> clazz) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        assertIsTrue(attr.paths.length <= 1, clazz, method, "@RequestMapping 'path' or 'value' is wrong (only one param).");
+        assertIsTrue(attr.paths.length <= 1, clazz, method, "@RequestMapping 'path' or 'value' is only one param.");
     }
 
     static void assertXxxMappingOnlyOne(Method method, Class<?> clazz) {

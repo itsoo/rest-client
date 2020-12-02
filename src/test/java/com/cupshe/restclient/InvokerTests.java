@@ -1,7 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.Application;
-import com.cupshe.demo.fallback.DemoProviderFallback;
+import com.cupshe.demo.rpc.fallback.DemoProviderFallback;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;

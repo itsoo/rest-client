@@ -51,7 +51,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
                     RestClient ann = AssertBeforeRegister.assertAndGetAnnotation(clazz);
                     AbstractBeanDefinition beanDefinition = getBeanDefinition(clazz, ann);
                     String beanName = StringUtils.defaultIfBlank(ann.id(), classBeanName);
-                    AssertBeforeRegister.assertSingletonRegister(beanName); // maybe contains repeated bean-name
+                    AssertBeforeRegister.assertSingletonRegister(beanName, clazz); // maybe contains repeated bean-name
                     BeanDefinitionReaderUtils.registerBeanDefinition(
                             new BeanDefinitionHolder(beanDefinition, beanName, ofArray(clazz)), registry);
                 }
