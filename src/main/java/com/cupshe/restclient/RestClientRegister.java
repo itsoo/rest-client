@@ -3,6 +3,7 @@ package com.cupshe.restclient;
 import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.lang.EnableRestClient;
+import com.cupshe.restclient.lang.PureFunction;
 import com.cupshe.restclient.lang.RestClient;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -57,6 +58,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         }
     }
 
+    @PureFunction
     private ClassPathScanningCandidateComponentProvider getComponentProviderScanner() {
         ClassPathScanningCandidateComponentProvider result = new ClassPathScanningCandidateComponentProvider(false) {
             @Override
@@ -70,6 +72,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         return result;
     }
 
+    @PureFunction
     private Set<String> getBasePackages(AnnotationMetadata metadata) {
         EnableRestClient clazz = metadata.getAnnotations().get(EnableRestClient.class).synthesize();
         Set<String> result = Arrays.stream(clazz.basePackages())

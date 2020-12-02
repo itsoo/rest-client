@@ -16,9 +16,9 @@ import java.util.List;
  *
  * @author zxy
  */
-@PureFunction
 class ResponseProcessor {
 
+    @PureFunction
     static Object convertToObject(String json, Method method) {
         if (isNotInconvertibleType(method.getReturnType())) {
             return json;

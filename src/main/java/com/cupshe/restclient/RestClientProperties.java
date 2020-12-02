@@ -1,5 +1,6 @@
 package com.cupshe.restclient;
 
+import com.cupshe.restclient.lang.PureFunction;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.stereotype.Component;
@@ -21,6 +22,7 @@ public class RestClientProperties {
 
     // ~ getter and setter ~ //
 
+    @PureFunction
     static List<RequestCaller> getRouters() {
         return Collections.unmodifiableList(routers);
     }
