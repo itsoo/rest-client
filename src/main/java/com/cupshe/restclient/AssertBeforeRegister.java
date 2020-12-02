@@ -16,6 +16,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * AssertBeforeRegister
@@ -24,6 +26,13 @@ import java.util.Arrays;
  */
 @PureFunction
 class AssertBeforeRegister {
+
+    private static final Set<String> ALL_REGISTERED_BEANS = new HashSet<>();
+
+    static void assertSingletonRegister(String beanName) {
+        Assert.isTrue(!ALL_REGISTERED_BEANS.contains(beanName), "Bean '" + beanName + "' is registered.");
+        ALL_REGISTERED_BEANS.add(beanName);
+    }
 
     @NonNull
     @SneakyThrows

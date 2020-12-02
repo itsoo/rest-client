@@ -36,12 +36,12 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
     private ResourceLoader resourceLoader;
 
     @Override
-    public void setResourceLoader(ResourceLoader resourceLoader) {
+    public void setResourceLoader(@NonNull ResourceLoader resourceLoader) {
         this.resourceLoader = resourceLoader;
     }
 
     @Override
-    public void registerBeanDefinitions(AnnotationMetadata metadata, BeanDefinitionRegistry registry) {
+    public void registerBeanDefinitions(@NonNull AnnotationMetadata metadata, @NonNull BeanDefinitionRegistry registry) {
         ClassPathScanningCandidateComponentProvider scanner = getComponentProviderScanner();
         for (String basePackage : getBasePackages(metadata)) {
             for (BeanDefinition component : scanner.findCandidateComponents(basePackage)) {
@@ -51,6 +51,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
                     RestClient ann = AssertBeforeRegister.assertAndGetAnnotation(clazz);
                     AbstractBeanDefinition beanDefinition = getBeanDefinition(clazz, ann);
                     String beanName = StringUtils.defaultIfBlank(ann.id(), classBeanName);
+                    AssertBeforeRegister.assertSingletonRegister(beanName); // maybe contains repeated bean-name
                     BeanDefinitionReaderUtils.registerBeanDefinition(
                             new BeanDefinitionHolder(beanDefinition, beanName, ofArray(clazz)), registry);
                 }
