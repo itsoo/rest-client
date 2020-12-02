@@ -57,7 +57,7 @@ public class RestClientProxy implements InvocationHandler {
                 return ResponseProcessor.convertToObject(res, method);
             }
             // void
-            if (method.getReturnType().isAssignableFrom(void.class)) {
+            if (method.getReturnType() == void.class) {
                 return null;
             }
             // fallback
