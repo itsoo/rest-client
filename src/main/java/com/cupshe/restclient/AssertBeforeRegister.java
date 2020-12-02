@@ -27,7 +27,7 @@ import java.util.Map;
 @PureFunction
 class AssertBeforeRegister {
 
-    private static final Map<String, String> ALL_REGISTERED_BEANS = new HashMap<>();
+    private static ConcurrentMap<String, String> ALL_REGISTERED_BEANS = new ConcurrentHashMap<>();
 
     static void assertSingletonRegister(String beanName, String className) {
         String repClassName = ALL_REGISTERED_BEANS.get(beanName);
@@ -35,6 +35,13 @@ class AssertBeforeRegister {
                 "please check your providers 'id' attribute of: {} or {}.", beanName, className, repClassName);
         Assert.isTrue(!ALL_REGISTERED_BEANS.containsKey(beanName), message);
         ALL_REGISTERED_BEANS.put(beanName, className);
+    }
+
+    static void clearCheckedRegisterCache() {
+        if (ALL_REGISTERED_BEANS != null) {
+            ALL_REGISTERED_BEANS.clear();
+            ALL_REGISTERED_BEANS = null;
+        }
     }
 
     @NonNull
