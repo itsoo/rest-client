@@ -89,16 +89,16 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
 
     @SneakyThrows
     private AbstractBeanDefinition getBeanDefinition(String clazz, RestClient ann) {
-        BeanDefinitionBuilder b = BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class);
-        b.addConstructorArgValue(Class.forName(clazz));
-        b.addConstructorArgValue(ann.name());
-        b.addConstructorArgValue(ann.path());
-        b.addConstructorArgValue(ann.loadBalanceType());
-        b.addConstructorArgValue(ann.maxAutoRetries());
-        b.addConstructorArgValue(ann.fallback());
-        b.addConstructorArgValue(ann.connectTimeout());
-        b.addConstructorArgValue(ann.readTimeout());
-        return b.getBeanDefinition();
+        BeanDefinitionBuilder bdBuilder = BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class);
+        bdBuilder.addConstructorArgValue(Class.forName(clazz));
+        bdBuilder.addConstructorArgValue(ann.name());
+        bdBuilder.addConstructorArgValue(ann.path());
+        bdBuilder.addConstructorArgValue(ann.loadBalanceType());
+        bdBuilder.addConstructorArgValue(ann.maxAutoRetries());
+        bdBuilder.addConstructorArgValue(ann.fallback());
+        bdBuilder.addConstructorArgValue(ann.connectTimeout());
+        bdBuilder.addConstructorArgValue(ann.readTimeout());
+        return bdBuilder.getBeanDefinition();
     }
 
     @NonNull
