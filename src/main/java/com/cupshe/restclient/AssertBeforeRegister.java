@@ -16,8 +16,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * AssertBeforeRegister
@@ -27,7 +27,7 @@ import java.util.concurrent.ConcurrentMap;
 @PureFunction
 class AssertBeforeRegister {
 
-    private static ConcurrentMap<String, String> ALL_REGISTERED_BEANS = new ConcurrentHashMap<>();
+    private static Map<String, String> ALL_REGISTERED_BEANS = new ConcurrentHashMap<>(32);
 
     static void assertSingletonRegister(String beanName, String className) {
         String repClassName = ALL_REGISTERED_BEANS.get(beanName);
