@@ -75,8 +75,8 @@
             <url>http://nexus.kapeixi.cn/repository/cupshe-releases/</url>
         </repository>
         <snapshotRepository>
-            <id>nexus-snapshots</id>
-            <name>nexus prod repository</name>
+            <id>cupshe-snapshots</id>
+            <name>snapshots</name>
             <url>http://nexus.kapeixi.cn/repository/cupshe-snapshots/</url>
         </snapshotRepository>
     </distributionManagement>
