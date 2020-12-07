@@ -27,20 +27,26 @@ import java.util.concurrent.ConcurrentHashMap;
 @PureFunction
 class AssertBeforeRegister {
 
-    private static Map<String, String> ALL_REGISTERED_BEANS = new ConcurrentHashMap<>(32);
+    private static Map<String, String> allRegisteredBeans = new ConcurrentHashMap<>(32);
+
+    private static final Object CLEAR_REGISTERED_LOCK = new Object();
 
     static void assertSingletonRegister(String beanName, String className) {
-        String repClassName = ALL_REGISTERED_BEANS.get(beanName);
+        String repClassName = allRegisteredBeans.get(beanName);
         String message = StringUtils.getFormatString("Not allow repeated bean name '{}', " +
                 "please check your providers 'id' attribute of: {} or {}.", beanName, className, repClassName);
-        Assert.isTrue(!ALL_REGISTERED_BEANS.containsKey(beanName), message);
-        ALL_REGISTERED_BEANS.put(beanName, className);
+        Assert.isTrue(!allRegisteredBeans.containsKey(beanName), message);
+        allRegisteredBeans.put(beanName, className);
     }
 
     static void clearCheckedRegisterCache() {
-        if (ALL_REGISTERED_BEANS != null) {
-            ALL_REGISTERED_BEANS.clear();
-            ALL_REGISTERED_BEANS = null;
+        if (allRegisteredBeans != null) {
+            synchronized (CLEAR_REGISTERED_LOCK) {
+                if (allRegisteredBeans != null) {
+                    allRegisteredBeans.clear();
+                    allRegisteredBeans = null;
+                }
+            }
         }
     }
 
