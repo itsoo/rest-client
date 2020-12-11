@@ -161,11 +161,11 @@ class AssertBeforeRegister {
         Assert.notNull(obj, clazz.getCanonicalName() + ": " + message);
     }
 
-    private static void assertIsTrue(boolean exp, Class<?> clazz, String message) {
-        Assert.isTrue(exp, clazz.getCanonicalName() + ": " + message);
+    private static void assertIsTrue(boolean expr, Class<?> clazz, String message) {
+        Assert.isTrue(expr, clazz.getCanonicalName() + ": " + message);
     }
 
-    private static void assertIsTrue(boolean exp, Class<?> clazz, Method method, String message) {
-        Assert.isTrue(exp, clazz.getCanonicalName() + '#' + method.toGenericString() + ": " + message);
+    private static void assertIsTrue(boolean expr, Class<?> clazz, Method method, String message) {
+        Assert.isTrue(expr, clazz.getCanonicalName() + '#' + method.toGenericString() + ": " + message);
     }
 }
