@@ -51,11 +51,10 @@ class FallbackInvoker {
     }
 
     private Object getInstance(Class<?> clazz) {
-        // computed once
         if (!INSTANCE_CACHES.containsKey(clazz)) {
             synchronized (INSTANCE_CACHES) {
+                // computed once
                 if (!INSTANCE_CACHES.containsKey(clazz)) {
-                    // computed when needed
                     INSTANCE_CACHES.put(clazz, new FallbackInstance(clazz).getInstance());
                 }
             }
