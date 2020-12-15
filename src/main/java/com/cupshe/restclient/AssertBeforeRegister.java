@@ -146,8 +146,8 @@ class AssertBeforeRegister {
                 .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, PathVariable.class) != null)
                 .count();
-        assertIsTrue(pvCounts1 == pvCounts2, method, "Path variable format error.");
-        assertIsTrue(pvCounts1 == mpsCounts, method, "Wrong params map to request path variable.");
+        assertIsTrue(pvCounts1 == pvCounts2, method, "@RequestMapping 'path' format error.");
+        assertIsTrue(pvCounts1 == mpsCounts, method, "Wrong params map to request @PathVariable.");
     }
 
     @NonNull
