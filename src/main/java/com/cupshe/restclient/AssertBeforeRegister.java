@@ -61,17 +61,17 @@ class AssertBeforeRegister {
     static RestClient assertRestClientIsInterface(Class<?> clazz) {
         assertIsTrue(clazz.isInterface(), clazz, "@RestClient component can only be interface.");
         RestClient ann = AnnotationUtils.findAnnotation(clazz, RestClient.class);
-        assertNotNull(ann, clazz, "Cannot found interface with @RestClient.");
+        Assert.notNull(ann, clazz.getCanonicalName() + ": Cannot found interface with @RestClient.");
         assertNameOrValueIsNotEmpty(ann, clazz);
         assertMaxAutoRetriesValue(ann, clazz);
         assertFallbackClass(ann, clazz);
         // assert all methods
         for (Method method : clazz.getDeclaredMethods()) {
-            assertRequestBodyOnlyOne(method, clazz);
-            assertRequestMappingMethod(method, clazz);
-            assertRequestMappingPath(method, clazz);
-            assertXxxMappingOnlyOne(method, clazz);
-            assertPathVariableParams(method, clazz);
+            assertRequestBodyOnlyOne(method);
+            assertRequestMappingMethod(method);
+            assertRequestMappingPath(method);
+            assertXxxMappingOnlyOne(method);
+            assertPathVariableParams(method);
         }
 
         return ann;
@@ -107,26 +107,26 @@ class AssertBeforeRegister {
         assertIsTrue(count <= 1L, clazz, message);
     }
 
-    static void assertRequestBodyOnlyOne(Method method, Class<?> clazz) {
+    static void assertRequestBodyOnlyOne(Method method) {
         long count = Arrays.stream(method.getParameters())
                 .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, RequestBody.class) != null)
                 .count();
-        assertIsTrue(count <= 1L, clazz, method, "@RequestBody of the method cannot have that more than one.");
+        assertIsTrue(count <= 1L, method, "@RequestBody of the method cannot have that more than one.");
     }
 
-    static void assertRequestMappingMethod(Method method, Class<?> clazz) {
-        RequestMapping ann = getRequestMappingOfMethod(method, clazz);
-        assertIsTrue(ann.method().length > 0, clazz, method, "@RequestMapping property 'method' cannot be empty.");
-        assertIsTrue(ann.method().length == 1, clazz, method, "@RequestMapping property 'method' can only one.");
+    static void assertRequestMappingMethod(Method method) {
+        RequestMapping ann = getRequestMappingOfMethod(method);
+        assertIsTrue(ann.method().length > 0, method, "@RequestMapping property 'method' cannot be empty.");
+        assertIsTrue(ann.method().length == 1, method, "@RequestMapping property 'method' can only one.");
     }
 
-    static void assertRequestMappingPath(Method method, Class<?> clazz) {
+    static void assertRequestMappingPath(Method method) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        assertIsTrue(attr.paths.length <= 1, clazz, method, "@RequestMapping 'path' or 'value' is only one param.");
+        assertIsTrue(attr.paths.length <= 1, method, "@RequestMapping 'path' or 'value' is only one param.");
     }
 
-    static void assertXxxMappingOnlyOne(Method method, Class<?> clazz) {
+    static void assertXxxMappingOnlyOne(Method method) {
         int count = 0;
         for (Annotation ann : method.getDeclaredAnnotations()) {
             try {
@@ -135,10 +135,10 @@ class AssertBeforeRegister {
             } catch (NoSupportMethodException ignore) {}
         }
 
-        assertIsTrue(count == 1, clazz, method, "@RequestMapping is required and only one.");
+        assertIsTrue(count == 1, method, "@RequestMapping is required and only one.");
     }
 
-    static void assertPathVariableParams(Method method, Class<?> clazz) {
+    static void assertPathVariableParams(Method method) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
         long pvCounts1 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_DELIMITER_PREFIX);
         long pvCounts2 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_DELIMITER_SUFFIX);
@@ -146,26 +146,22 @@ class AssertBeforeRegister {
                 .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, PathVariable.class) != null)
                 .count();
-        assertIsTrue(pvCounts1 == pvCounts2, clazz, method, "Path variable expression format error.");
-        assertIsTrue(pvCounts1 == mpsCounts, clazz, method, "Wrong params map to request path variable.");
+        assertIsTrue(pvCounts1 == pvCounts2, method, "Path variable format error.");
+        assertIsTrue(pvCounts1 == mpsCounts, method, "Wrong params map to request path variable.");
     }
 
     @NonNull
-    private static RequestMapping getRequestMappingOfMethod(Method method, Class<?> clazz) {
+    private static RequestMapping getRequestMappingOfMethod(Method method) {
         RequestMapping result = AnnotationUtils.findAnnotation(method, RequestMapping.class);
-        assertNotNull(result, clazz, "Cannot found anyone @RequestMapping class.");
+        Assert.notNull(result, method.toGenericString() + ": Cannot found anyone @RequestMapping class.");
         return result;
-    }
-
-    private static void assertNotNull(Object obj, Class<?> clazz, String message) {
-        Assert.notNull(obj, clazz.getCanonicalName() + ": " + message);
     }
 
     private static void assertIsTrue(boolean expr, Class<?> clazz, String message) {
         Assert.isTrue(expr, clazz.getCanonicalName() + ": " + message);
     }
 
-    private static void assertIsTrue(boolean expr, Class<?> clazz, Method method, String message) {
-        Assert.isTrue(expr, clazz.getCanonicalName() + '#' + method.toGenericString() + ": " + message);
+    private static void assertIsTrue(boolean expr, Method method, String message) {
+        Assert.isTrue(expr, method.toGenericString() + ": " + message);
     }
 }
