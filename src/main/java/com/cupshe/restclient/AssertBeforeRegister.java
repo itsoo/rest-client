@@ -8,6 +8,7 @@ import lombok.SneakyThrows;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
+import org.springframework.util.ReflectionUtils;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -53,8 +54,7 @@ class AssertBeforeRegister {
     @NonNull
     @SneakyThrows
     static RestClient assertAndGetAnnotation(String className) {
-        Class<?> clazz = Class.forName(className);
-        return assertRestClientIsInterface(clazz);
+        return assertRestClientIsInterface(Class.forName(className));
     }
 
     @NonNull
@@ -66,7 +66,7 @@ class AssertBeforeRegister {
         assertMaxAutoRetriesValue(ann, clazz);
         assertFallbackClass(ann, clazz);
         // assert all methods
-        for (Method method : clazz.getDeclaredMethods()) {
+        for (Method method : ReflectionUtils.getDeclaredMethods(clazz)) {
             assertRequestBodyOnlyOne(method);
             assertRequestMappingMethod(method);
             assertRequestMappingPath(method);
