@@ -24,7 +24,7 @@ class FallbackInvoker {
 
     private static ApplicationContext applicationContext;
 
-    private static final Map<Class<?>, Object> INSTANCE_CACHES = new ConcurrentHashMap<>(32);
+    private static final Map<Class<?>, Object> INSTANCES_CACHE = new ConcurrentHashMap<>(32);
 
     private FallbackInvoker(Class<?> reference, Method method) {
         this.reference = reference;
@@ -51,7 +51,7 @@ class FallbackInvoker {
     }
 
     private Object getInstance(Class<?> clazz) {
-        return INSTANCE_CACHES.computeIfAbsent(clazz, k -> new FallbackInstance(k).getInstance());
+        return INSTANCES_CACHE.computeIfAbsent(clazz, k -> new FallbackInstance(k).getInstance());
     }
 
     /**
