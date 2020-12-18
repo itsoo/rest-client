@@ -3,10 +3,12 @@ package com.cupshe.restclient;
 import com.cupshe.restclient.lang.PureFunction;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * RestClientProperties
@@ -18,16 +20,18 @@ import java.util.List;
 public class RestClientProperties {
 
     @NestedConfigurationProperty
-    private static List<RequestCaller> routers;
+    private static Map<String, RequestCaller> routers;
 
     // ~ getter and setter ~ //
 
     @PureFunction
-    static List<RequestCaller> getRouters() {
-        return Collections.unmodifiableList(routers);
+    static RequestCaller getRouters(String name) {
+        return routers.get(name);
     }
 
-    public void setRouters(List<RequestCaller> routers) {
-        RestClientProperties.routers = routers;
+    public void setRouters(@NonNull List<RequestCaller> routers) {
+        RestClientProperties.routers = routers
+                .parallelStream()
+                .collect(Collectors.toMap(RequestCaller::getName, t -> t));
     }
 }

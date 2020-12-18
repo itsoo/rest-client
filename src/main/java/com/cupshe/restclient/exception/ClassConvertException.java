@@ -9,7 +9,7 @@ import com.cupshe.ak.text.StringUtils;
  */
 public class ClassConvertException extends RuntimeException {
 
-    private static final String MESSAGE = "Cannot serialize this return value: <<{}>>";
+    private static final String MESSAGE = "Cannot serialize this return value: {}";
 
     public ClassConvertException(String stack, Exception e) {
         super(StringUtils.getFormatString(MESSAGE, stack), e);
