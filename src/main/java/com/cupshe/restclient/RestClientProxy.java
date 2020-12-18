@@ -111,7 +111,7 @@ public class RestClientProxy implements InvocationHandler {
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             Logging.error(e.getMessage(), requestEntity);
             throw e;
-        } catch (ResourceAccessException e) { // Timeout
+        } catch (ResourceAccessException e) { // timeout
             Logging.error(e.getMessage());
             throw e;
         }
