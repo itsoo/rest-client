@@ -8,8 +8,8 @@ import org.springframework.util.ClassUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * FallbackInvoker
@@ -24,7 +24,7 @@ class FallbackInvoker {
 
     private static ApplicationContext applicationContext;
 
-    private static final Map<Class<?>, Object> INSTANCE_CACHES = new HashMap<>(32);
+    private static final Map<Class<?>, Object> INSTANCE_CACHES = new ConcurrentHashMap<>(32);
 
     private FallbackInvoker(Class<?> reference, Method method) {
         this.reference = reference;
@@ -51,16 +51,7 @@ class FallbackInvoker {
     }
 
     private Object getInstance(Class<?> clazz) {
-        if (!INSTANCE_CACHES.containsKey(clazz)) {
-            synchronized (INSTANCE_CACHES) {
-                // computed once
-                if (!INSTANCE_CACHES.containsKey(clazz)) {
-                    INSTANCE_CACHES.put(clazz, new FallbackInstance(clazz).getInstance());
-                }
-            }
-        }
-
-        return INSTANCE_CACHES.get(clazz);
+        return INSTANCE_CACHES.computeIfAbsent(clazz, k -> new FallbackInstance(k).getInstance());
     }
 
     /**

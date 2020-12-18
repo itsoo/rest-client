@@ -29,6 +29,7 @@ public class RestClientFactoryBean implements FactoryBean<Object>, ApplicationCo
 
     public RestClientFactoryBean(Class<?> clazz, String name, String path, LoadBalanceType loadBalanceType,
                                  int maxAutoRetries, Class<?> fallback, int connectTimeout, int readTimeout) {
+
         this.clazz = clazz;
         this.name = name;
         this.path = path;

@@ -8,7 +8,6 @@ import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.lang.NonNull;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -18,7 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.cupshe.ak.common.BaseConstant.*;
+import static com.cupshe.ak.common.BaseConstant.REQ_HEADERS_STORE;
+import static com.cupshe.ak.common.BaseConstant.TRACE_ID_KEY;
 import static com.cupshe.restclient.RequestProcessor.*;
 
 /**
@@ -80,7 +80,6 @@ class RequestGenerator {
     }
 
     static String genericUriOf(String uri, String[] defParams, Parameter[] mthParams, Object[] args) {
-        // trade space for time
         int capacity = (mthParams.length + defParams.length) << 1;
         List<Kv> params = new ArrayList<>(capacity);
         params.addAll(getRequestParamsOf(mthParams, args));
@@ -89,7 +88,6 @@ class RequestGenerator {
     }
 
     static MultiValueMap<String, Object> genericFormDataOf(String[] defParams, Parameter[] mthParams, Object[] args) {
-        // trade space for time
         int capacity = (mthParams.length + defParams.length) << 1;
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>(capacity);
         for (Kv kv : getRequestParamsOf(mthParams, args)) {
@@ -107,22 +105,14 @@ class RequestGenerator {
         return URI.create(getUrl(targetHost, path));
     }
 
-    @NonNull
     private static String getUrl(String targetHost, String path) {
-        String url = targetHost.startsWith(PROTOCOL)
-                ? targetHost
-                : PROTOCOL + targetHost;
+        String url = targetHost.startsWith(PROTOCOL) ? targetHost : (PROTOCOL + targetHost);
         return url.endsWith("/") || path.startsWith("/")
                 ? url + path
                 : url + '/' + path;
     }
 
-    @NonNull
     private static String genericTranceId() {
-        try {
-            return Optional.ofNullable(TraceIdUtils.getTraceId()).orElse(UuidUtils.createUuid());
-        } finally {
-            TRACE_ID_STORE.remove();
-        }
+        return Optional.ofNullable(TraceIdUtils.getTraceId()).orElse(UuidUtils.createUuid());
     }
 }

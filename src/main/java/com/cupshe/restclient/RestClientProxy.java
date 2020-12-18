@@ -33,19 +33,19 @@ public class RestClientProxy implements InvocationHandler {
     private final LoadBalanceType loadBalanceType;
     private final int maxAutoRetries;
     private final Class<?> fallback;
-
     private final RestTemplate client;
-    private final ThreadLocal<Integer> retries = ThreadLocal.withInitial(() -> 0);
+    private final ThreadLocal<Integer> retries;
 
     RestClientProxy(String name, String path, LoadBalanceType loadBalanceType, int maxAutoRetries,
                     Class<?> fallback, int connectTimeout, int readTimeout) {
+
         this.name = name;
         this.path = path;
         this.loadBalanceType = loadBalanceType;
         this.maxAutoRetries = maxAutoRetries;
-
         this.fallback = fallback;
         this.client = RestTemplateUtils.createRestTemplate(connectTimeout, readTimeout);
+        this.retries = ThreadLocal.withInitial(() -> 0);
     }
 
     @Override
@@ -88,6 +88,7 @@ public class RestClientProxy implements InvocationHandler {
     @PureFunction
     private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
         ResponseEntity<String> re = null;
+
         do {
             try {
                 URI uri = RequestGenerator.genericUriOf(getTargetHost(name), uriPath);
@@ -110,18 +111,16 @@ public class RestClientProxy implements InvocationHandler {
         } catch (HttpClientErrorException | HttpServerErrorException e) {
             Logging.error(e.getMessage(), requestEntity);
             throw e;
-        } catch (ResourceAccessException e) { // Timeout
+        } catch (ResourceAccessException e) { // timeout
             Logging.error(e.getMessage());
             throw e;
         }
     }
 
-    @NonNull
-    private String getTargetHost(String name) {
-        for (RequestCaller rm : RestClientProperties.getRouters()) {
-            if (rm.getName().equals(name)) {
-                return rm.get(loadBalanceType);
-            }
+    private String getTargetHost(@NonNull String name) {
+        RequestCaller routers = RestClientProperties.getRouters(name);
+        if (routers != null) {
+            return routers.get(loadBalanceType);
         }
 
         throw new NotFoundException();

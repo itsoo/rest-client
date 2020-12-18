@@ -18,11 +18,11 @@ import static org.springframework.http.HttpMethod.*;
  */
 class AnnotationMethodAttribute {
 
-    String path;
-    String[] paths;
-    String[] headers;
-    String[] params;
-    HttpMethod method;
+    final String path;
+    final String[] paths;
+    final String[] headers;
+    final String[] params;
+    final HttpMethod method;
 
     private AnnotationMethodAttribute(String[] paths, String[] headers, String[] params, HttpMethod method) {
         this.path = paths.length == 1 ? paths[0] : "";
