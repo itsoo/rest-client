@@ -106,9 +106,7 @@ class RequestGenerator {
     }
 
     private static String getUrl(String targetHost, String path) {
-        String url = targetHost.startsWith(PROTOCOL)
-                ? targetHost
-                : PROTOCOL + targetHost;
+        String url = targetHost.startsWith(PROTOCOL) ? targetHost : (PROTOCOL + targetHost);
         return url.endsWith("/") || path.startsWith("/")
                 ? url + path
                 : url + '/' + path;
