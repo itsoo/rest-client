@@ -35,7 +35,7 @@ class AssertBeforeRegister {
     static void assertSingletonRegister(String beanName, String className) {
         Assert.isTrue(registeredBeans.computeIfAbsent(beanName, k -> className).equals(className), () ->
                 StringUtils.getFormatString(
-                        "Cannot register bean definition '{}', please check your providers of: [{}] or [{}].",
+                        "Cannot register provider of bean name '{}', please check your providers of: [{}] or [{}].",
                         beanName, className, registeredBeans.get(beanName)));
     }
 
