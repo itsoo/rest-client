@@ -28,24 +28,23 @@ import java.util.concurrent.ConcurrentHashMap;
 @PureFunction
 class AssertBeforeRegister {
 
-    private static Map<String, String> allRegisteredBeans = new ConcurrentHashMap<>(32);
+    private static Map<String, String> registeredBeans = new ConcurrentHashMap<>(32);
 
-    private static final Object CLEAR_REGISTERED_LOCK = new Object();
+    private static final Object CLEAR_REGISTERED_BEANS_LOCK = new Object();
 
     static void assertSingletonRegister(String beanName, String className) {
-        String repClassName = allRegisteredBeans.get(beanName);
-        String message = StringUtils.getFormatString("Not allow repeated bean name '{}', " +
-                "please check your providers 'id' attribute of: {} or {}.", beanName, className, repClassName);
-        Assert.isTrue(!allRegisteredBeans.containsKey(beanName), message);
-        allRegisteredBeans.put(beanName, className);
+        Assert.isTrue(registeredBeans.computeIfAbsent(beanName, k -> className).equals(className), () ->
+                StringUtils.getFormatString(
+                        "Cannot register bean definition '{}', please check your providers of: [{}] or [{}].",
+                        beanName, className, registeredBeans.get(beanName)));
     }
 
     static void clearCheckedRegisterCache() {
-        if (allRegisteredBeans != null) {
-            synchronized (CLEAR_REGISTERED_LOCK) {
-                if (allRegisteredBeans != null) {
-                    allRegisteredBeans.clear();
-                    allRegisteredBeans = null;
+        if (registeredBeans != null) {
+            synchronized (CLEAR_REGISTERED_BEANS_LOCK) {
+                if (registeredBeans != null) {
+                    registeredBeans.clear();
+                    registeredBeans = null;
                 }
             }
         }
@@ -94,9 +93,9 @@ class AssertBeforeRegister {
 
         boolean checkIsSubclass = clazz.isAssignableFrom(fallback);
         assertIsTrue(checkIsSubclass, clazz, "Fallback class must implement the interface annotated by @RestClient.");
-        boolean checkClassType = !fallback.isInterface()
-                && !Modifier.isAbstract(fallback.getModifiers());
-        assertIsTrue(checkClassType, clazz, "Fallback class cannot be interface or abstract class.");
+
+        boolean checkClassTyped = !fallback.isInterface() && !Modifier.isAbstract(fallback.getModifiers());
+        assertIsTrue(checkClassTyped, clazz, "Fallback class cannot be interface or abstract class.");
 
         long count = Arrays.stream(fallback.getDeclaredAnnotations())
                 .parallel()

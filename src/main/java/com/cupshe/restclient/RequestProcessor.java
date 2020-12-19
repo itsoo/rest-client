@@ -39,14 +39,14 @@ class RequestProcessor {
             return rel;
         }
 
-        StringJoiner q = new StringJoiner("&");
+        StringJoiner params = new StringJoiner("&");
         for (Kv kv : args) {
             if (StringUtils.isNotBlank(kv.getKey())) {
-                q.add(convertObjectToQueryUri(kv.getKey(), kv.getValue()));
+                params.add(convertObjectToParams(kv.getKey(), kv.getValue()));
             }
         }
 
-        return rel + getQuerySeparator(rel) + q.toString();
+        return rel + getParamSeparator(rel) + params.toString();
     }
 
     static String processPathVariables(String url, List<Kv> args) {
@@ -136,7 +136,7 @@ class RequestProcessor {
         return convertStringToKvs(params, ":");
     }
 
-    private static String convertObjectToQueryUri(String property, Object arg) {
+    private static String convertObjectToParams(String property, Object arg) {
         StringJoiner joiner = new StringJoiner("&");
         getSampleKvs(property, arg)
                 .parallelStream()
@@ -174,7 +174,7 @@ class RequestProcessor {
 
         List<Kv> result = new ArrayList<>(1 << 6);
         if (!ObjectClasses.isInconvertibleClass(arg.getClass())
-                && StringUtils.isNotBlank(property)) { // is not literals
+                && StringUtils.isNotBlank(property)) { // is literals
             result.add(new Kv(property, arg));
         } else if (arg instanceof Kv) {
             Kv kv = (Kv) arg;
@@ -205,7 +205,7 @@ class RequestProcessor {
         return ann == null ? ROOT_PROPERTY : ann.name();
     }
 
-    private static char getQuerySeparator(String uri) {
+    private static char getParamSeparator(String uri) {
         return uri.lastIndexOf('?') != -1 ? '&' : '?';
     }
 
