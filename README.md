@@ -17,7 +17,7 @@
 <dependency>
   <groupId>com.cupshe</groupId>
   <artifactId>rest-client</artifactId>
-  <version>0.1.1-RELEASE</version>
+  <version>0.2.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -125,14 +125,14 @@ public class DemoServiceImpl implements DemoService {
 8. 测试标准 URI 路径的处理
 
 
----------------------------------------
+--------------
 
 
 ### RPC 0.2.0 版本新特性总览
 
 #### 一、fallback 重构，支持以下新特性
 
-1. 入参类型改为 Class<?> 以适配接口的全部签名 
+1. 入参类型改为 Class<?> 以适配接口的全部签名（0.1.X 版本是字符串，单一无返回值的兜底方法）
 2. fallback 指定的类型支持注入 Spring 容器
 3. 新增 @Fallback 注解，作用等同 Component 语义化更好
 
