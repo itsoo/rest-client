@@ -9,7 +9,6 @@ import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionReaderUtils;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -46,14 +45,14 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
         for (String basePackage : getBasePackages(metadata)) {
             for (BeanDefinition component : scanner.findCandidateComponents(basePackage)) {
                 if (component instanceof AnnotatedBeanDefinition) {
-                    String clazz = component.getBeanClassName();
-                    String classBeanName = ObjectClasses.getShortNameAsProperty(clazz);
-                    RestClient ann = AssertBeforeRegister.assertAndGetAnnotation(clazz);
-                    AbstractBeanDefinition beanDefinition = getBeanDefinition(clazz, ann);
+                    String className = component.getBeanClassName();
+                    String classBeanName = ObjectClasses.getShortNameAsProperty(className);
+                    RestClient ann = AssertBeforeRegister.assertAndGetAnnotation(className);
+                    BeanDefinition beanDefinition = getBeanDefinition(className, ann);
                     String beanName = StringUtils.defaultIfBlank(ann.id(), classBeanName);
-                    AssertBeforeRegister.assertSingletonRegister(beanName, clazz); // maybe contains repeated bean-name
+                    AssertBeforeRegister.assertSingletonRegister(beanName, className);
                     BeanDefinitionReaderUtils.registerBeanDefinition(
-                            new BeanDefinitionHolder(beanDefinition, beanName, ofArray(clazz)), registry);
+                            new BeanDefinitionHolder(beanDefinition, beanName, ofArray(className)), registry);
                 }
             }
         }
@@ -90,7 +89,7 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
     }
 
     @SneakyThrows
-    private AbstractBeanDefinition getBeanDefinition(String clazz, RestClient ann) {
+    private BeanDefinition getBeanDefinition(String clazz, RestClient ann) {
         return BeanDefinitionBuilder.genericBeanDefinition(RestClientFactoryBean.class)
                 .addConstructorArgValue(Class.forName(clazz))
                 .addConstructorArgValue(ann.name())
@@ -103,7 +102,6 @@ public class RestClientRegister implements ImportBeanDefinitionRegistrar, Resour
                 .getBeanDefinition();
     }
 
-    @NonNull
     private String[] ofArray(String... args) {
         return args;
     }

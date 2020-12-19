@@ -4,6 +4,7 @@ import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
 import org.springframework.context.ApplicationContext;
+import org.springframework.lang.NonNull;
 import org.springframework.util.ClassUtils;
 
 import java.lang.annotation.Annotation;
@@ -31,7 +32,7 @@ class FallbackInvoker {
         this.method = method;
     }
 
-    static void setApplicationContext(ApplicationContext applicationContext) {
+    static void setApplicationContext(@NonNull ApplicationContext applicationContext) {
         if (FallbackInvoker.applicationContext == null) {
             FallbackInvoker.applicationContext = applicationContext;
         }

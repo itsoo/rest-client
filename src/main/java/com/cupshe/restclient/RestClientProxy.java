@@ -1,6 +1,5 @@
 package com.cupshe.restclient;
 
-import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.restclient.exception.ConnectTimeoutException;
 import com.cupshe.restclient.exception.NotFoundException;
 import com.cupshe.restclient.lang.PureFunction;
@@ -55,17 +54,13 @@ public class RestClientProxy implements InvocationHandler {
             if (res != null) {
                 Logging.info(res);
                 return ResponseProcessor.convertToObject(res, method);
-            }
-            // void
-            if (method.getReturnType() == void.class) {
+            } else if (method.getReturnType() == void.class) { // void
                 return null;
-            }
-            // fallback
-            if (ObjectClasses.isInconvertibleClass(fallback)) {
+            } else if (fallback != void.class) { // fallback
                 return FallbackInvoker.of(fallback, method).invoke(args);
+            } else { // timeout
+                throw new ConnectTimeoutException();
             }
-            // timeout
-            throw new ConnectTimeoutException();
         } finally {
             retries.remove();
         }
