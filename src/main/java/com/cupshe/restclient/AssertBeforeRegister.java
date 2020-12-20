@@ -33,10 +33,11 @@ class AssertBeforeRegister {
     private static final Object CLEAR_REGISTERED_BEANS_LOCK = new Object();
 
     static void assertSingletonRegister(String beanName, String className) {
-        Assert.isTrue(registeredBeans.computeIfAbsent(beanName, k -> className).equals(className), () ->
-                StringUtils.getFormatString(
-                        "Cannot register provider of bean name '{}', please check your providers of: [{}] or [{}].",
-                        beanName, className, registeredBeans.get(beanName)));
+        Assert.isTrue(registeredBeans.computeIfAbsent(beanName, k -> className).equals(className), () -> {
+            String message = "Annotation-specified bean name '{}' for bean class [{}] conflicts with existing, " +
+                    "non-compatible bean definition of same name and class [{}].";
+            return StringUtils.getFormatString(message, beanName, className, registeredBeans.get(beanName));
+        });
     }
 
     static void clearCheckedRegisterCache() {
