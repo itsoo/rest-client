@@ -34,7 +34,7 @@ class AssertBeforeRegister {
 
     static void assertSingletonRegister(String beanName, String className) {
         String repClassName = registeredBeans.computeIfAbsent(beanName, k -> className);
-        if (!repClassName.equals(className)) {
+        if (StringUtils.isNotEquals(repClassName, className)) {
             String message = "Annotation-specified bean name '{}' for bean class [{}] conflicts with existing, " +
                     "non-compatible bean definition of same name and class [{}].";
             throw new BeanDefinitionStoreException(
