@@ -5,6 +5,7 @@ import com.cupshe.restclient.exception.NoSupportMethodException;
 import com.cupshe.restclient.lang.PureFunction;
 import com.cupshe.restclient.lang.RestClient;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;
@@ -33,11 +34,13 @@ class AssertBeforeRegister {
     private static final Object CLEAR_REGISTERED_BEANS_LOCK = new Object();
 
     static void assertSingletonRegister(String beanName, String className) {
-        Assert.isTrue(registeredBeans.computeIfAbsent(beanName, k -> className).equals(className), () -> {
+        String repClassName = registeredBeans.computeIfAbsent(beanName, k -> className);
+        if (!repClassName.equals(className)) {
             String message = "Annotation-specified bean name '{}' for bean class [{}] conflicts with existing, " +
                     "non-compatible bean definition of same name and class [{}].";
-            return StringUtils.getFormatString(message, beanName, className, registeredBeans.get(beanName));
-        });
+            throw new BeanDefinitionStoreException(
+                    StringUtils.getFormatString(message, beanName, className, registeredBeans.get(beanName)));
+        }
     }
 
     static void clearCheckedRegisterCache() {
