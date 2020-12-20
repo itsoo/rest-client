@@ -87,6 +87,11 @@ class RequestGenerator {
         return processRequestParams(uri, params);
     }
 
+    @SneakyThrows
+    static URI genericUriOf(String targetHost, String path) {
+        return URI.create(getUrl(targetHost, path));
+    }
+
     static MultiValueMap<String, Object> genericFormDataOf(String[] defParams, Parameter[] mthParams, Object[] args) {
         int capacity = (mthParams.length + defParams.length) << 1;
         MultiValueMap<String, Object> result = new LinkedMultiValueMap<>(capacity);
@@ -98,11 +103,6 @@ class RequestGenerator {
         }
 
         return result;
-    }
-
-    @SneakyThrows
-    static URI genericUriOf(String targetHost, String path) {
-        return URI.create(getUrl(targetHost, path));
     }
 
     private static String getUrl(String targetHost, String path) {
