@@ -12,5 +12,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.SOURCE)
 @Documented
 public @interface PureFunction {
-    // ~ EMPTY BODY ~ //
+    //---------------------
+    // EMPTY BODY
+    //---------------------
 }

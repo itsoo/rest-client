@@ -22,7 +22,9 @@ public class RestClientProperties {
     @NestedConfigurationProperty
     private static Map<String, RequestCaller> routers;
 
-    // ~ getter and setter ~ //
+    //---------------------
+    // GETTER AND SETTER
+    //---------------------
 
     @PureFunction
     static RequestCaller getRouters(String name) {
