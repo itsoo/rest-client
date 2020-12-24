@@ -1,5 +1,6 @@
 package com.cupshe.restclient;
 
+import com.cupshe.ak.common.BaseConstant;
 import com.cupshe.ak.core.Kv;
 import com.cupshe.ak.net.TraceIdUtils;
 import com.cupshe.ak.net.UuidUtils;
@@ -18,7 +19,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.cupshe.ak.common.BaseConstant.TRACE_ID_KEY;
 import static com.cupshe.restclient.RequestProcessor.*;
 
 /**
@@ -35,10 +35,10 @@ class RequestGenerator {
 
     private static final String PROTOCOL = "http://";
 
-    static HttpHeaders genericHttpHeaders() {
+    static HttpHeaders genericHeaders() {
         HttpHeaders result = new HttpHeaders();
         result.add(CALL_SOURCE_KEY, CALL_SOURCE_VALUE);
-        result.add(TRACE_ID_KEY, genericTranceId());
+        result.add(BaseConstant.TRACE_ID_KEY, genericTranceId());
         // request context headers
         for (Kv kv : RequestHeaderUtils.getRequestHeaders()) {
             result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
@@ -47,10 +47,10 @@ class RequestGenerator {
         return result;
     }
 
-    static HttpHeaders genericHttpHeaders(
+    static HttpHeaders genericHeaders(
             AnnotationMethodAttribute attr, Parameter[] params, Object[] args, boolean isApplicationJson) {
 
-        HttpHeaders result = genericHttpHeaders();
+        HttpHeaders result = genericHeaders();
         for (Kv kv : getRequestHeadersOf(attr.headers)) {
             result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
         }

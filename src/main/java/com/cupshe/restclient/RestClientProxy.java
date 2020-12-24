@@ -75,7 +75,7 @@ public class RestClientProxy implements InvocationHandler {
             payload = RequestGenerator.genericFormDataOf(attr.params, params, args);
         }
 
-        HttpHeaders headers = RequestGenerator.genericHttpHeaders(attr, params, args, isApplicationJson);
+        HttpHeaders headers = RequestGenerator.genericHeaders(attr, params, args, isApplicationJson);
         String uriPath = RequestGenerator.genericUriOf(path, attr, params, args);
         return sendRequestAndGetResponse(uriPath, attr.method, payload, headers);
     }
