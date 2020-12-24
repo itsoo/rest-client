@@ -3,6 +3,7 @@ package com.cupshe.restclient;
 import com.cupshe.ak.core.Kv;
 import com.cupshe.ak.net.TraceIdUtils;
 import com.cupshe.ak.net.UuidUtils;
+import com.cupshe.ak.request.RequestHeaderUtils;
 import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
@@ -17,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.cupshe.ak.common.BaseConstant.REQ_HEADERS_STORE;
 import static com.cupshe.ak.common.BaseConstant.TRACE_ID_KEY;
 import static com.cupshe.restclient.RequestProcessor.*;
 
@@ -40,10 +40,8 @@ class RequestGenerator {
         result.add(CALL_SOURCE_KEY, CALL_SOURCE_VALUE);
         result.add(TRACE_ID_KEY, genericTranceId());
         // request context headers
-        if (REQ_HEADERS_STORE.get() != null) {
-            for (Kv kv : REQ_HEADERS_STORE.get()) {
-                result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
-            }
+        for (Kv kv : RequestHeaderUtils.getRequestHeaders()) {
+            result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
         }
 
         return result;
