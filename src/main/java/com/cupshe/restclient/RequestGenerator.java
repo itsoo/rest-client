@@ -16,7 +16,10 @@ import org.springframework.util.MultiValueMap;
 import java.lang.reflect.Parameter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
 
 import static com.cupshe.restclient.RequestProcessor.*;
 
@@ -32,13 +35,9 @@ class RequestGenerator {
 
     private static final String CALL_SOURCE_VALUE = "REST-CLIENT";
 
-    private static final String PROTOCOL = "http://";
+    private static final String CONTENT_TYPE = "Content-Type";
 
-    private static final Set<String> IGNORE_HEADERS = new HashSet<String>() {{
-        add("host");
-        add("Content-Type");
-        add("postman-token");
-    }};
+    private static final String PROTOCOL = "http://";
 
     static HttpHeaders genericHeaders() {
         HttpHeaders result = new HttpHeaders();
@@ -47,7 +46,7 @@ class RequestGenerator {
         result.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
         // request context headers
         for (Kv kv : RequestHeaderUtils.getRequestHeaders()) {
-            if (!IGNORE_HEADERS.contains(kv.getKey())) {
+            if (!CONTENT_TYPE.equalsIgnoreCase(kv.getKey())) {
                 result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
             }
         }
@@ -60,15 +59,11 @@ class RequestGenerator {
 
         HttpHeaders result = genericHeaders();
         for (Kv kv : getRequestHeadersOf(attr.headers)) {
-            if (!IGNORE_HEADERS.contains(kv.getKey())) {
-                result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
-            }
+            result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
         }
         // maybe override for request headers
         for (Kv kv : getRequestHeadersOf(params, args)) {
-            if (!IGNORE_HEADERS.contains(kv.getKey())) {
-                result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
-            }
+            result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
         }
         // setting content-type
         if (isApplicationJson) {
