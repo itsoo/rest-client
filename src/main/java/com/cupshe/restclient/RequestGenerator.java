@@ -15,9 +15,8 @@ import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.Parameter;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 import static com.cupshe.restclient.RequestProcessor.*;
 
@@ -35,13 +34,22 @@ class RequestGenerator {
 
     private static final String PROTOCOL = "http://";
 
+    private static final Set<String> IGNORE_HEADERS = new HashSet<String>() {{
+        add("host");
+        add("Content-Type");
+        add("postman-token");
+    }};
+
     static HttpHeaders genericHeaders() {
         HttpHeaders result = new HttpHeaders();
         result.add(CALL_SOURCE_KEY, CALL_SOURCE_VALUE);
         result.add(BaseConstant.TRACE_ID_KEY, genericTranceId());
+        result.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
         // request context headers
         for (Kv kv : RequestHeaderUtils.getRequestHeaders()) {
-            result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
+            if (!IGNORE_HEADERS.contains(kv.getKey())) {
+                result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
+            }
         }
 
         return result;
@@ -58,7 +66,7 @@ class RequestGenerator {
         for (Kv kv : getRequestHeadersOf(params, args)) {
             result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
         }
-
+        // setting content-type
         if (isApplicationJson) {
             result.setContentType(MediaType.APPLICATION_JSON);
         } else if (attr.isPassingParamsOfForm()) {
