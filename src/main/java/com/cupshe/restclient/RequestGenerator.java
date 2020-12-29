@@ -35,7 +35,6 @@ class RequestGenerator {
     private static final String PROTOCOL = "http://";
 
     private static final Set<String> IGNORE_HEADERS = new HashSet<String>() {{
-        add("host");
         add("Content-Type");
         add("postman-token");
     }};
