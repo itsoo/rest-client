@@ -60,11 +60,15 @@ class RequestGenerator {
 
         HttpHeaders result = genericHeaders();
         for (Kv kv : getRequestHeadersOf(attr.headers)) {
-            result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
+            if (!IGNORE_HEADERS.contains(kv.getKey())) {
+                result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
+            }
         }
         // maybe override for request headers
         for (Kv kv : getRequestHeadersOf(params, args)) {
-            result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
+            if (!IGNORE_HEADERS.contains(kv.getKey())) {
+                result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
+            }
         }
         // setting content-type
         if (isApplicationJson) {
