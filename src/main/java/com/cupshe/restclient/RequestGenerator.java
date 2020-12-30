@@ -33,8 +33,6 @@ class RequestGenerator {
 
     private static final String CALL_SOURCE_VALUE = "REST-CLIENT";
 
-    private static final String CONTENT_TYPE = "Content-Type";
-
     private static final String PROTOCOL = "http://";
 
     static HttpHeaders genericHeaders() {
@@ -44,11 +42,11 @@ class RequestGenerator {
         result.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
         // request context headers
         for (Kv kv : RequestHeaderUtils.getRequestHeaders()) {
-            if (!CONTENT_TYPE.equalsIgnoreCase(kv.getKey())) {
-                result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
-            }
+            result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
         }
 
+        result.remove(HttpHeaders.CONTENT_TYPE);
+        result.remove(HttpHeaders.HOST);
         return result;
     }
 
@@ -109,9 +107,11 @@ class RequestGenerator {
     }
 
     private static String getUrl(String targetHost, String path) {
-        String url = targetHost.startsWith(PROTOCOL) ? targetHost : (PROTOCOL + targetHost);
-        return url.endsWith("/") || path.startsWith("/")
-                ? url + path
-                : url + '/' + path;
+        String relTargetHost = targetHost.startsWith(PROTOCOL)
+                ? targetHost
+                : (PROTOCOL + targetHost);
+        return relTargetHost.endsWith("/") || path.startsWith("/")
+                ? (relTargetHost + path)
+                : (relTargetHost + '/' + path);
     }
 }
