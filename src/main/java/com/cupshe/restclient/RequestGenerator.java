@@ -9,6 +9,7 @@ import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -39,7 +40,9 @@ class RequestGenerator {
         HttpHeaders result = new HttpHeaders();
         result.add(CALL_SOURCE_KEY, CALL_SOURCE_VALUE);
         result.add(BaseConstant.TRACE_ID_KEY, RequestTraceIdUtils.genericTraceId());
-        result.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
+        if (CollectionUtils.isEmpty(result.getAcceptCharset())) {
+            result.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
+        }
         // request context headers
         for (Kv kv : RequestHeaderUtils.getRequestHeaders()) {
             result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
