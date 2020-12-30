@@ -40,6 +40,7 @@ class RequestGenerator {
         HttpHeaders result = new HttpHeaders();
         result.add(CALL_SOURCE_KEY, CALL_SOURCE_VALUE);
         result.add(BaseConstant.TRACE_ID_KEY, RequestTraceIdUtils.genericTraceId());
+        // default charset=utf-8
         if (CollectionUtils.isEmpty(result.getAcceptCharset())) {
             result.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
         }
