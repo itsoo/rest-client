@@ -2,9 +2,8 @@ package com.cupshe.restclient;
 
 import com.cupshe.ak.common.BaseConstant;
 import com.cupshe.ak.core.Kv;
-import com.cupshe.ak.net.TraceIdUtils;
-import com.cupshe.ak.net.UuidUtils;
 import com.cupshe.ak.request.RequestHeaderUtils;
+import com.cupshe.ak.request.RequestTraceIdUtils;
 import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
@@ -19,7 +18,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 import static com.cupshe.restclient.RequestProcessor.*;
 
@@ -42,7 +40,7 @@ class RequestGenerator {
     static HttpHeaders genericHeaders() {
         HttpHeaders result = new HttpHeaders();
         result.add(CALL_SOURCE_KEY, CALL_SOURCE_VALUE);
-        result.add(BaseConstant.TRACE_ID_KEY, genericTranceId());
+        result.add(BaseConstant.TRACE_ID_KEY, RequestTraceIdUtils.genericTraceId());
         result.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
         // request context headers
         for (Kv kv : RequestHeaderUtils.getRequestHeaders()) {
@@ -115,9 +113,5 @@ class RequestGenerator {
         return url.endsWith("/") || path.startsWith("/")
                 ? url + path
                 : url + '/' + path;
-    }
-
-    private static String genericTranceId() {
-        return Optional.ofNullable(TraceIdUtils.getTraceId()).orElse(UuidUtils.createUuid());
     }
 }
