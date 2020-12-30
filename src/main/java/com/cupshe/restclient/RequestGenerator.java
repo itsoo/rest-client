@@ -37,21 +37,19 @@ class RequestGenerator {
     private static final String PROTOCOL = "http://";
 
     static HttpHeaders genericHeaders() {
-        HttpHeaders result = new HttpHeaders();
-        result.add(CALL_SOURCE_KEY, CALL_SOURCE_VALUE);
-        result.add(BaseConstant.TRACE_ID_KEY, RequestTraceIdUtils.genericTraceId());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(CALL_SOURCE_KEY, CALL_SOURCE_VALUE);
+        headers.add(BaseConstant.TRACE_ID_KEY, RequestTraceIdUtils.genericTraceId());
         // default charset=utf-8
-        if (CollectionUtils.isEmpty(result.getAcceptCharset())) {
-            result.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
+        if (CollectionUtils.isEmpty(headers.getAcceptCharset())) {
+            headers.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
         }
         // request context headers
         for (Kv kv : RequestHeaderUtils.getRequestHeaders()) {
-            result.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
+            headers.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
         }
 
-        result.remove(HttpHeaders.CONTENT_TYPE);
-        result.remove(HttpHeaders.HOST);
-        return result;
+        return getFilteredHeaders(headers);
     }
 
     static HttpHeaders genericHeaders(
@@ -108,6 +106,14 @@ class RequestGenerator {
         }
 
         return result;
+    }
+
+    private static HttpHeaders getFilteredHeaders(HttpHeaders headers) {
+        headers.remove(HttpHeaders.AUTHORIZATION);
+        headers.remove(HttpHeaders.ACCEPT_ENCODING);
+        headers.remove(HttpHeaders.CONTENT_TYPE);
+        headers.remove(HttpHeaders.HOST);
+        return headers;
     }
 
     private static String getUrl(String targetHost, String path) {
