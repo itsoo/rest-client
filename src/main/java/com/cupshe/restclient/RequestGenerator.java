@@ -1,7 +1,7 @@
 package com.cupshe.restclient;
 
-import com.cupshe.ak.common.BaseConstant;
 import com.cupshe.ak.core.Kv;
+import com.cupshe.ak.core.Kvs;
 import com.cupshe.ak.request.RequestHeaderUtils;
 import com.cupshe.ak.request.RequestTraceIdUtils;
 import com.cupshe.ak.text.StringUtils;
@@ -16,9 +16,8 @@ import org.springframework.util.MultiValueMap;
 import java.lang.reflect.Parameter;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.Objects;
 
 import static com.cupshe.restclient.RequestProcessor.*;
 
@@ -30,26 +29,17 @@ import static com.cupshe.restclient.RequestProcessor.*;
 @PureFunction
 class RequestGenerator {
 
-    private static final String CALL_SOURCE_KEY = "Call-Source";
-
-    private static final String CALL_SOURCE_VALUE = "REST-CLIENT";
-
     private static final String PROTOCOL = "http://";
 
     static HttpHeaders genericHeaders() {
-        HttpHeaders headers = new HttpHeaders();
-        headers.add(CALL_SOURCE_KEY, CALL_SOURCE_VALUE);
-        headers.add(BaseConstant.TRACE_ID_KEY, RequestTraceIdUtils.genericTraceId());
+        HttpHeaders headers = RestClientHeaders.getDefaultHeaders();
+        RestClientHeaders.resetTraceIdOfHeaders(headers);
         // default charset=utf-8
         if (CollectionUtils.isEmpty(headers.getAcceptCharset())) {
             headers.setAcceptCharset(Collections.singletonList(StandardCharsets.UTF_8));
         }
-        // request context headers
-        for (Kv kv : RequestHeaderUtils.getRequestHeaders()) {
-            headers.add(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
-        }
 
-        return getFilteredHeaders(headers);
+        return RestClientHeaders.getFilteredHeaders(headers);
     }
 
     static HttpHeaders genericHeaders(
@@ -83,8 +73,7 @@ class RequestGenerator {
     }
 
     static String genericUriOf(String uri, String[] defParams, Parameter[] mthParams, Object[] args) {
-        int capacity = (mthParams.length + defParams.length) << 1;
-        List<Kv> params = new ArrayList<>(capacity);
+        Kvs params = new Kvs();
         params.addAll(getRequestParamsOf(mthParams, args));
         params.addAll(getRequestParamsOf(defParams));
         return processRequestParams(uri, params);
@@ -108,14 +97,6 @@ class RequestGenerator {
         return result;
     }
 
-    private static HttpHeaders getFilteredHeaders(HttpHeaders headers) {
-        headers.remove(HttpHeaders.AUTHORIZATION);
-        headers.remove(HttpHeaders.ACCEPT_ENCODING);
-        headers.remove(HttpHeaders.CONTENT_TYPE);
-        headers.remove(HttpHeaders.HOST);
-        return headers;
-    }
-
     private static String getUrl(String targetHost, String path) {
         String relTargetHost = targetHost.startsWith(PROTOCOL)
                 ? targetHost
@@ -123,5 +104,65 @@ class RequestGenerator {
         return relTargetHost.endsWith("/") || path.startsWith("/")
                 ? (relTargetHost + path)
                 : (relTargetHost + '/' + path);
+    }
+
+    /**
+     * RestClientHeaders
+     */
+    private enum RestClientHeaders {
+
+        CALL_SOURCE("Call-Source", "REST-CLIENT"),
+
+        TRACE_ID("Trace-ID", null);
+
+        //---------------------
+        // PROPERTIES
+        //---------------------
+
+        private final String key;
+        private final String value;
+
+        RestClientHeaders(String key, String value) {
+            this.key = key;
+            this.value = value;
+        }
+
+        static HttpHeaders getDefaultHeaders() {
+            HttpHeaders result = new HttpHeaders();
+            for (RestClientHeaders header : RestClientHeaders.values()) {
+                result.set(header.key, header.value);
+            }
+            // request-context headers
+            for (Kv kv : RequestHeaderUtils.getRequestHeaders()) {
+                result.set(kv.getKey(), StringUtils.getOrEmpty(kv.getValue()));
+            }
+
+            return result;
+        }
+
+        static HttpHeaders getFilteredHeaders(HttpHeaders headers) {
+            headers.remove(HttpHeaders.AUTHORIZATION);
+            headers.remove(HttpHeaders.ACCEPT_ENCODING);
+            headers.remove(HttpHeaders.CONTENT_TYPE);
+            headers.remove(HttpHeaders.HOST);
+            return headers;
+        }
+
+        static void resetTraceIdOfHeaders(HttpHeaders headers) {
+            if (!RestClientHeaders.contains(headers, TRACE_ID.key)) {
+                headers.set(TRACE_ID.key, RequestTraceIdUtils.genericTraceId());
+            }
+        }
+
+        static boolean contains(HttpHeaders headers, String key) {
+            return getHeader(headers, key).length > 0;
+        }
+
+        static String[] getHeader(HttpHeaders headers, String key) {
+            return headers.getOrEmpty(key)
+                    .parallelStream()
+                    .filter(Objects::nonNull)
+                    .toArray(String[]::new);
+        }
     }
 }

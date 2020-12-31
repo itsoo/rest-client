@@ -1,6 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.core.Kv;
+import com.cupshe.ak.core.Kvs;
 import com.cupshe.restclient.exception.ClassConvertException;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -21,7 +22,7 @@ public class UriTests {
 
     @Test
     public void testUris() {
-        List<Kv> kvs = new ArrayList<>();
+        Kvs kvs = new Kvs();
         kvs.add(new Kv("id", 1));
         kvs.add(new Kv("age", 20));
         kvs.add(new Kv("name", "ZhangSan"));
@@ -31,7 +32,7 @@ public class UriTests {
 
     @Test
     public void testFormParams() {
-        List<Kv> kvs = new ArrayList<>();
+        Kvs kvs = new Kvs();
         kvs.add(new Kv("id", 1));
         kvs.add(new Kv("age", 20));
         kvs.add(new Kv("name", "Zhang San"));
