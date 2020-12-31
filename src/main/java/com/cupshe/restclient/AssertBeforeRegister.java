@@ -5,6 +5,7 @@ import com.cupshe.restclient.exception.NoSupportMethodException;
 import com.cupshe.restclient.lang.PureFunction;
 import com.cupshe.restclient.lang.RestClient;
 import lombok.SneakyThrows;
+import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.util.Assert;

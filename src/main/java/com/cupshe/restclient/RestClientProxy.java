@@ -16,7 +16,6 @@ import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.net.URI;
 
 import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
 
@@ -49,53 +48,50 @@ public class RestClientProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        try {
-            String res = sendRequestAndGetResponse(AnnotationMethodAttribute.of(method), method, args);
-            if (res != null) {
-                Logging.info(res);
-                return ResponseProcessor.convertToObject(res, method);
-            } else if (method.getReturnType() == void.class) { // void
-                return null;
-            } else if (fallback != void.class) { // fallback
-                return FallbackInvoker.of(fallback, method).invoke(args);
-            } else { // timeout
-                throw new ConnectTimeoutException();
-            }
-        } finally {
-            retries.remove();
+        String result = sendRequestAndGetResponse(AnnotationMethodAttribute.of(method), method, args);
+        if (result != null) {
+            Logging.info(result);
+            return ResponseProcessor.convertToObject(result, method);
+        } else if (method.getReturnType() == void.class) { // void
+            return null;
+        } else if (fallback != void.class) { // fallback
+            return FallbackInvoker.of(fallback, method).invoke(args);
+        } else { // timeout
+            throw new ConnectTimeoutException();
         }
     }
 
     @PureFunction
     private String sendRequestAndGetResponse(AnnotationMethodAttribute attr, Method method, Object[] args) {
         Parameter[] params = method.getParameters();
-        Object payload = RequestProcessor.getRequestBodyOf(params, args);
-        boolean isApplicationJson = (payload != null);
+        Object body = RequestProcessor.getRequestBodyOf(params, args);
+        boolean isApplicationJson = (body != null);
         if (!isApplicationJson && attr.isPassingParamsOfForm()) {
-            payload = RequestGenerator.genericFormDataOf(attr.params, params, args);
+            body = RequestGenerator.genericFormDataOf(attr.params, params, args);
         }
 
-        HttpHeaders headers = RequestGenerator.genericHttpHeaders(attr, params, args, isApplicationJson);
+        HttpHeaders headers = RequestGenerator.genericHeaders(attr, params, args, isApplicationJson);
         String uriPath = RequestGenerator.genericUriOf(path, attr, params, args);
-        return sendRequestAndGetResponse(uriPath, attr.method, payload, headers);
+        return sendRequestAndGetResponse(uriPath, attr.method, body, headers);
     }
 
     @PureFunction
     private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
-        ResponseEntity<String> re = null;
-
-        do {
-            try {
-                URI uri = RequestGenerator.genericUriOf(getTargetHost(name), uriPath);
-                re = sendRequestAndGetResponse(new RequestEntity<>(body, headers, method, uri));
-                break;
-            } catch (ResourceAccessException e) { // retry
-                retries.set(retries.get() + 1);
-            }
-        } while (retries.get() <= maxAutoRetries);
-
-        String result;
-        return (re != null && (result = re.getBody()) != null) ? result : null;
+        try {
+            ResponseEntity<String> result = null;
+            do {
+                try {
+                    result = sendRequestAndGetResponse(new RequestEntity<>(
+                            body, headers, method, RequestGenerator.genericUriOf(getTargetHost(name), uriPath)));
+                    break;
+                } catch (ResourceAccessException e) { // retry
+                    retries.set(retries.get() + 1);
+                }
+            } while (retries.get() <= maxAutoRetries);
+            return result != null ? result.getBody() : null;
+        } finally {
+            retries.remove();
+        }
     }
 
     @PureFunction

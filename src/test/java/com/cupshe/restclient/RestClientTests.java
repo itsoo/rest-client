@@ -4,6 +4,7 @@ import com.cupshe.Application;
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.service.DemoService;
+import lombok.SneakyThrows;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,9 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @WebAppConfiguration
@@ -23,13 +27,18 @@ public class RestClientTests {
     @Autowired
     private DemoService demoService;
 
+    @SneakyThrows
     @Test
     public void testPostForm() {
         DemoDTO dto = new DemoDTO();
         dto.setAge(12);
         dto.setName("zhang %20$3san");
-        ResponseVO<Object> res = demoService.postForm(dto);
-        System.out.println(res);
+        ExecutorService es = Executors.newFixedThreadPool(20);
+        for (int i = 0; i < 20; i++) {
+            es.execute(() -> demoService.postForm(dto));
+        }
+
+        TimeUnit.SECONDS.sleep(5L);
     }
 
     @Test
