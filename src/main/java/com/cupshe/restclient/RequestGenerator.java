@@ -141,10 +141,6 @@ class RequestGenerator {
         }
 
         static HttpHeaders getFilteredHeaders(HttpHeaders headers) {
-            headers.remove(HttpHeaders.ACCEPT_ENCODING);
-            headers.remove(HttpHeaders.AUTHORIZATION);
-            headers.remove(HttpHeaders.CONTENT_TYPE);
-            headers.remove(HttpHeaders.CONNECTION);
             headers.remove(HttpHeaders.HOST);
             return headers;
         }
