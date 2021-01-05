@@ -60,6 +60,7 @@ class FallbackInvoker {
      */
     @PureFunction
     private static class FallbackInstance {
+
         private String beanName;
         private Object instance;
 

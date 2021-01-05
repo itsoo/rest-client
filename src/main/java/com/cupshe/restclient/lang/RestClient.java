@@ -93,6 +93,7 @@ public @interface RestClient {
      * 负载均衡策略枚举
      */
     enum LoadBalanceType {
+
         /*** 轮询（Round-Robin） */
         RR,
 

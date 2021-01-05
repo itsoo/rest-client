@@ -34,8 +34,9 @@ class ResponseProcessor {
     private static Object convertToObject(String json, Type genericType)
             throws JsonProcessingException {
 
-        if (List.class.isAssignableFrom(genericType.getClass())) {
-            JavaType targetType = JsonUtils.getObjectType(genericType.getClass());
+        Class<? extends Type> genericClass = genericType.getClass();
+        if (List.class.isAssignableFrom(genericClass)) {
+            JavaType targetType = JsonUtils.getListType(genericClass);
             return JsonUtils.convertList(json, targetType);
         }
 

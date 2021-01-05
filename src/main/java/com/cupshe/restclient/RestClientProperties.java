@@ -4,7 +4,6 @@ import com.cupshe.restclient.lang.PureFunction;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -15,8 +14,8 @@ import java.util.stream.Collectors;
  *
  * @author zxy
  */
-@Component
 @ConfigurationProperties(prefix = "rest-client", ignoreInvalidFields = true)
+@SuppressWarnings("all")
 public class RestClientProperties {
 
     @NestedConfigurationProperty
@@ -35,5 +34,15 @@ public class RestClientProperties {
         RestClientProperties.routers = routers
                 .parallelStream()
                 .collect(Collectors.toMap(RequestCaller::getName, t -> t));
+    }
+
+    @Override
+    public String toString() {
+        String routersString = routers != null
+                ? routers.toString()
+                : "{}";
+        return "RestClientProperties(" +
+                routersString +
+                ')';
     }
 }
