@@ -31,12 +31,15 @@ class ResponseProcessor {
         }
     }
 
-    private static Object convertToObject(String json, Type genericType) throws JsonProcessingException {
+    private static Object convertToObject(String json, Type genericType)
+            throws JsonProcessingException {
+
         if (List.class.isAssignableFrom(genericType.getClass())) {
-            return JsonUtils.convertList(json, genericType.getClass());
+            JavaType targetType = JsonUtils.getObjectType(genericType.getClass());
+            return JsonUtils.convertList(json, targetType);
         }
 
-        JavaType targetType = JsonUtils.getJavaType(genericType);
+        JavaType targetType = JsonUtils.getObjectType(genericType);
         return JsonUtils.jsonToObject(json, targetType);
     }
 
