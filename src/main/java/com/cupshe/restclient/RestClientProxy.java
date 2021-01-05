@@ -79,6 +79,7 @@ public class RestClientProxy implements InvocationHandler {
     private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
         try {
             ResponseEntity<String> result = null;
+
             do {
                 try {
                     result = sendRequestAndGetResponse(new RequestEntity<>(
@@ -88,6 +89,7 @@ public class RestClientProxy implements InvocationHandler {
                     retries.set(retries.get() + 1);
                 }
             } while (retries.get() <= maxAutoRetries);
+
             return result != null ? result.getBody() : null;
         } finally {
             retries.remove();
