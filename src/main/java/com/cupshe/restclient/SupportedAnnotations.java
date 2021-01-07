@@ -28,11 +28,9 @@ class SupportedAnnotations {
     }
 
     static String getValue(Annotation annotation) {
-        if (isSupport(annotation.annotationType())) {
-            return (String) ObjectClasses.getValueByMethodName("value", annotation);
-        }
-
-        return null;
+        return isSupport(annotation.annotationType())
+                ? (String) ObjectClasses.getValueByMethodName("value", annotation)
+                : null;
     }
 
     static String supportTypes() {

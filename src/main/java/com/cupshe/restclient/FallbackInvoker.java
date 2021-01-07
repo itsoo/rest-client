@@ -4,8 +4,10 @@ import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.util.ClassUtils;
+import org.springframework.util.ReflectionUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -48,7 +50,7 @@ class FallbackInvoker {
         String methodName = method.getName();
         Class<?>[] paramTypes = method.getParameterTypes();
         Method fallback = reference.getDeclaredMethod(methodName, paramTypes);
-        return fallback.invoke(getInstance(reference), args);
+        return ReflectionUtils.invokeMethod(fallback, getInstance(reference), args);
     }
 
     private Object getInstance(Class<?> clazz) {

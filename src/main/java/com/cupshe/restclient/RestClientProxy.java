@@ -17,6 +17,7 @@ import org.springframework.web.client.RestTemplate;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 
+import static com.cupshe.restclient.RequestGenerator.*;
 import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
 
 /**
@@ -48,7 +49,7 @@ public class RestClientProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        String result = sendRequestAndGetResponse(AnnotationMethodAttribute.of(method), method, args);
+        String result = sendRequestAndGetResponse(method, args);
         if (result != null) {
             Logging.info(result);
             return ResponseProcessor.convertToObject(result, method);
@@ -62,28 +63,32 @@ public class RestClientProxy implements InvocationHandler {
     }
 
     @PureFunction
-    private String sendRequestAndGetResponse(AnnotationMethodAttribute attr, Method method, Object[] args) {
-        Parameter[] params = method.getParameters();
-        Object body = RequestProcessor.getRequestBodyOf(params, args);
+    private String sendRequestAndGetResponse(Method method, Object[] args) {
+        AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
+        Parameter[] mthParams = method.getParameters();
+        // request body or form-data
+        Object body = RequestProcessor.getRequestBodyOf(mthParams, args);
         boolean isApplicationJson = (body != null);
         if (!isApplicationJson && attr.isPassingParamsOfForm()) {
-            body = RequestGenerator.genericFormDataOf(attr.params, params, args);
+            body = genericFormDataOf(attr.params, mthParams, args);
         }
 
-        HttpHeaders headers = RequestGenerator.genericHeaders(attr, params, args, isApplicationJson);
-        String uriPath = RequestGenerator.genericUriOf(path, attr, params, args);
+        HttpHeaders headers = genericHeaders(attr, mthParams, args, isApplicationJson);
+        String uriPath = genericUriOf(path, attr, mthParams, args);
         return sendRequestAndGetResponse(uriPath, attr.method, body, headers);
     }
 
     @PureFunction
-    private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
+    private String sendRequestAndGetResponse(
+            String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
+
         try {
             ResponseEntity<String> result = null;
 
             do {
                 try {
                     result = sendRequestAndGetResponse(new RequestEntity<>(
-                            body, headers, method, RequestGenerator.genericUriOf(getTargetHost(name), uriPath)));
+                            body, headers, method, genericUriOf(getTargetHost(name), uriPath)));
                     break;
                 } catch (ResourceAccessException e) { // retry
                     retries.set(retries.get() + 1);
