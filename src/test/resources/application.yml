@@ -1,5 +1,6 @@
 rest-client:
-  repeat-merged: true
+  merged-routers: true
+  filter-headers: authorization,host
   routers:
     - name: comment
       services:

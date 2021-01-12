@@ -5,7 +5,6 @@ import com.cupshe.restclient.lang.PureFunction;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.NestedConfigurationProperty;
 import org.springframework.lang.NonNull;
 
 import java.util.LinkedHashMap;
@@ -23,24 +22,41 @@ public class RestClientProperties {
 
     @Getter
     @Setter
-    private boolean repeatMerged;
+    private boolean mergedRouters;
 
-    @NestedConfigurationProperty
+    private static String[] filterHeaders;
+
     private static Map<String, RequestCaller> routers;
+
+    public RestClientProperties() {
+        mergedRouters = false;
+        filterHeaders = new String[0];
+        routers = new LinkedHashMap<>(32);
+    }
 
     //---------------------
     // GETTER AND SETTER
     //---------------------
 
     @PureFunction
+    static String[] getFilterHeaders() {
+        return filterHeaders;
+    }
+
+    @PureFunction
     static RequestCaller getRouters(String name) {
         return routers.get(name);
     }
 
+    public void setFilterHeaders(String[] params) {
+        if (params != null) {
+            filterHeaders = params;
+        }
+    }
+
     public void setRouters(@NonNull List<RequestCaller> params) {
-        routers = new LinkedHashMap<>(params.size() << 1);
         for (RequestCaller router : params) {
-            if (!isRepeatMerged() && routers.containsKey(router.getName())) {
+            if (!isMergedRouters() && routers.containsKey(router.getName())) {
                 throw new RepeatRouterException(router.getName());
             }
 
