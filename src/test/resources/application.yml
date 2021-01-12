@@ -1,5 +1,6 @@
-# 路由的配置信息
 rest-client:
+  merged-routers: true
+  filter-headers: authorization,host
   routers:
     - name: comment
       services:
@@ -11,10 +12,14 @@ rest-client:
       services:
         - 127.0.0.1:8090
         - 127.0.0.1:8091
+    - name: product
+      services:
+        - 127.0.0.1:8092
 
 logging:
   level:
-    com.cupshe: debug
+    org.springframework: ERROR
+    com.cupshe: DEBUG
 
 fallback:
   tips: FALLBACK TIPS!

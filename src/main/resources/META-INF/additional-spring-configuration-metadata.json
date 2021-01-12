@@ -8,6 +8,19 @@
       "description": "RPC client config."
     },
     {
+      "name": "rest-client.filter-headers",
+      "type": "java.lang.String[]",
+      "sourceType": "com.cupshe.restclient.RestClientProperties",
+      "description": "Filter headers of request."
+    },
+    {
+      "name": "rest-client.merged-routers",
+      "type": "java.lang.Boolean",
+      "sourceType": "com.cupshe.restclient.RestClientProperties",
+      "defaultValue": false,
+      "description": "Merged repeat service-name of routers (default false)."
+    },
+    {
       "name": "rest-client.routers",
       "type": "java.util.List<com.cupshe.restclient.RequestCaller>",
       "sourceType": "com.cupshe.restclient.RestClientProperties",

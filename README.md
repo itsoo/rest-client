@@ -25,16 +25,19 @@
 第二步：在 application.yml 文件配置远端服务列表
 
 ```yaml
-# 路由的配置信息
+# 路由配置信息
 rest-client:
+  # 合并重复服务列表
+  repeat-merged: true
+  # 服务列表
   routers:
-    - name: demo
+    - name: foo
       services:
         - 127.0.0.1:8080
         - 127.0.0.1:8081
         - 127.0.0.1:8082
         - 127.0.0.1:8083
-    - name: test
+    - name: bar
       services:
         - 127.0.0.1:8090
         - 127.0.0.1:8091
@@ -135,6 +138,7 @@ public class DemoServiceImpl implements DemoService {
 1. 入参类型改为 Class<?> 以适配接口的全部签名（0.1.X 版本是字符串，单一无返回值的兜底方法）
 2. fallback 指定的类型支持注入 Spring 容器
 3. 新增 @Fallback 注解，作用等同 Component 语义化更好
+4. 新增 repeat-merged 属性配置，true 合并重复定义的服务列表，false 启动时报错
 
 
 #### 二、容器启动时对所有 Provider 进行有效性校验（0.1.X 版本是运行时校验）
