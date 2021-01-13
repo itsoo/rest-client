@@ -1,5 +1,6 @@
 package com.cupshe.restclient;
 
+import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.exception.RepeatRouterException;
 import com.cupshe.restclient.lang.PureFunction;
 import lombok.Getter;
@@ -31,7 +32,7 @@ public class RestClientProperties {
     public RestClientProperties() {
         mergedRouters = false;
         filterHeaders = new String[0];
-        routers = new LinkedHashMap<>(32);
+        routers = new LinkedHashMap<>(1 << 5);
     }
 
     //---------------------
@@ -73,11 +74,8 @@ public class RestClientProperties {
 
     @Override
     public String toString() {
-        String routersString = routers != null
-                ? routers.toString()
-                : "{}";
         return "RestClientProperties(" +
-                routersString +
+                StringUtils.getOrDefault(routers, "{}") +
                 ')';
     }
 }
