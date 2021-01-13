@@ -23,7 +23,7 @@ public @interface RestClient {
     String id() default "";
 
     /**
-     * 服务名称
+     * 服务名称（等同于 {@linkplain RestClient#value()}）
      * <ol>
      *   <li>name 与 value 不能同时为空</li>
      *   <li>与 value 同时设置时权重高于 value</li>
@@ -35,7 +35,7 @@ public @interface RestClient {
     String name() default "";
 
     /**
-     * 服务名称
+     * 服务名称（等同于 {@linkplain RestClient#name()}）
      * <ol>
      *   <li>name 与 value 不能同时为空</li>
      *   <li>与 name 同时设置时权重低于 name</li>

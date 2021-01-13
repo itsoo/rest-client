@@ -129,7 +129,7 @@ class RequestGenerator {
 
         static HttpHeaders getDefaultHeaders() {
             HttpHeaders result = new HttpHeaders();
-            for (RestClientHeaders header : RestClientHeaders.values()) {
+            for (RestClientHeaders header : values()) {
                 result.set(header.key, header.value);
             }
             // request-context headers
@@ -150,7 +150,7 @@ class RequestGenerator {
         }
 
         static void resetTraceIdOfHeaders(HttpHeaders headers) {
-            if (!RestClientHeaders.contains(headers, TRACE_ID.key)) {
+            if (!contains(headers, TRACE_ID.key)) {
                 headers.set(TRACE_ID.key, RequestTraceIdUtils.genericTraceId());
             }
         }

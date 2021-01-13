@@ -32,7 +32,7 @@ public class RestClientProperties {
     public RestClientProperties() {
         mergedRouters = false;
         filterHeaders = new String[0];
-        routers = new LinkedHashMap<>(1 << 5);
+        routers = new LinkedHashMap<>(32);
     }
 
     //---------------------
