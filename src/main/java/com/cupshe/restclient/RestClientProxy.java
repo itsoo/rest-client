@@ -79,9 +79,7 @@ public class RestClientProxy implements InvocationHandler {
     }
 
     @PureFunction
-    private String sendRequestAndGetResponse(
-            String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
-
+    private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
         try {
             ResponseEntity<String> result = null;
 
