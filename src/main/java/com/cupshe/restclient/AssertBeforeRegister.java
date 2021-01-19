@@ -19,6 +19,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -44,9 +45,9 @@ class AssertBeforeRegister {
     }
 
     static void clearCheckedRegisterCache() {
-        if (registeredBeans != null) {
+        if (Objects.nonNull(registeredBeans)) {
             synchronized (CLEAR_REGISTERED_BEANS_LOCK) {
-                if (registeredBeans != null) {
+                if (Objects.nonNull(registeredBeans)) {
                     registeredBeans.clear();
                     registeredBeans = null;
                 }

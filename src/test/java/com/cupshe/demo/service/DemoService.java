@@ -22,11 +22,5 @@ public interface DemoService {
 
     void deleteById(Long id);
 
-    ArrayList<Map<String, List<DemoDTO>>> findDemoList(DemoDTO dto);
-
-    List<Integer> findIdList(DemoDTO dto);
-
-    List<String> findTitleList(DemoDTO dto);
-
-    ResponseVO<Map<String, List<DemoDTO>>> complexObject();
+    List<Map<String, List<DemoDTO>>> findDemoList(DemoDTO dto);
 }

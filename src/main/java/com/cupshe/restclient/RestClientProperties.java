@@ -1,6 +1,5 @@
 package com.cupshe.restclient;
 
-import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.exception.RepeatRouterException;
 import com.cupshe.restclient.lang.PureFunction;
 import lombok.Getter;
@@ -11,6 +10,7 @@ import org.springframework.lang.NonNull;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * RestClientProperties
@@ -44,15 +44,15 @@ public class RestClientProperties {
         return filterHeaders;
     }
 
+    public void setFilterHeaders(String[] params) {
+        if (Objects.nonNull(params)) {
+            filterHeaders = params;
+        }
+    }
+
     @PureFunction
     static RequestCaller getRouters(String name) {
         return routers.get(name);
-    }
-
-    public void setFilterHeaders(String[] params) {
-        if (params != null) {
-            filterHeaders = params;
-        }
     }
 
     public void setRouters(@NonNull List<RequestCaller> params) {
@@ -70,12 +70,5 @@ public class RestClientProperties {
         if (rc != router) {
             rc.getServices().addAll(router.getServices());
         }
-    }
-
-    @Override
-    public String toString() {
-        return "RestClientProperties(" +
-                StringUtils.getOrDefault(routers, "{}") +
-                ')';
     }
 }

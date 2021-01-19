@@ -1,5 +1,6 @@
 package com.cupshe.restclient;
 
+import com.cupshe.ak.common.BaseConstant;
 import com.cupshe.ak.core.Kv;
 import com.cupshe.ak.core.Kvs;
 import com.cupshe.ak.request.RequestHeaderUtils;
@@ -111,9 +112,9 @@ class RequestGenerator {
      */
     private enum RestClientHeaders {
 
-        CALL_SOURCE("Call-Source", "REST-CLIENT"),
+        CALL_SOURCE("X-Call-Source", "REST-CLIENT"),
 
-        TRACE_ID("Trace-ID", null);
+        TRACE_ID(BaseConstant.TRACE_ID_KEY, null);
 
         //---------------------
         // PROPERTIES
@@ -141,7 +142,11 @@ class RequestGenerator {
         }
 
         static HttpHeaders getFilteredHeaders(HttpHeaders headers) {
-            headers.remove(HttpHeaders.CONTENT_TYPE); // reset content-type
+            // reset content-type
+            headers.remove(HttpHeaders.CONTENT_TYPE);
+            // remove host
+            headers.remove(HttpHeaders.HOST);
+            // filter headers
             for (String rh : RestClientProperties.getFilterHeaders()) {
                 headers.remove(rh);
             }

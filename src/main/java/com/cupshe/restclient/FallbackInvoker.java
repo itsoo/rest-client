@@ -11,6 +11,7 @@ import org.springframework.util.ReflectionUtils;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -34,7 +35,7 @@ class FallbackInvoker {
     }
 
     static void setApplicationContext(@NonNull ApplicationContext applicationContext) {
-        if (FallbackInvoker.applicationContext == null) {
+        if (Objects.isNull(FallbackInvoker.applicationContext)) {
             FallbackInvoker.applicationContext = applicationContext;
         }
     }
@@ -86,7 +87,7 @@ class FallbackInvoker {
         }
 
         private void setInstance(Class<?> clazz) {
-            instance = applicationContext == null
+            instance = Objects.isNull(applicationContext)
                     ? getDefaultBean(clazz)
                     : getBeanOrDefault(beanName, clazz);
         }

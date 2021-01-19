@@ -6,7 +6,10 @@ import com.cupshe.demo.rpc.DemoProvider;
 import com.cupshe.restclient.lang.Fallback;
 import org.springframework.beans.factory.annotation.Value;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 /**
  * DemoProviderFallback
@@ -20,8 +23,8 @@ public class DemoProviderFallback implements DemoProvider {
     private String fallbackTips;
 
     @Override
-    public ResponseVO<Object> postForm(DemoDTO dto) {
-        return ResponseVO.of(fallbackTips);
+    public Future<ResponseVO<Object>> postForm(DemoDTO dto) {
+        return Executors.newSingleThreadExecutor().submit(() -> ResponseVO.of(fallbackTips));
     }
 
     @Override
@@ -40,27 +43,7 @@ public class DemoProviderFallback implements DemoProvider {
     }
 
     @Override
-    public ArrayList<Map<String, List<DemoDTO>>> findDemoList(ArrayList<Map<String, List<DemoDTO>>> dto) {
+    public List<Map<String, List<DemoDTO>>> findDemoList() {
         return null;
-    }
-
-    @Override
-    public ArrayList<Map<String, List<DemoDTO>>> findDemoListPost(ArrayList<Map<String, List<DemoDTO>>> dto) {
-        return null;
-    }
-
-    @Override
-    public List<Integer> findIdList(DemoDTO dto) {
-        return Collections.singletonList(dto.getAge());
-    }
-
-    @Override
-    public List<String> findTitleList(DemoDTO dto) {
-        return Collections.singletonList(dto.getName());
-    }
-
-    @Override
-    public ResponseVO<Map<String, List<DemoDTO>>> complexObject() {
-        return ResponseVO.of(new HashMap<>());
     }
 }
