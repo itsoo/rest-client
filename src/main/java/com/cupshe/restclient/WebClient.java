@@ -6,7 +6,10 @@ import com.cupshe.restclient.exception.ConnectTimeoutException;
 import com.cupshe.restclient.exception.NotFoundException;
 import com.cupshe.restclient.lang.PureFunction;
 import org.slf4j.MDC;
-import org.springframework.http.*;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.RequestEntity;
+import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -31,8 +34,8 @@ import static com.cupshe.restclient.RequestGenerator.*;
 @PureFunction
 class WebClient {
 
-    private static final ExecutorService ES = new ThreadPoolExecutor(
-            30, 200, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(400));
+    private static final ExecutorService ES =
+            new ThreadPoolExecutor(30, 200, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(400));
 
     private final RestClientProxy proxy;
 
@@ -94,8 +97,7 @@ class WebClient {
 
     private ResponseEntity<byte[]> sendRequest(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
         try {
-            ResponseEntity<byte[]> resp = ResponseProcessor.defaultResponseEntity();
-            int maxAutoRetries = proxy.getMaxAutoRetries();
+            ResponseEntity<byte[]> resp = ResponseProcessor.REQUEST_TIMEOUT;
 
             do {
                 try {
@@ -104,7 +106,7 @@ class WebClient {
                 } catch (ResourceAccessException e) { // retry
                     retries.set(retries.get() + 1);
                 }
-            } while (retries.get() <= maxAutoRetries);
+            } while (retries.get() <= proxy.getMaxAutoRetries());
 
             return resp;
         } finally {
@@ -126,26 +128,26 @@ class WebClient {
     }
 
     private <T> RequestEntity<T> getRequestEntity(String uriPath, HttpMethod method, T body, HttpHeaders headers) {
-        String targetHost;
         RequestCaller routers = RestClientProperties.getRouters(proxy.getName());
         if (Objects.isNull(routers)) {
             throw new NotFoundException();
         }
 
-        targetHost = routers.get(proxy.getLoadBalanceType());
+        String targetHost = routers.get(proxy.getLoadBalanceType());
         URI uri = genericUriOf(targetHost, uriPath);
         return new RequestEntity<>(body, headers, method, uri);
     }
 
     private Object doResponse(ResponseEntity<byte[]> resp, Method method, Object[] args) {
+        if (ResponseProcessor.REQUEST_TIMEOUT == resp
+                && proxy.nonReturnType(method)
+                && proxy.nonFallbackType()) {
+            throw new ConnectTimeoutException();
+        }
+
         String json = ResponseProcessor.convertToString(resp.getBody());
         if (Objects.nonNull(json)) {
             Logging.info(json);
-        }
-
-        if (HttpStatus.REQUEST_TIMEOUT.equals(resp.getStatusCode())
-                && proxy.isRealFailure(method)) {
-            throw new ConnectTimeoutException();
         }
 
         return proxy.callback(ResponseProcessor.convertToObject(json, method), method, args);

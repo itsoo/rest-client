@@ -44,7 +44,7 @@ public class RestClientProxy implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) {
-        return isAsyncCaller(method)
+        return Future.class.isAssignableFrom(method.getReturnType())
                 ? client.asyncSendRequest(method, args)
                 : client.sendRequest(method, args);
     }
@@ -56,12 +56,12 @@ public class RestClientProxy implements InvocationHandler {
         }
 
         // void
-        if (method.getReturnType() == void.class) {
+        if (nonReturnType(method)) {
             return null;
         }
 
         // fallback
-        if (fallback != void.class) {
+        if (!nonFallbackType()) {
             return FallbackInvoker.of(fallback, method).invoke(args);
         }
 
@@ -69,12 +69,11 @@ public class RestClientProxy implements InvocationHandler {
         throw new ConnectTimeoutException();
     }
 
-    public boolean isRealFailure(Method method) {
-        return method.getReturnType() == void.class
-                && fallback == void.class;
+    public boolean nonReturnType(Method method) {
+        return method.getReturnType() == void.class;
     }
 
-    private boolean isAsyncCaller(Method method) {
-        return Future.class.isAssignableFrom(method.getReturnType());
+    public boolean nonFallbackType() {
+        return fallback == void.class;
     }
 }

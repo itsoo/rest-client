@@ -25,10 +25,7 @@ import java.util.concurrent.Future;
 @PureFunction
 class ResponseProcessor {
 
-    static ResponseEntity<byte[]> defaultResponseEntity() {
-        // gateway-timeout
-        return new ResponseEntity<>(HttpStatus.REQUEST_TIMEOUT);
-    }
+    static final ResponseEntity<byte[]> REQUEST_TIMEOUT = new ResponseEntity<>(HttpStatus.REQUEST_TIMEOUT);
 
     static String convertToString(@Nullable byte[] bytes) {
         return Objects.nonNull(bytes)
