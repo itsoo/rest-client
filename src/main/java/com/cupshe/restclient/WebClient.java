@@ -67,15 +67,20 @@ class WebClient {
         RequestAttributes rqs = RequestContextHolder.getRequestAttributes();
 
         return ES.submit(() -> {
-            MDC.put(BaseConstant.MDC_SESSION_KEY, traceId);
-            RequestContextHolder.setRequestAttributes(rqs);
-            // response maybe of Future.class
-            Object resp = sendRequest(method, args);
-            if (resp instanceof Future) {
-                return ((Future<?>) resp).get();
-            }
+            try {
+                MDC.put(BaseConstant.MDC_SESSION_KEY, traceId);
+                RequestContextHolder.setRequestAttributes(rqs);
+                // response maybe of Future.class
+                Object resp = sendRequest(method, args);
+                if (resp instanceof Future) {
+                    return ((Future<?>) resp).get();
+                }
 
-            return resp;
+                return resp;
+            } finally {
+                MDC.remove(BaseConstant.MDC_SESSION_KEY);
+                RequestContextHolder.resetRequestAttributes();
+            }
         });
     }
 
