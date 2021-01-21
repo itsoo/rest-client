@@ -19,9 +19,13 @@ import static org.springframework.http.HttpMethod.*;
 class AnnotationMethodAttribute {
 
     final String path;
+
     final String[] paths;
+
     final String[] headers;
+
     final String[] params;
+
     final HttpMethod method;
 
     private AnnotationMethodAttribute(String[] paths, String[] headers, String[] params, HttpMethod method) {
@@ -57,9 +61,9 @@ class AnnotationMethodAttribute {
             return of(ann);
         } else if ((ann = findAnnotation(method, RequestMapping.class)) != null) {
             return of(ann);
-        } else {
-            throw new NoSupportMethodException();
         }
+
+        throw new NoSupportMethodException();
     }
 
     @PureFunction
@@ -76,9 +80,9 @@ class AnnotationMethodAttribute {
             return of((DeleteMapping) ann);
         } else if (RequestMapping.class.isAssignableFrom(ann.annotationType())) {
             return of((RequestMapping) ann);
-        } else {
-            throw new NoSupportMethodException();
         }
+
+        throw new NoSupportMethodException();
     }
 
     private static AnnotationMethodAttribute of(GetMapping t) {

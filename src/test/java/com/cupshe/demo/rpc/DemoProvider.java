@@ -6,9 +6,9 @@ import com.cupshe.demo.rpc.fallback.DemoProviderFallback;
 import com.cupshe.restclient.lang.RestClient;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * DemoProvider
@@ -20,7 +20,7 @@ import java.util.Map;
 public interface DemoProvider {
 
     @PostMapping("/form")
-    ResponseVO<Object> postForm(DemoDTO dto);
+    Future<ResponseVO<Object>> postForm(DemoDTO dto);
 
     @PostMapping("/body")
     DemoDTO postBody(@RequestBody DemoDTO dto);
@@ -29,20 +29,8 @@ public interface DemoProvider {
     String pathVariable(@PathVariable("id") Long id, @RequestParam("title") String title);
 
     @DeleteMapping("/{id}")
-    void deleteById(@PathVariable("id") Long id/*, @RequestHeader("token") String token*/);
+    void deleteById(@PathVariable("id") Long id);
 
     @GetMapping("/demo-list")
-    ArrayList<Map<String, List<DemoDTO>>> findDemoList(@RequestParam("dtos") ArrayList<Map<String, List<DemoDTO>>> dtos);
-
-    @PostMapping("/demo-list-post")
-    ArrayList<Map<String, List<DemoDTO>>> findDemoListPost(@RequestParam("dtos") ArrayList<Map<String, List<DemoDTO>>> dtos);
-
-    @GetMapping("/age-list")
-    List<Integer> findIdList(DemoDTO dto);
-
-    @GetMapping("/name-list")
-    List<String> findTitleList(DemoDTO dto);
-
-    @GetMapping("/sbigobject")
-    ResponseVO<Map<String, List<DemoDTO>>> complexObject();
+    List<Map<String, List<DemoDTO>>> findDemoList();
 }

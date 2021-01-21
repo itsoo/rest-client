@@ -3,10 +3,12 @@ package com.cupshe.demo.service;
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.rpc.DemoProvider;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
 
 /**
  * CommentServiceImpl
@@ -19,9 +21,10 @@ public class DemoServiceImpl implements DemoService {
     @Autowired
     private DemoProvider demoProvider;
 
+    @SneakyThrows
     @Override
     public ResponseVO<Object> postForm(DemoDTO dto) {
-        return demoProvider.postForm(dto);
+        return demoProvider.postForm(dto).get();
     }
 
     @Override
@@ -40,25 +43,7 @@ public class DemoServiceImpl implements DemoService {
     }
 
     @Override
-    public ArrayList<Map<String, List<DemoDTO>>> findDemoList(DemoDTO dto) {
-        Map<String, List<DemoDTO>> map = new HashMap<>(2);
-        map.put("demo", Collections.singletonList(dto));
-        return demoProvider.findDemoList(new ArrayList<>(Collections.singletonList(map)));
-//        return demoProvider.findDemoListPost(new ArrayList<>(Collections.singletonList(map)));
-    }
-
-    @Override
-    public List<Integer> findIdList(DemoDTO dto) {
-        return demoProvider.findIdList(dto);
-    }
-
-    @Override
-    public List<String> findTitleList(DemoDTO dto) {
-        return demoProvider.findTitleList(dto);
-    }
-
-    @Override
-    public ResponseVO<Map<String, List<DemoDTO>>> complexObject() {
-        return demoProvider.complexObject();
+    public List<Map<String, List<DemoDTO>>> findDemoList(DemoDTO dto) {
+        return demoProvider.findDemoList();
     }
 }

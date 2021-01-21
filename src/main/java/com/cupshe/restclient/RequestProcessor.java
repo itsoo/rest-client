@@ -35,7 +35,7 @@ class RequestProcessor {
 
     static String processRequestParams(String url, Kvs args) {
         String rel = StringUtils.trimTrailingCharacter(url, '&');
-        if (rel == null || args.isEmpty()) {
+        if (Objects.isNull(rel) || args.isEmpty()) {
             return rel;
         }
 
@@ -50,7 +50,7 @@ class RequestProcessor {
     }
 
     static String processPathVariables(String url, Kvs args) {
-        if (url == null || args.isEmpty()) {
+        if (Objects.isNull(url) || args.isEmpty()) {
             return url;
         }
 
@@ -62,7 +62,7 @@ class RequestProcessor {
             j = url.indexOf(EXPRESSION_DELIMITER_SUFFIX, i);
             String key = url.substring(i, j);
             String value = map.get(key.substring(1).trim());
-            if (value != null) {
+            if (Objects.nonNull(value)) {
                 result.append(value);
             }
 
@@ -87,7 +87,7 @@ class RequestProcessor {
     static Object getRequestBodyOf(@NonNull Parameter[] params, @NonNull Object[] args) {
         for (int i = 0; i < params.length; i++) {
             RequestBody ann = AnnotationUtils.findAnnotation(params[i], RequestBody.class);
-            if (ann != null) {
+            if (Objects.nonNull(ann)) {
                 return args[i];
             }
         }
@@ -99,7 +99,7 @@ class RequestProcessor {
         Kvs result = new Kvs();
         for (int i = 0; i < params.length; i++) {
             PathVariable ann = AnnotationUtils.findAnnotation(params[i], PathVariable.class);
-            if (ann != null) {
+            if (Objects.nonNull(ann)) {
                 result.add(new Kv(ann.name(), args[i]));
             }
         }
@@ -124,7 +124,7 @@ class RequestProcessor {
         Kvs result = new Kvs();
         for (int i = 0; i < params.length; i++) {
             RequestHeader ann = AnnotationUtils.findAnnotation(params[i], RequestHeader.class);
-            if (ann != null) {
+            if (Objects.nonNull(ann)) {
                 result.add(new Kv(ann.name(), StringUtils.getOrEmpty(args[i])));
             }
         }
@@ -149,7 +149,7 @@ class RequestProcessor {
         Kvs result = new Kvs();
         for (String param : params) {
             String[] kv = StringUtils.split(param, sp);
-            if (kv != null) {
+            if (Objects.nonNull(kv)) {
                 result.add(new Kv(kv[0], StringUtils.trimToEmpty(kv[1])));
             }
         }
@@ -168,13 +168,13 @@ class RequestProcessor {
     }
 
     private static Kvs getSampleKvs(String property, Object arg) {
-        if (arg == null) {
+        if (Objects.isNull(arg)) {
             return Kvs.emptyKvs();
         }
 
         Kvs result = new Kvs();
-        if (!ObjectClasses.isInconvertibleClass(arg.getClass())
-                && StringUtils.isNotBlank(property)) { // is literals
+        if (!ObjectClasses.isInconvertibleClass(arg.getClass()) && StringUtils.isNotBlank(property)) {
+            // is literals
             result.add(new Kv(property, arg));
         } else if (arg instanceof Kv) {
             Kv kv = (Kv) arg;
@@ -202,7 +202,7 @@ class RequestProcessor {
 
     private static String getPropertyName(Parameter param) {
         RequestParam ann = AnnotationUtils.findAnnotation(param, RequestParam.class);
-        return ann == null ? ROOT_PROPERTY : ann.name();
+        return Objects.isNull(ann) ? ROOT_PROPERTY : ann.name();
     }
 
     private static char getParamSeparator(String uri) {

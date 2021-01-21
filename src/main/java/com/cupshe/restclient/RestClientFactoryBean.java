@@ -17,12 +17,19 @@ import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
 public class RestClientFactoryBean implements FactoryBean<Object>, ApplicationContextAware {
 
     private final Class<?> clazz;
+
     private final String name;
+
     private final String path;
+
     private final LoadBalanceType loadBalanceType;
+
     private final int maxAutoRetries;
+
     private final Class<?> fallback;
+
     private final int connectTimeout;
+
     private final int readTimeout;
 
     private ApplicationContext applicationContext;

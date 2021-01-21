@@ -1,23 +1,14 @@
 package com.cupshe.restclient;
 
-import com.cupshe.restclient.exception.ConnectTimeoutException;
-import com.cupshe.restclient.exception.NotFoundException;
-import com.cupshe.restclient.lang.PureFunction;
+import com.cupshe.restclient.exception.ClientUnknownError;
+import lombok.Getter;
+import lombok.SneakyThrows;
 import org.springframework.cglib.proxy.InvocationHandler;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.RequestEntity;
-import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
-import org.springframework.web.client.ResourceAccessException;
-import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import java.util.Objects;
+import java.util.concurrent.Future;
 
-import static com.cupshe.restclient.RequestGenerator.*;
 import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
 
 /**
@@ -25,15 +16,20 @@ import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
  *
  * @author zxy
  */
+@Getter
 public class RestClientProxy implements InvocationHandler {
 
     private final String name;
+
     private final String path;
+
     private final LoadBalanceType loadBalanceType;
+
     private final int maxAutoRetries;
+
     private final Class<?> fallback;
-    private final RestTemplate client;
-    private final ThreadLocal<Integer> retries;
+
+    private final WebClient client;
 
     RestClientProxy(String name, String path, LoadBalanceType loadBalanceType, int maxAutoRetries,
                     Class<?> fallback, int connectTimeout, int readTimeout) {
@@ -43,82 +39,40 @@ public class RestClientProxy implements InvocationHandler {
         this.loadBalanceType = loadBalanceType;
         this.maxAutoRetries = maxAutoRetries;
         this.fallback = fallback;
-        this.client = RestTemplateUtils.createRestTemplate(connectTimeout, readTimeout);
-        this.retries = ThreadLocal.withInitial(() -> 0);
+        this.client = WebClient.newInstance(this, connectTimeout, readTimeout);
     }
 
     @Override
-    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-        String result = sendRequestAndGetResponse(method, args);
-        if (result != null) {
-            Logging.info(result);
-            return ResponseProcessor.convertToObject(result, method);
-        } else if (method.getReturnType() == void.class) { // void
+    public Object invoke(Object proxy, Method method, Object[] args) {
+        return Future.class.isAssignableFrom(method.getReturnType())
+                ? client.asyncSendRequest(method, args)
+                : client.sendRequest(method, args);
+    }
+
+    @SneakyThrows
+    Object callback(Object resp, Method method, Object[] args) {
+        if (Objects.nonNull(resp)) {
+            return resp;
+        }
+
+        // void
+        if (nonReturnType(method)) {
             return null;
-        } else if (fallback != void.class) { // fallback
+        }
+
+        // fallback
+        if (!nonFallbackType()) {
             return FallbackInvoker.of(fallback, method).invoke(args);
-        } else { // timeout
-            throw new ConnectTimeoutException();
         }
+
+        throw new ClientUnknownError();
     }
 
-    @PureFunction
-    private String sendRequestAndGetResponse(Method method, Object[] args) {
-        AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        Parameter[] mthParams = method.getParameters();
-        // request body or form-data
-        Object body = RequestProcessor.getRequestBodyOf(mthParams, args);
-        boolean isApplicationJson = (body != null);
-        if (!isApplicationJson && attr.isPassingParamsOfForm()) {
-            body = genericFormDataOf(attr.params, mthParams, args);
-        }
-
-        HttpHeaders headers = genericHeaders(attr, mthParams, args, isApplicationJson);
-        String uriPath = genericUriOf(path, attr, mthParams, args);
-        return sendRequestAndGetResponse(uriPath, attr.method, body, headers);
+    boolean nonReturnType(Method method) {
+        return method.getReturnType() == void.class;
     }
 
-    @PureFunction
-    private String sendRequestAndGetResponse(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
-        try {
-            ResponseEntity<String> result = null;
-
-            do {
-                try {
-                    result = sendRequestAndGetResponse(new RequestEntity<>(
-                            body, headers, method, genericUriOf(getTargetHost(name), uriPath)));
-                    break;
-                } catch (ResourceAccessException e) { // retry
-                    retries.set(retries.get() + 1);
-                }
-            } while (retries.get() <= maxAutoRetries);
-
-            return result != null ? result.getBody() : null;
-        } finally {
-            retries.remove();
-        }
-    }
-
-    @PureFunction
-    private ResponseEntity<String> sendRequestAndGetResponse(RequestEntity<?> requestEntity) {
-        try {
-            Logging.info(requestEntity);
-            return client.exchange(requestEntity, String.class);
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            Logging.error(e.getMessage(), requestEntity);
-            throw e;
-        } catch (ResourceAccessException e) { // timeout
-            Logging.error(e.getMessage());
-            throw e;
-        }
-    }
-
-    private String getTargetHost(@NonNull String name) {
-        RequestCaller routers = RestClientProperties.getRouters(name);
-        if (routers != null) {
-            return routers.get(loadBalanceType);
-        }
-
-        throw new NotFoundException();
+    boolean nonFallbackType() {
+        return fallback == void.class;
     }
 }
