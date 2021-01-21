@@ -22,7 +22,7 @@
     },
     {
       "name": "rest-client.routers",
-      "type": "java.util.List<com.cupshe.restclient.RequestCaller>",
+      "type": "java.util.List<com.cupshe.restclient.WebClient.RequestCaller>",
       "sourceType": "com.cupshe.restclient.RestClientProperties",
       "description": "Remote service list."
     }
