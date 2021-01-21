@@ -1,6 +1,6 @@
 package com.cupshe.restclient;
 
-import com.cupshe.restclient.exception.ConnectTimeoutException;
+import com.cupshe.restclient.exception.ClientUnknownError;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.springframework.cglib.proxy.InvocationHandler;
@@ -50,7 +50,7 @@ public class RestClientProxy implements InvocationHandler {
     }
 
     @SneakyThrows
-    public Object callback(Object resp, Method method, Object[] args) {
+    Object callback(Object resp, Method method, Object[] args) {
         if (Objects.nonNull(resp)) {
             return resp;
         }
@@ -65,15 +65,14 @@ public class RestClientProxy implements InvocationHandler {
             return FallbackInvoker.of(fallback, method).invoke(args);
         }
 
-        // timeout
-        throw new ConnectTimeoutException();
+        throw new ClientUnknownError();
     }
 
-    public boolean nonReturnType(Method method) {
+    boolean nonReturnType(Method method) {
         return method.getReturnType() == void.class;
     }
 
-    public boolean nonFallbackType() {
+    boolean nonFallbackType() {
         return fallback == void.class;
     }
 }

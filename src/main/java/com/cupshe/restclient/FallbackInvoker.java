@@ -64,6 +64,7 @@ class FallbackInvoker {
     private static class FallbackInstance {
 
         private String beanName;
+
         private Object instance;
 
         FallbackInstance(Class<?> clazz) {

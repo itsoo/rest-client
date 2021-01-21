@@ -173,8 +173,8 @@ class RequestProcessor {
         }
 
         Kvs result = new Kvs();
-        if (!ObjectClasses.isInconvertibleClass(arg.getClass())
-                && StringUtils.isNotBlank(property)) { // is literals
+        if (!ObjectClasses.isInconvertibleClass(arg.getClass()) && StringUtils.isNotBlank(property)) {
+            // is literals
             result.add(new Kv(property, arg));
         } else if (arg instanceof Kv) {
             Kv kv = (Kv) arg;
