@@ -29,6 +29,8 @@
 rest-client:
   # 合并重复服务列表
   repeat-merged: true
+  # 过滤掉请求头
+  filter-headers: authorization,host
   # 服务列表
   routers:
     - name: foo
@@ -157,7 +159,7 @@ public class DemoServiceImpl implements DemoService {
 - 打印返回值，日志级别 INFO
 - 打印错误信息，日志级别 ERROR
 
-#### 四、POST 请求的对象支持序列化 FormData 请求
+#### 四、POST 请求的对象支持序列化为 FormData
 
 #### 五、新增对 @RequestHeader 注解的支持
 

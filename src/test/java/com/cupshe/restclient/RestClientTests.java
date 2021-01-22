@@ -24,40 +24,34 @@ public class RestClientTests {
 
     @Test
     public void testPostForm() {
-        DemoDTO dto = new DemoDTO();
-        dto.setAge(12);
-        dto.setName("zhang %20$3san");
+        DemoDTO dto = DemoDTO.defaultInstance();
         ResponseVO<Object> res = demoService.postForm(dto);
         System.out.println(res);
     }
 
     @Test
     public void testPostBody() {
-        DemoDTO dto = new DemoDTO();
-        dto.setAge(12);
-        dto.setName("zhang %20$3san");
+        DemoDTO dto = DemoDTO.defaultInstance();
         DemoDTO res = demoService.postBody(dto);
         System.out.println(res);
     }
 
     @Test
     public void pathVariable() {
-        String res = demoService.pathVariable(2L, "zhang %20$3san");
+        DemoDTO dto = DemoDTO.defaultInstance();
+        String res = demoService.pathVariable(dto.getId(), dto.getName());
         System.out.println(res);
     }
 
     @Test
     public void testDeleteById() {
-        demoService.deleteById(2L);
-        System.out.println("success!");
+        DemoDTO dto = DemoDTO.defaultInstance();
+        demoService.deleteById(dto.getId());
     }
 
     @Test
     public void testFindDemoList() {
-        DemoDTO dto = new DemoDTO();
-        dto.setAge(12);
-        dto.setName("zhang %20$3san");
-
+        DemoDTO dto = DemoDTO.defaultInstance();
         List<Map<String, List<DemoDTO>>> res = demoService.findDemoList(dto);
         System.out.println(res);
     }

@@ -51,13 +51,9 @@ public class RestClientProxy implements InvocationHandler {
 
     @SneakyThrows
     Object callback(Object resp, Method method, Object[] args) {
+        // response
         if (Objects.nonNull(resp)) {
             return resp;
-        }
-
-        // void
-        if (nonReturnType(method)) {
-            return null;
         }
 
         // fallback
@@ -65,11 +61,8 @@ public class RestClientProxy implements InvocationHandler {
             return FallbackInvoker.of(fallback, method).invoke(args);
         }
 
+        // unknown error
         throw new ClientUnknownError();
-    }
-
-    boolean nonReturnType(Method method) {
-        return method.getReturnType() == void.class;
     }
 
     boolean nonFallbackType() {
