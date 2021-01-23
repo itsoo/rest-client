@@ -2,26 +2,23 @@ package com.cupshe.restclient;
 
 import com.cupshe.restclient.exception.ConnectTimeoutException;
 import com.cupshe.restclient.exception.NotFoundException;
+import com.cupshe.restclient.factory.ClientRestTemplateFactory;
+import com.cupshe.restclient.factory.ThreadPoolExecutorFactory;
 import com.cupshe.restclient.lang.PureFunction;
 import lombok.Data;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.OkHttp3ClientHttpRequestFactory;
 import org.springframework.util.CollectionUtils;
-import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
@@ -40,8 +37,7 @@ import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
 @PureFunction
 class WebClient {
 
-    private static final ExecutorService EXECUTOR =
-            new ThreadPoolExecutor(30, 200, 0L, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<>(400));
+    private static final ExecutorService EXECUTOR = ThreadPoolExecutorFactory.getThreadPoolExecutor();
 
     private final RestClientProxy proxy;
 
@@ -50,17 +46,8 @@ class WebClient {
     private final ThreadLocal<Integer> retries;
 
     private WebClient(RestClientProxy proxy, int connectTimeout, int readTimeout) {
-        OkHttp3ClientHttpRequestFactory factory = new OkHttp3ClientHttpRequestFactory();
-        if (connectTimeout >= 0) {
-            factory.setConnectTimeout(connectTimeout);
-        }
-
-        if (readTimeout >= 0) {
-            factory.setReadTimeout(readTimeout);
-        }
-
         this.proxy = proxy;
-        this.restTemplate = new RestTemplate(factory);
+        this.restTemplate = ClientRestTemplateFactory.getRestTemplate(connectTimeout, readTimeout);
         this.retries = ThreadLocal.withInitial(() -> 0);
     }
 
@@ -77,29 +64,26 @@ class WebClient {
 
     Object sendRequest(Method method, Object[] args) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        Parameter[] mthParams = method.getParameters();
-        // request body or form-data
-        Object body = RequestProcessor.getRequestBodyOf(mthParams, args);
-        boolean isApplicationJson = Objects.nonNull(body);
-        if (!isApplicationJson && attr.isPassingParamsOfForm()) {
-            body = RequestGenerator.genericFormDataOf(attr.params, mthParams, args);
-        }
-
-        String uriPath = RequestGenerator.genericUriOf(proxy.getPath(), attr, mthParams, args);
-        HttpHeaders headers = RequestGenerator.genericHeaders(attr, mthParams, args, isApplicationJson);
-        return doResponse(sendRequest(uriPath, attr.method, body, headers), method, args);
+        Parameter[] params = method.getParameters();
+        return doResponse(doRequest(attr, params, args), method, args);
     }
 
-    private ResponseEntity<byte[]> sendRequest(String uriPath, HttpMethod method, Object body, HttpHeaders headers) {
+    private ResponseEntity<byte[]> doRequest(AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
         try {
             ResponseEntity<byte[]> result = ResponseProcessor.REQUEST_TIMEOUT;
 
             do {
+                RequestEntity<?> requestEntity = getRequestEntity(attr, params, args);
                 try {
-                    result = sendRequest(getRequestEntity(uriPath, method, body, headers));
+                    Logging.request(requestEntity);
+                    result = restTemplate.exchange(requestEntity, byte[].class);
                     break;
-                } catch (ResourceAccessException e) { // retry
+                } catch (ResourceAccessException e) { // timeout
+                    Logging.timeout(e.getMessage());
                     retries.set(retries.get() + 1);
+                } catch (Exception e) {
+                    Logging.failed(e.getMessage(), requestEntity);
+                    throw e;
                 }
             } while (retries.get() <= proxy.getMaxAutoRetries());
 
@@ -109,28 +93,15 @@ class WebClient {
         }
     }
 
-    private ResponseEntity<byte[]> sendRequest(RequestEntity<?> requestEntity) {
-        try {
-            Logging.info(requestEntity);
-            return restTemplate.exchange(requestEntity, byte[].class);
-        } catch (HttpClientErrorException | HttpServerErrorException e) {
-            Logging.error(e.getMessage(), requestEntity);
-            throw e;
-        } catch (ResourceAccessException e) { // timeout
-            Logging.error(e.getMessage());
-            throw e;
-        }
-    }
-
-    private <T> RequestEntity<T> getRequestEntity(String uriPath, HttpMethod method, T body, HttpHeaders headers) {
+    private RequestEntity<?> getRequestEntity(AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
         RequestCaller routers = RestClientProperties.getRouters(proxy.getName());
         if (Objects.isNull(routers)) {
             throw new NotFoundException();
         }
 
         String targetHost = routers.get(proxy.getLoadBalanceType());
-        URI requestUrl = RequestGenerator.genericUriOf(targetHost, uriPath);
-        return new RequestEntity<>(body, headers, method, requestUrl);
+        String uriPath = RequestGenerator.genericUriOf(proxy.getPath(), attr, params, args);
+        return RequestGenerator.getRequestEntity(targetHost, uriPath, attr, params, args);
     }
 
     private Object doResponse(ResponseEntity<byte[]> resp, Method method, Object[] args) {
@@ -140,7 +111,7 @@ class WebClient {
 
         String json = ResponseProcessor.convertToString(resp.getBody());
         if (Objects.nonNull(json)) {
-            Logging.info(json);
+            Logging.response(json);
         }
 
         return proxy.callback(ResponseProcessor.convertToObject(json, method), method, args);
@@ -168,7 +139,7 @@ class WebClient {
 
         @PureFunction
         String get(LoadBalanceType loadBalanceType) {
-            int i = getCall(loadBalanceType).index();
+            int i = getCaller(loadBalanceType).next();
             if (i == -1) {
                 throw new NotFoundException();
             }
@@ -176,7 +147,7 @@ class WebClient {
             return services.get(i);
         }
 
-        private AbstractCaller getCall(LoadBalanceType loadBalanceType) {
+        private AbstractCaller getCaller(LoadBalanceType loadBalanceType) {
             return LoadBalanceType.R.equals(loadBalanceType) ? random : roundRobin;
         }
 
@@ -187,7 +158,7 @@ class WebClient {
              *
              * @return int
              */
-            abstract int index();
+            abstract int next();
         }
 
         private class RoundRobinCaller extends AbstractCaller {
@@ -195,7 +166,7 @@ class WebClient {
             private final AtomicInteger i = new AtomicInteger(0);
 
             @Override
-            int index() {
+            int next() {
                 if (CollectionUtils.isEmpty(services)) {
                     return -1;
                 }
@@ -214,7 +185,7 @@ class WebClient {
         private class RandomCaller extends AbstractCaller {
 
             @Override
-            int index() {
+            int next() {
                 return CollectionUtils.isEmpty(services) ? -1 : new Random().nextInt(services.size());
             }
         }
