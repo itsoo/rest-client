@@ -50,6 +50,7 @@ class FallbackInvoker {
         String methodName = method.getName();
         Class<?>[] paramTypes = method.getParameterTypes();
         Method fallback = reference.getDeclaredMethod(methodName, paramTypes);
+        Logging.fallback(fallback.toGenericString(), args);
         return ReflectionUtils.invokeMethod(fallback, getInstance(reference), args);
     }
 

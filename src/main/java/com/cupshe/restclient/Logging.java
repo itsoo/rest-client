@@ -13,19 +13,23 @@ import org.springframework.http.RequestEntity;
 @PureFunction
 class Logging {
 
-    static void info(String data) {
-        log.info("Rest-client response data is ===> {}", data);
+    static void response(String arg) {
+        log.info("Rest-client response data is ===> {}", arg);
     }
 
-    static void info(RequestEntity<?> entity) {
-        log.info("Rest-client request params ===> {}", entity.toString());
+    static void request(RequestEntity<?> arg) {
+        log.info("Rest-client request params ===> {}", arg.toString());
     }
 
-    static void error(String message) {
+    static void timeout(String message) {
         log.error("Rest-client request timeout: {}", message);
     }
 
-    static void error(String message, RequestEntity<?> entity) {
-        log.error("Rest-client failed request {} ===> {}", message, entity.getUrl());
+    static void failed(String message, RequestEntity<?> arg) {
+        log.error("Rest-client failed request {} ===> {}", message, arg.toString());
+    }
+
+    static void fallback(String message, Object arg) {
+        log.warn("Rest-client called <{}> fallback arguments: {}", message, arg);
     }
 }

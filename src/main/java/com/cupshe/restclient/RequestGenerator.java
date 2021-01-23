@@ -10,6 +10,7 @@ import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -32,7 +33,54 @@ class RequestGenerator {
 
     private static final String PROTOCOL = "http://";
 
-    static HttpHeaders genericHeaders() {
+    static RequestEntity<?> getRequestEntity(
+            String targetHost, String uriPath, AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
+
+        Object body = RequestProcessor.getRequestBodyOf(params, args);
+        boolean isApplicationJson = Objects.nonNull(body);
+        if (!isApplicationJson && attr.isPassingParamsOfForm()) {
+            // form-data
+            int capacity = (params.length + attr.params.length) << 1;
+            MultiValueMap<String, Object> result = new LinkedMultiValueMap<>(capacity);
+            for (Kv kv : getRequestParamsOf(params, args)) {
+                result.add(kv.getKey(), kv.getValue());
+            }
+            for (Kv kv : getRequestParamsOf(attr.params)) {
+                result.add(kv.getKey(), kv.getValue());
+            }
+
+            body = result;
+        }
+
+        HttpHeaders headers = genericHeaders(attr, params, args, isApplicationJson);
+        return new RequestEntity<>(body, headers, attr.method, genericUriOf(targetHost, uriPath));
+    }
+
+    static String genericUriOf(String prefix, AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
+        String result = processStandardUri(prefix, attr.path);
+        result = processPathVariables(result, getPathVariablesOf(params, args));
+        if (attr.isPassingParamsOfUrl()) {
+            Kvs kvs = new Kvs();
+            kvs.addAll(getRequestParamsOf(params, args));
+            kvs.addAll(getRequestParamsOf(attr.params));
+            result = processRequestParams(result, kvs);
+        }
+
+        return result;
+    }
+
+    @SneakyThrows
+    private static URI genericUriOf(String targetHost, String path) {
+        String relTargetHost = targetHost.startsWith(PROTOCOL)
+                ? targetHost
+                : (PROTOCOL + targetHost);
+        String url = relTargetHost.endsWith("/") || path.startsWith("/")
+                ? (relTargetHost + path)
+                : (relTargetHost + '/' + path);
+        return URI.create(url);
+    }
+
+    private static HttpHeaders genericHeaders() {
         HttpHeaders headers = RestClientHeaders.getDefaultHeaders();
         RestClientHeaders.resetTraceIdOfHeaders(headers);
         // default charset=utf-8
@@ -43,7 +91,7 @@ class RequestGenerator {
         return RestClientHeaders.getFilteredHeaders(headers);
     }
 
-    static HttpHeaders genericHeaders(
+    private static HttpHeaders genericHeaders(
             AnnotationMethodAttribute attr, Parameter[] params, Object[] args, boolean isApplicationJson) {
 
         HttpHeaders result = genericHeaders();
@@ -64,56 +112,15 @@ class RequestGenerator {
         return result;
     }
 
-    static String genericUriOf(String prefix, AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
-        String result = processStandardUri(prefix, attr.path);
-        result = processPathVariables(result, getPathVariablesOf(params, args));
-        result = attr.isPassingParamsOfUrl()
-                ? genericUriOf(result, attr.params, params, args)
-                : result;
-        return result;
-    }
-
-    static String genericUriOf(String uri, String[] defParams, Parameter[] mthParams, Object[] args) {
-        Kvs params = new Kvs();
-        params.addAll(getRequestParamsOf(mthParams, args));
-        params.addAll(getRequestParamsOf(defParams));
-        return processRequestParams(uri, params);
-    }
-
-    @SneakyThrows
-    static URI genericUriOf(String targetHost, String path) {
-        return URI.create(getUrl(targetHost, path));
-    }
-
-    static MultiValueMap<String, Object> genericFormDataOf(String[] defParams, Parameter[] mthParams, Object[] args) {
-        int capacity = (mthParams.length + defParams.length) << 1;
-        MultiValueMap<String, Object> result = new LinkedMultiValueMap<>(capacity);
-        for (Kv kv : getRequestParamsOf(mthParams, args)) {
-            result.add(kv.getKey(), kv.getValue());
-        }
-        for (Kv kv : getRequestParamsOf(defParams)) {
-            result.add(kv.getKey(), kv.getValue());
-        }
-
-        return result;
-    }
-
-    private static String getUrl(String targetHost, String path) {
-        String relTargetHost = targetHost.startsWith(PROTOCOL)
-                ? targetHost
-                : (PROTOCOL + targetHost);
-        return relTargetHost.endsWith("/") || path.startsWith("/")
-                ? (relTargetHost + path)
-                : (relTargetHost + '/' + path);
-    }
-
     /**
      * RestClientHeaders
      */
     private enum RestClientHeaders {
 
+        /*** call-source */
         CALL_SOURCE("X-Call-Source", "REST-CLIENT"),
 
+        /*** trace-id */
         TRACE_ID(BaseConstant.TRACE_ID_KEY, null);
 
         //---------------------
