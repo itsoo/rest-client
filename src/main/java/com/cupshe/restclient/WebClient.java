@@ -145,8 +145,8 @@ class WebClient {
         }
 
         @PureFunction
-        String get(LoadBalanceType loadBalanceType) {
-            int i = getCaller(loadBalanceType).next();
+        String get(LoadBalanceType lp) {
+            int i = getCaller(lp).next();
             if (i == -1) {
                 throw new NotFoundException();
             }
@@ -154,8 +154,8 @@ class WebClient {
             return services.get(i);
         }
 
-        private AbstractCaller getCaller(LoadBalanceType loadBalanceType) {
-            return LoadBalanceType.R.equals(loadBalanceType) ? random : roundRobin;
+        private AbstractCaller getCaller(LoadBalanceType lp) {
+            return LoadBalanceType.R.equals(lp) ? random : roundRobin;
         }
 
         private abstract static class AbstractCaller {
@@ -191,9 +191,11 @@ class WebClient {
 
         private class RandomCaller extends AbstractCaller {
 
+            private final Random i = new Random();
+
             @Override
             int next() {
-                return CollectionUtils.isEmpty(services) ? -1 : new Random().nextInt(services.size());
+                return CollectionUtils.isEmpty(services) ? -1 : i.nextInt(services.size());
             }
         }
     }
