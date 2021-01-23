@@ -30,6 +30,6 @@ class Logging {
     }
 
     static void fallback(String message, Object arg) {
-        log.warn("Rest-client called fallback {} ===> {}", message, arg);
+        log.warn("Rest-client called fallback <{}> args: {}", message, arg);
     }
 }
