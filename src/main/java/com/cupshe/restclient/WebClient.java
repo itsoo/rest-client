@@ -191,9 +191,11 @@ class WebClient {
 
         private class RandomCaller extends AbstractCaller {
 
+            private final Random i = new Random();
+
             @Override
             int next() {
-                return CollectionUtils.isEmpty(services) ? -1 : new Random().nextInt(services.size());
+                return CollectionUtils.isEmpty(services) ? -1 : i.nextInt(services.size());
             }
         }
     }
