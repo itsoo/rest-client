@@ -109,12 +109,19 @@ class WebClient {
             throw new ConnectTimeoutException();
         }
 
-        String json = ResponseProcessor.convertToString(resp.getBody());
+        String json = Objects.nonNull(resp.getBody())
+                ? ResponseProcessor.convertToString(resp.getBody())
+                : null;
+
         if (Objects.nonNull(json)) {
             Logging.response(json);
         }
 
-        return proxy.callback(ResponseProcessor.convertToObject(json, method), method, args);
+        Object data = Objects.nonNull(json)
+                ? ResponseProcessor.convertToObject(json, method)
+                : null;
+
+        return proxy.callback(data, method, args);
     }
 
     /**

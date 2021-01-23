@@ -8,13 +8,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.Nullable;
+import org.springframework.lang.NonNull;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 import java.util.concurrent.Future;
 
 /**
@@ -27,17 +26,11 @@ class ResponseProcessor {
 
     static final ResponseEntity<byte[]> REQUEST_TIMEOUT = new ResponseEntity<>(HttpStatus.REQUEST_TIMEOUT);
 
-    static String convertToString(@Nullable byte[] bytes) {
-        return Objects.nonNull(bytes)
-                ? new String(bytes, StandardCharsets.UTF_8)
-                : null;
+    static String convertToString(@NonNull byte[] bytes) {
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
-    static Object convertToObject(String json, Method method) {
-        if (Objects.isNull(json)) {
-            return null;
-        }
-
+    static Object convertToObject(@NonNull String json, Method method) {
         if (isNotInconvertibleType(method.getReturnType())) {
             return json;
         }
@@ -49,9 +42,7 @@ class ResponseProcessor {
         }
     }
 
-    private static Object convertToObject(String json, Type genericType)
-            throws JsonProcessingException {
-
+    private static Object convertToObject(String json, Type genericType) throws JsonProcessingException {
         JavaType targetType = JsonUtils.getObjectType(genericType);
         if (isFutureClass(genericType)) {
             targetType = targetType.containedType(0);
