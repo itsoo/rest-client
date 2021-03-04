@@ -10,9 +10,9 @@ import java.lang.annotation.*;
  *
  * @author zxy
  */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
 @Import(RestClientRegister.class)
 public @interface EnableRestClient {
 

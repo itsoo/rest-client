@@ -5,10 +5,14 @@ import com.cupshe.restclient.exception.NotFoundException;
 import com.cupshe.restclient.factory.ClientRestTemplateFactory;
 import com.cupshe.restclient.factory.ThreadPoolExecutorFactory;
 import com.cupshe.restclient.lang.PureFunction;
+import com.cupshe.restclient.lb.LoadBalanceType;
+import com.cupshe.restclient.lb.LoadBalancer;
+import com.cupshe.restclient.lb.RandomLoadBalancer;
+import com.cupshe.restclient.lb.RoundRobinLoadBalancer;
 import lombok.Data;
+import org.springframework.core.env.Environment;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,12 +20,10 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
+import static com.cupshe.restclient.ResponseProcessor.*;
 
 /**
  * WebClient
@@ -63,14 +65,15 @@ class WebClient {
     }
 
     Object sendRequest(Method method, Object[] args) {
-        AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
+        Environment env = proxy.getEnvironment();
+        AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method).process(env);
         Parameter[] params = method.getParameters();
         return doResponse(doRequest(attr, params, args), method, args);
     }
 
     private ResponseEntity<byte[]> doRequest(AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
         try {
-            ResponseEntity<byte[]> result = ResponseProcessor.REQUEST_TIMEOUT;
+            ResponseEntity<byte[]> result = REQUEST_TIMEOUT;
 
             do {
                 RequestEntity<?> requestEntity = getRequestEntity(attr, params, args);
@@ -101,26 +104,22 @@ class WebClient {
 
         String targetHost = routers.get(proxy.getLoadBalanceType());
         String uriPath = RequestGenerator.genericUriOf(proxy.getPath(), attr, params, args);
-        return RequestGenerator.getRequestEntity(targetHost, uriPath, attr, params, args);
+        return RequestGenerator.genericRequestEntity(targetHost, uriPath, attr, params, args);
     }
 
     private Object doResponse(ResponseEntity<byte[]> resp, Method method, Object[] args) {
-        if (ResponseProcessor.REQUEST_TIMEOUT == resp && proxy.nonFallbackType()) {
+        if (REQUEST_TIMEOUT == resp && proxy.nonFallbackType()) {
             throw new ConnectTimeoutException();
         }
 
-        String json = Objects.nonNull(resp.getBody())
-                ? ResponseProcessor.convertToString(resp.getBody())
-                : null;
-
+        // process response body
+        String json = Objects.nonNull(resp.getBody()) ? convertToString(resp.getBody()) : null;
         if (Objects.nonNull(json)) {
             Logging.response(json);
         }
 
-        Object data = Objects.nonNull(json)
-                ? ResponseProcessor.convertToObject(json, method)
-                : null;
-
+        // callback policy
+        Object data = Objects.nonNull(json) ? convertToObject(json, method) : null;
         return proxy.callback(data, method, args);
     }
 
@@ -135,68 +134,24 @@ class WebClient {
 
         private List<String> services;
 
-        private final AbstractCaller roundRobin;
+        private LoadBalancer roundRobin;
 
-        private final AbstractCaller random;
+        private LoadBalancer random;
 
-        private RequestCaller() {
-            roundRobin = new RoundRobinCaller();
-            random = new RandomCaller();
+        @SuppressWarnings("unused")
+        public void setServices(List<String> services) {
+            this.services = services;
+            this.roundRobin = new RoundRobinLoadBalancer(services);
+            this.random = new RandomLoadBalancer(services);
         }
 
         @PureFunction
         String get(LoadBalanceType lp) {
-            int i = getCaller(lp).next();
-            if (i == -1) {
-                throw new NotFoundException();
-            }
-
-            return services.get(i);
+            return getLoadBalancer(lp).next();
         }
 
-        private AbstractCaller getCaller(LoadBalanceType lp) {
-            return LoadBalanceType.R.equals(lp) ? random : roundRobin;
-        }
-
-        private abstract static class AbstractCaller {
-
-            /**
-             * Get next service of service-list
-             *
-             * @return int
-             */
-            abstract int next();
-        }
-
-        private class RoundRobinCaller extends AbstractCaller {
-
-            private final AtomicInteger i = new AtomicInteger(0);
-
-            @Override
-            int next() {
-                if (CollectionUtils.isEmpty(services)) {
-                    return -1;
-                }
-
-                int curr, next, size = services.size();
-
-                do {
-                    curr = i.get();
-                    next = curr >= size - 1 ? 0 : curr + 1;
-                } while (!i.compareAndSet(curr, next));
-
-                return curr;
-            }
-        }
-
-        private class RandomCaller extends AbstractCaller {
-
-            private final Random i = new Random();
-
-            @Override
-            int next() {
-                return CollectionUtils.isEmpty(services) ? -1 : i.nextInt(services.size());
-            }
+        private LoadBalancer getLoadBalancer(LoadBalanceType lbt) {
+            return LoadBalanceType.R.equals(lbt) ? random : roundRobin;
         }
     }
 }

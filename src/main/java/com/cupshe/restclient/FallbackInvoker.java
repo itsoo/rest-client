@@ -4,6 +4,7 @@ import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
 import org.springframework.context.ApplicationContext;
+import org.springframework.core.env.Environment;
 import org.springframework.lang.NonNull;
 import org.springframework.util.ClassUtils;
 import org.springframework.util.ReflectionUtils;
@@ -25,6 +26,8 @@ class FallbackInvoker {
 
     private final Method method;
 
+    private static Environment environment;
+
     private static ApplicationContext applicationContext;
 
     private static final Map<Class<?>, Object> INSTANCES_CACHE = new ConcurrentHashMap<>(32);
@@ -32,6 +35,12 @@ class FallbackInvoker {
     private FallbackInvoker(Class<?> reference, Method method) {
         this.reference = reference;
         this.method = method;
+    }
+
+    static void setEnvironment(@NonNull Environment environment) {
+        if (Objects.isNull(FallbackInvoker.environment)) {
+            FallbackInvoker.environment = environment;
+        }
     }
 
     static void setApplicationContext(@NonNull ApplicationContext applicationContext) {

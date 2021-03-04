@@ -27,15 +27,9 @@ public class RestClientProperties {
     @Setter
     private boolean mergedRouters;
 
-    private static String[] filterHeaders;
+    private static String[] filterHeaders = new String[0];
 
-    private static Map<String, RequestCaller> routers;
-
-    public RestClientProperties() {
-        mergedRouters = false;
-        filterHeaders = new String[0];
-        routers = new LinkedHashMap<>(32);
-    }
+    private static Map<String, RequestCaller> routers = new LinkedHashMap<>(32);
 
     //---------------------
     // GETTER AND SETTER

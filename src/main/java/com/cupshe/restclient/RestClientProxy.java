@@ -1,15 +1,15 @@
 package com.cupshe.restclient;
 
 import com.cupshe.restclient.exception.ClientUnknownError;
+import com.cupshe.restclient.lb.LoadBalanceType;
 import lombok.Getter;
 import lombok.SneakyThrows;
 import org.springframework.cglib.proxy.InvocationHandler;
+import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.concurrent.Future;
-
-import static com.cupshe.restclient.lang.RestClient.LoadBalanceType;
 
 /**
  * RestClientProxy
@@ -29,16 +29,19 @@ public class RestClientProxy implements InvocationHandler {
 
     private final Class<?> fallback;
 
+    private final Environment environment;
+
     private final WebClient client;
 
     RestClientProxy(String name, String path, LoadBalanceType loadBalanceType, int maxAutoRetries,
-                    Class<?> fallback, int connectTimeout, int readTimeout) {
+                    Class<?> fallback, int connectTimeout, int readTimeout, Environment environment) {
 
         this.name = name;
         this.path = path;
         this.loadBalanceType = loadBalanceType;
         this.maxAutoRetries = maxAutoRetries;
         this.fallback = fallback;
+        this.environment = environment;
         this.client = WebClient.newInstance(this, connectTimeout, readTimeout);
     }
 

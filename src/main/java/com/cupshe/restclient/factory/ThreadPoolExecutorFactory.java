@@ -17,7 +17,7 @@ public class ThreadPoolExecutorFactory {
 
     public static ThreadPoolExecutor getThreadPoolExecutor() {
         return new ThreadPoolExecutor(
-                // core-max size
+                // core and max threads
                 30, 200,
                 // keep-alive time
                 0L, TimeUnit.MILLISECONDS,

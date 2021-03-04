@@ -1,6 +1,7 @@
 package com.cupshe.restclient.lang;
 
 import com.cupshe.restclient.exception.ConnectTimeoutException;
+import com.cupshe.restclient.lb.LoadBalanceType;
 import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.*;
@@ -10,9 +11,9 @@ import java.lang.annotation.*;
  *
  * @author zxy
  */
-@Documented
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@Documented
 public @interface RestClient {
 
     /**
@@ -56,7 +57,7 @@ public @interface RestClient {
     /**
      * 负载均衡策略
      *
-     * @return {@link RestClient.LoadBalanceType#RR}
+     * @return {@link LoadBalanceType#RR}
      */
     LoadBalanceType loadBalanceType() default LoadBalanceType.RR;
 
@@ -88,16 +89,4 @@ public @interface RestClient {
      * @return int
      */
     int readTimeout() default -1;
-
-    /**
-     * 负载均衡策略枚举
-     */
-    enum LoadBalanceType {
-
-        /*** 轮询（Round-Robin） */
-        RR,
-
-        /*** 随机（Random） */
-        R
-    }
 }

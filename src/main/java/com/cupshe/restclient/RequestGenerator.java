@@ -31,9 +31,7 @@ import static com.cupshe.restclient.RequestProcessor.*;
 @PureFunction
 class RequestGenerator {
 
-    private static final String PROTOCOL = "http://";
-
-    static RequestEntity<?> getRequestEntity(
+    static RequestEntity<?> genericRequestEntity(
             String targetHost, String uriPath, AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
 
         Object body = RequestProcessor.getRequestBodyOf(params, args);
@@ -53,31 +51,7 @@ class RequestGenerator {
         }
 
         HttpHeaders headers = genericHeaders(attr, params, args, isApplicationJson);
-        return new RequestEntity<>(body, headers, attr.method, genericUriOf(targetHost, uriPath));
-    }
-
-    static String genericUriOf(String prefix, AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
-        String result = processStandardUri(prefix, attr.path);
-        result = processPathVariables(result, getPathVariablesOf(params, args));
-        if (attr.isPassingParamsOfUrl()) {
-            Kvs kvs = new Kvs();
-            kvs.addAll(getRequestParamsOf(params, args));
-            kvs.addAll(getRequestParamsOf(attr.params));
-            result = processRequestParams(result, kvs);
-        }
-
-        return result;
-    }
-
-    @SneakyThrows
-    private static URI genericUriOf(String targetHost, String path) {
-        String relTargetHost = targetHost.startsWith(PROTOCOL)
-                ? targetHost
-                : (PROTOCOL + targetHost);
-        String url = relTargetHost.endsWith("/") || path.startsWith("/")
-                ? (relTargetHost + path)
-                : (relTargetHost + '/' + path);
-        return URI.create(url);
+        return new RequestEntity<>(body, headers, attr.method, genericUriOf(attr.httpsSupported, targetHost, uriPath));
     }
 
     private static HttpHeaders genericHeaders() {
@@ -112,6 +86,44 @@ class RequestGenerator {
         return result;
     }
 
+    static String genericUriOf(String prefix, AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
+        String result = processStandardUri(prefix, attr.path);
+        result = processPathVariables(result, getPathVariablesOf(params, args));
+        if (attr.isPassingParamsOfUrl()) {
+            Kvs kvs = new Kvs();
+            kvs.addAll(getRequestParamsOf(params, args));
+            kvs.addAll(getRequestParamsOf(attr.params));
+            result = processRequestParams(result, kvs);
+        }
+
+        return result;
+    }
+
+    @SneakyThrows
+    private static URI genericUriOf(boolean httpsSupported, String targetHost, String path) {
+        String absHost = getAbsTargetHost(httpsSupported, targetHost);
+        String requestUrl = path.startsWith("/") ? (absHost + path) : (absHost + '/' + path);
+        return URI.create(requestUrl);
+    }
+
+    private static String getAbsTargetHost(boolean httpsSupported, String targetHost) {
+        String protocol = httpsSupported ? Protocols.HTTPS : Protocols.HTTP;
+        String absHost = targetHost.startsWith(protocol) ? targetHost : (protocol + targetHost);
+        return absHost.endsWith("/") ? absHost.substring(0, absHost.length() - 1) : absHost;
+    }
+
+    /**
+     * Protocols
+     */
+    private interface Protocols {
+
+        /*** http */
+        String HTTP = "http://";
+
+        /*** https */
+        String HTTPS = "https://";
+    }
+
     /**
      * RestClientHeaders
      */
@@ -128,6 +140,7 @@ class RequestGenerator {
         //---------------------
 
         private final String key;
+
         private final String value;
 
         RestClientHeaders(String key, String value) {
@@ -151,8 +164,6 @@ class RequestGenerator {
         static HttpHeaders getFilteredHeaders(HttpHeaders headers) {
             // reset content-type
             headers.remove(HttpHeaders.CONTENT_TYPE);
-            // remove host
-            headers.remove(HttpHeaders.HOST);
             // filter headers
             for (String rh : RestClientProperties.getFilterHeaders()) {
                 headers.remove(rh);

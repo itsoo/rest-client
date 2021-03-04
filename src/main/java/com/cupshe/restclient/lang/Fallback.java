@@ -16,7 +16,7 @@ import java.lang.annotation.*;
  * @see Service
  * @see Repository
  */
-@Target({ElementType.TYPE})
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Component

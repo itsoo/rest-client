@@ -3,6 +3,7 @@ package com.cupshe.demo.rpc;
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.rpc.fallback.DemoProviderFallback;
+import com.cupshe.restclient.lang.HttpsSupported;
 import com.cupshe.restclient.lang.RestClient;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,11 +16,12 @@ import java.util.concurrent.Future;
  *
  * @author zxy
  */
+@HttpsSupported
 @RestClient(name = "comment", path = "/api/v1/comment", maxAutoRetries = 3,
         fallback = DemoProviderFallback.class, readTimeout = 1000)
 public interface DemoProvider {
 
-    @PostMapping("/form")
+    @PostMapping(value = "/form", headers = "authorization: ${request.authorization}", params = "abc=1")
     Future<ResponseVO<Object>> postForm(DemoDTO dto);
 
     @PostMapping("/body")

@@ -6,6 +6,8 @@ import com.cupshe.ak.net.UriUtils;
 import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.lang.PureFunction;
+import com.cupshe.restclient.parser.ExpressionParser;
+import com.cupshe.restclient.parser.PathVariableExpressionParser;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,10 +26,6 @@ import java.util.*;
  */
 @PureFunction
 class RequestProcessor {
-
-    static final String EXPRESSION_DELIMITER_PREFIX = "{";
-
-    static final String EXPRESSION_DELIMITER_SUFFIX = "}";
 
     static final String ROOT_PROPERTY = StringUtils.EMPTY;
 
@@ -50,26 +48,9 @@ class RequestProcessor {
     }
 
     static String processPathVariables(String url, Kvs args) {
-        if (Objects.isNull(url) || args.isEmpty()) {
-            return url;
-        }
-
-        StringBuilder result = new StringBuilder();
         Map<String, String> map = convertKvsToMap(args);
-        int i = 0, j = i;
-        while ((i = url.indexOf(EXPRESSION_DELIMITER_PREFIX, i)) != -1) {
-            result.append(url, j, i); // no expression template delimiter
-            j = url.indexOf(EXPRESSION_DELIMITER_SUFFIX, i);
-            String key = url.substring(i, j);
-            String value = map.get(key.substring(1).trim());
-            if (Objects.nonNull(value)) {
-                result.append(value);
-            }
-
-            i = ++j;
-        }
-
-        return result.append(url.substring(j)).toString();
+        ExpressionParser<?> parser = new PathVariableExpressionParser(map);
+        return parser.process(url);
     }
 
     static String processStandardUri(String prefix, String path) {

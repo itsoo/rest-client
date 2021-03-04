@@ -1,6 +1,6 @@
 rest-client:
   merged-routers: true
-  filter-headers: authorization,host
+  filter-headers: host
   routers:
     - name: comment
       services:
@@ -23,3 +23,6 @@ logging:
 
 fallback:
   tips: FALLBACK TIPS!
+
+request:
+  authorization: Basic NzY1ZDZiYzViMjA4NDc1M2U3YWE5OTM2MGIwM2JjNDE6MjVjOGIyNTNkMDhlYjg5YWRkYWE3YmQ3NmQ2MDZjMWQ=

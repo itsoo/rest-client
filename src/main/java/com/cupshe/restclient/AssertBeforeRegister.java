@@ -4,6 +4,7 @@ import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.exception.NoSupportMethodException;
 import com.cupshe.restclient.lang.PureFunction;
 import com.cupshe.restclient.lang.RestClient;
+import com.cupshe.restclient.parser.PathVariableExpressionParser;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.BeanDefinitionStoreException;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -134,7 +135,7 @@ class AssertBeforeRegister {
         int count = 0;
         for (Annotation ann : method.getDeclaredAnnotations()) {
             try {
-                AnnotationMethodAttribute.of(ann);
+                AnnotationMethodAttribute.of(ann, false);
                 count++;
             } catch (NoSupportMethodException ignore) {}
         }
@@ -144,14 +145,14 @@ class AssertBeforeRegister {
 
     static void assertPathVariableParams(Method method) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        long pvCounts1 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_DELIMITER_PREFIX);
-        long pvCounts2 = StringUtils.findSubstringCountOf(attr.path, RequestProcessor.EXPRESSION_DELIMITER_SUFFIX);
-        long mpsCounts = Arrays.stream(method.getParameters())
+        long pvCnt1 = StringUtils.findSubstringCountOf(attr.path, PathVariableExpressionParser.EXPRESSION_PREFIX);
+        long pvCnt2 = StringUtils.findSubstringCountOf(attr.path, PathVariableExpressionParser.EXPRESSION_SUFFIX);
+        long mpsCnt = Arrays.stream(method.getParameters())
                 .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, PathVariable.class) != null)
                 .count();
-        assertIsTrue(pvCounts1 == pvCounts2, method, "@RequestMapping 'path' format error.");
-        assertIsTrue(pvCounts1 == mpsCounts, method, "Wrong params map to request @PathVariable.");
+        assertIsTrue(pvCnt1 == pvCnt2, method, "@RequestMapping 'path' format error.");
+        assertIsTrue(pvCnt1 == mpsCnt, method, "Wrong params map to request @PathVariable.");
     }
 
     @NonNull
