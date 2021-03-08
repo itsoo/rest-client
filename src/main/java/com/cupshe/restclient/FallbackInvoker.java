@@ -3,6 +3,7 @@ package com.cupshe.restclient;
 import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.lang.NonNull;
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author zxy
  */
+@Slf4j
 class FallbackInvoker {
 
     private final Class<?> reference;
@@ -59,7 +61,7 @@ class FallbackInvoker {
         String methodName = method.getName();
         Class<?>[] paramTypes = method.getParameterTypes();
         Method fallback = reference.getDeclaredMethod(methodName, paramTypes);
-        Logging.fallback(fallback.toGenericString(), args);
+        log.warn("Rest-client called <{}> fallback arguments: {}", fallback.toGenericString(), args);
         return ReflectionUtils.invokeMethod(fallback, getInstance(reference), args);
     }
 

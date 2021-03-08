@@ -10,9 +10,9 @@ import org.springframework.core.env.Environment;
  */
 public class PropertyValueExpressionParser implements ExpressionParser<Environment> {
 
-    public static final String EXPRESSION_PREFIX = "${";
+    public static final String EXPRESSION_DELIMITER_PREFIX = "${";
 
-    public static final String EXPRESSION_SUFFIX = "}";
+    public static final String EXPRESSION_DELIMITER_SUFFIX = "}";
 
     private final Environment dataSource;
 
@@ -21,13 +21,13 @@ public class PropertyValueExpressionParser implements ExpressionParser<Environme
     }
 
     @Override
-    public String getExpressionPrefix() {
-        return EXPRESSION_PREFIX;
+    public String getExpressionDelimiterPrefix() {
+        return EXPRESSION_DELIMITER_PREFIX;
     }
 
     @Override
-    public String getExpressionSuffix() {
-        return EXPRESSION_SUFFIX;
+    public String getExpressionDelimiterSuffix() {
+        return EXPRESSION_DELIMITER_SUFFIX;
     }
 
     @Override

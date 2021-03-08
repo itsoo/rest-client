@@ -11,9 +11,9 @@ import java.util.Map;
  */
 public class PathVariableExpressionParser implements ExpressionParser<Map<String, String>> {
 
-    public static final String EXPRESSION_PREFIX = "{";
+    public static final String EXPRESSION_DELIMITER_PREFIX = "{";
 
-    public static final String EXPRESSION_SUFFIX = "}";
+    public static final String EXPRESSION_DELIMITER_SUFFIX = "}";
 
     private final Map<String, String> dataSource;
 
@@ -22,13 +22,13 @@ public class PathVariableExpressionParser implements ExpressionParser<Map<String
     }
 
     @Override
-    public String getExpressionPrefix() {
-        return EXPRESSION_PREFIX;
+    public String getExpressionDelimiterPrefix() {
+        return EXPRESSION_DELIMITER_PREFIX;
     }
 
     @Override
-    public String getExpressionSuffix() {
-        return EXPRESSION_SUFFIX;
+    public String getExpressionDelimiterSuffix() {
+        return EXPRESSION_DELIMITER_SUFFIX;
     }
 
     @Override

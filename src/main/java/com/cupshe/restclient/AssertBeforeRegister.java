@@ -145,8 +145,8 @@ class AssertBeforeRegister {
 
     static void assertPathVariableParams(Method method) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method);
-        long pvCnt1 = StringUtils.findSubstringCountOf(attr.path, PathVariableExpressionParser.EXPRESSION_PREFIX);
-        long pvCnt2 = StringUtils.findSubstringCountOf(attr.path, PathVariableExpressionParser.EXPRESSION_SUFFIX);
+        long pvCnt1 = StringUtils.findSubstringCountOf(attr.path, PathVariableExpressionParser.EXPRESSION_DELIMITER_PREFIX);
+        long pvCnt2 = StringUtils.findSubstringCountOf(attr.path, PathVariableExpressionParser.EXPRESSION_DELIMITER_SUFFIX);
         long mpsCnt = Arrays.stream(method.getParameters())
                 .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, PathVariable.class) != null)

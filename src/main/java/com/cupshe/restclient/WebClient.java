@@ -10,7 +10,7 @@ import com.cupshe.restclient.lb.LoadBalancer;
 import com.cupshe.restclient.lb.RandomLoadBalancer;
 import com.cupshe.restclient.lb.RoundRobinLoadBalancer;
 import lombok.Data;
-import org.springframework.core.env.Environment;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.ResourceAccessException;
@@ -36,6 +36,7 @@ import static com.cupshe.restclient.ResponseProcessor.*;
  *
  * @author zxy
  */
+@Slf4j
 @PureFunction
 class WebClient {
 
@@ -65,10 +66,11 @@ class WebClient {
     }
 
     Object sendRequest(Method method, Object[] args) {
-        Environment env = proxy.getEnvironment();
-        AnnotationMethodAttribute attr = AnnotationMethodAttribute.of(method).process(env);
-        Parameter[] params = method.getParameters();
-        return doResponse(doRequest(attr, params, args), method, args);
+        AnnotationMethodAttribute attr = AnnotationMethodAttribute
+                .of(method)
+                .process(proxy.getEnvironment());
+        ResponseEntity<byte[]> resp = doRequest(attr, method.getParameters(), args);
+        return doResponse(resp, method, args);
     }
 
     private ResponseEntity<byte[]> doRequest(AnnotationMethodAttribute attr, Parameter[] params, Object[] args) {
@@ -78,14 +80,14 @@ class WebClient {
             do {
                 RequestEntity<?> requestEntity = getRequestEntity(attr, params, args);
                 try {
-                    Logging.request(requestEntity);
+                    log.info("Rest-client request params ===> {}", requestEntity.toString());
                     result = restTemplate.exchange(requestEntity, byte[].class);
                     break;
                 } catch (ResourceAccessException e) { // timeout
-                    Logging.timeout(e.getMessage());
+                    log.error("Rest-client request timeout: {}", e.getMessage());
                     retries.set(retries.get() + 1);
                 } catch (Exception e) {
-                    Logging.failed(e.getMessage(), requestEntity);
+                    log.error("Rest-client failed request {} ===> {}", e.getMessage(), requestEntity.toString());
                     throw e;
                 }
             } while (retries.get() <= proxy.getMaxAutoRetries());
@@ -115,7 +117,7 @@ class WebClient {
         // process response body
         String json = Objects.nonNull(resp.getBody()) ? convertToString(resp.getBody()) : null;
         if (Objects.nonNull(json)) {
-            Logging.response(json);
+            log.info("Rest-client response data is ===> {}", json);
         }
 
         // callback policy
@@ -145,7 +147,6 @@ class WebClient {
             this.random = new RandomLoadBalancer(services);
         }
 
-        @PureFunction
         String get(LoadBalanceType lp) {
             return getLoadBalancer(lp).next();
         }

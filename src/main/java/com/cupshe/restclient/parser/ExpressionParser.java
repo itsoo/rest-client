@@ -9,9 +9,9 @@ import java.util.Objects;
  */
 public interface ExpressionParser<T> {
 
-    String getExpressionPrefix();
+    String getExpressionDelimiterPrefix();
 
-    String getExpressionSuffix();
+    String getExpressionDelimiterSuffix();
 
     T getDataSource();
 
@@ -24,8 +24,8 @@ public interface ExpressionParser<T> {
         }
 
         StringBuilder result = new StringBuilder();
-        String prefix = getExpressionPrefix();
-        String suffix = getExpressionSuffix();
+        String prefix = getExpressionDelimiterPrefix();
+        String suffix = getExpressionDelimiterSuffix();
         int i = 0, j = i, offset = prefix.length();
         while ((i = expression.indexOf(prefix, i)) != -1) {
             result.append(expression, j, i); // no expression template delimiter
