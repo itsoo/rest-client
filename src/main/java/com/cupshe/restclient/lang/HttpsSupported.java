@@ -4,6 +4,7 @@ import java.lang.annotation.*;
 
 /**
  * HttpsSupported
+ * <p>Marking this annotation will send an HTTPS request.
  *
  * @author zxy
  */
