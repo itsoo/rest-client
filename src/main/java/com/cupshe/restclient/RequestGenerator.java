@@ -6,7 +6,6 @@ import com.cupshe.ak.core.Kvs;
 import com.cupshe.ak.request.RequestHeaderUtils;
 import com.cupshe.ak.request.RequestTraceIdUtils;
 import com.cupshe.ak.text.StringUtils;
-import com.cupshe.restclient.lang.PureFunction;
 import lombok.SneakyThrows;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,7 +27,6 @@ import static com.cupshe.restclient.RequestProcessor.*;
  *
  * @author zxy
  */
-@PureFunction
 class RequestGenerator {
 
     static RequestEntity<?> genericRequestEntity(
@@ -184,7 +182,7 @@ class RequestGenerator {
 
         static String[] getHeader(HttpHeaders headers, String key) {
             return headers.getOrEmpty(key)
-                    .parallelStream()
+                    .stream()
                     .filter(Objects::nonNull)
                     .toArray(String[]::new);
         }

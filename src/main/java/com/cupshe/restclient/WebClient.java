@@ -4,7 +4,6 @@ import com.cupshe.restclient.exception.ConnectTimeoutException;
 import com.cupshe.restclient.exception.NotFoundException;
 import com.cupshe.restclient.factory.ClientRestTemplateFactory;
 import com.cupshe.restclient.factory.ThreadPoolExecutorFactory;
-import com.cupshe.restclient.lang.PureFunction;
 import com.cupshe.restclient.lb.LoadBalanceType;
 import com.cupshe.restclient.lb.LoadBalancer;
 import com.cupshe.restclient.lb.RandomLoadBalancer;
@@ -37,7 +36,6 @@ import static com.cupshe.restclient.ResponseProcessor.*;
  * @author zxy
  */
 @Slf4j
-@PureFunction
 class WebClient {
 
     private static final ExecutorService EXECUTOR = ThreadPoolExecutorFactory.getThreadPoolExecutor();
@@ -68,7 +66,7 @@ class WebClient {
     Object sendRequest(Method method, Object[] args) {
         AnnotationMethodAttribute attr = AnnotationMethodAttribute
                 .of(method)
-                .process(proxy.getEnvironment());
+                .parse(proxy.getEnv());
         ResponseEntity<byte[]> resp = doRequest(attr, method.getParameters(), args);
         return doResponse(resp, method, args);
     }

@@ -1,4 +1,4 @@
-package com.cupshe.restclient.lang;
+package com.cupshe.restclient.fallback;
 
 import org.springframework.core.annotation.AliasFor;
 import org.springframework.stereotype.Component;

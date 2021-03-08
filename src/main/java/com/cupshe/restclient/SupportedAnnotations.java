@@ -1,8 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.ak.objects.ObjectClasses;
-import com.cupshe.restclient.lang.Fallback;
-import com.cupshe.restclient.lang.PureFunction;
+import com.cupshe.restclient.fallback.Fallback;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
@@ -18,24 +17,23 @@ import java.util.stream.Collectors;
  *
  * @author zxy
  */
-@PureFunction
-class SupportedAnnotations {
+public class SupportedAnnotations {
 
     private static final Set<Class<?>> ALL_TYPES = Collections.unmodifiableSet(allTypes());
 
-    static boolean isSupport(Class<?> clazz) {
+    public static boolean isSupport(Class<?> clazz) {
         return ALL_TYPES.contains(clazz);
     }
 
-    static String getValue(Annotation annotation) {
+    public static String getValue(Annotation annotation) {
         return isSupport(annotation.annotationType())
                 ? (String) ObjectClasses.getValueByMethodName("value", annotation)
                 : null;
     }
 
-    static String supportTypes() {
+    public static String supportTypes() {
         return ALL_TYPES
-                .parallelStream()
+                .stream()
                 .map(Class::getCanonicalName)
                 .collect(Collectors.joining(", "));
     }

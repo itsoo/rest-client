@@ -13,11 +13,12 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class RoundRobinLoadBalancer implements LoadBalancer {
 
-    private final AtomicInteger i = new AtomicInteger(-1);
+    private final AtomicInteger i;
 
     private final List<String> services;
 
     public RoundRobinLoadBalancer(@NonNull List<String> services) {
+        this.i = new AtomicInteger(-1);
         this.services = services;
     }
 

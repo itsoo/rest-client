@@ -5,7 +5,6 @@ import com.cupshe.ak.core.Kvs;
 import com.cupshe.ak.net.UriUtils;
 import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.ak.text.StringUtils;
-import com.cupshe.restclient.lang.PureFunction;
 import com.cupshe.restclient.parser.ExpressionParser;
 import com.cupshe.restclient.parser.PathVariableExpressionParser;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -24,7 +23,6 @@ import java.util.*;
  *
  * @author zxy
  */
-@PureFunction
 class RequestProcessor {
 
     static final String ROOT_PROPERTY = StringUtils.EMPTY;

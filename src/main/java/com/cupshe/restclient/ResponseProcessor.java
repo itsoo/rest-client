@@ -3,7 +3,6 @@ package com.cupshe.restclient;
 import com.cupshe.ak.json.JsonUtils;
 import com.cupshe.ak.objects.ObjectClasses;
 import com.cupshe.restclient.exception.ClassConvertException;
-import com.cupshe.restclient.lang.PureFunction;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import org.springframework.http.HttpStatus;
@@ -21,7 +20,6 @@ import java.util.concurrent.Future;
  *
  * @author zxy
  */
-@PureFunction
 class ResponseProcessor {
 
     static final ResponseEntity<byte[]> REQUEST_TIMEOUT = new ResponseEntity<>(HttpStatus.REQUEST_TIMEOUT);

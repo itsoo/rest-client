@@ -1,6 +1,7 @@
 package com.cupshe.restclient;
 
 import com.cupshe.restclient.exception.ClientUnknownError;
+import com.cupshe.restclient.fallback.FallbackInvoker;
 import com.cupshe.restclient.lb.LoadBalanceType;
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -29,19 +30,19 @@ public class RestClientProxy implements InvocationHandler {
 
     private final Class<?> fallback;
 
-    private final Environment environment;
+    private final Environment env;
 
     private final WebClient client;
 
     RestClientProxy(String name, String path, LoadBalanceType loadBalanceType, int maxAutoRetries,
-                    Class<?> fallback, int connectTimeout, int readTimeout, Environment environment) {
+                    Class<?> fallback, int connectTimeout, int readTimeout, Environment env) {
 
         this.name = name;
         this.path = path;
         this.loadBalanceType = loadBalanceType;
         this.maxAutoRetries = maxAutoRetries;
         this.fallback = fallback;
-        this.environment = environment;
+        this.env = env;
         this.client = WebClient.newInstance(this, connectTimeout, readTimeout);
     }
 

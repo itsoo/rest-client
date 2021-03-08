@@ -2,7 +2,6 @@ package com.cupshe.restclient;
 
 import com.cupshe.ak.text.StringUtils;
 import com.cupshe.restclient.exception.NoSupportMethodException;
-import com.cupshe.restclient.lang.PureFunction;
 import com.cupshe.restclient.lang.RestClient;
 import com.cupshe.restclient.parser.PathVariableExpressionParser;
 import lombok.SneakyThrows;
@@ -28,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap;
  *
  * @author zxy
  */
-@PureFunction
 class AssertBeforeRegister {
 
     private static Map<String, String> registeredBeans = new ConcurrentHashMap<>(32);
@@ -104,7 +102,6 @@ class AssertBeforeRegister {
         assertIsTrue(checkClassTyped, clazz, "Fallback class cannot be interface or abstract class.");
 
         long count = Arrays.stream(fallback.getDeclaredAnnotations())
-                .parallel()
                 .filter(t -> SupportedAnnotations.isSupport(t.annotationType()))
                 .count();
         String types = SupportedAnnotations.supportTypes();
@@ -114,7 +111,6 @@ class AssertBeforeRegister {
 
     static void assertRequestBodyOnlyOne(Method method) {
         long count = Arrays.stream(method.getParameters())
-                .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, RequestBody.class) != null)
                 .count();
         assertIsTrue(count <= 1L, method, "@RequestBody of the method cannot have that more than one.");
@@ -148,7 +144,6 @@ class AssertBeforeRegister {
         long pvCnt1 = StringUtils.findSubstringCountOf(attr.path, PathVariableExpressionParser.EXPRESSION_DELIMITER_PREFIX);
         long pvCnt2 = StringUtils.findSubstringCountOf(attr.path, PathVariableExpressionParser.EXPRESSION_DELIMITER_SUFFIX);
         long mpsCnt = Arrays.stream(method.getParameters())
-                .parallel()
                 .filter(t -> AnnotationUtils.findAnnotation(t, PathVariable.class) != null)
                 .count();
         assertIsTrue(pvCnt1 == pvCnt2, method, "@RequestMapping 'path' format error.");

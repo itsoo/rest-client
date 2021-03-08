@@ -2,7 +2,6 @@ package com.cupshe.restclient;
 
 import com.cupshe.restclient.exception.NoSupportMethodException;
 import com.cupshe.restclient.lang.HttpsSupported;
-import com.cupshe.restclient.lang.PureFunction;
 import com.cupshe.restclient.parser.ExpressionParser;
 import com.cupshe.restclient.parser.PropertyValueExpressionParser;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -46,17 +45,15 @@ class AnnotationMethodAttribute {
         this.httpsSupported = httpsSupported;
     }
 
-    @PureFunction
     boolean isPassingParamsOfUrl() {
         return GET.equals(method) || DELETE.equals(method);
     }
 
-    @PureFunction
     boolean isPassingParamsOfForm() {
         return POST.equals(method) || PUT.equals(method) || PATCH.equals(method);
     }
 
-    AnnotationMethodAttribute process(Environment env) {
+    AnnotationMethodAttribute parse(Environment env) {
         ExpressionParser<?> parser = new PropertyValueExpressionParser(env);
         for (int i = 0; i < headers.length; i++) {
             headers[i] = parser.process(headers[i]);
@@ -69,7 +66,6 @@ class AnnotationMethodAttribute {
         return this;
     }
 
-    @PureFunction
     static AnnotationMethodAttribute of(Method method) {
         Annotation ann;
         boolean httpsSupported = supportHttpsProtocol(method);
@@ -90,7 +86,6 @@ class AnnotationMethodAttribute {
         throw new NoSupportMethodException();
     }
 
-    @PureFunction
     static AnnotationMethodAttribute of(Annotation ann, boolean httpsSupported) {
         if (GetMapping.class.isAssignableFrom(ann.annotationType())) {
             return of((GetMapping) ann, httpsSupported);

@@ -3,7 +3,7 @@ package com.cupshe.demo.rpc.fallback;
 import com.cupshe.ak.ResponseVO;
 import com.cupshe.demo.domain.DemoDTO;
 import com.cupshe.demo.rpc.DemoProvider;
-import com.cupshe.restclient.lang.Fallback;
+import com.cupshe.restclient.fallback.Fallback;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.List;

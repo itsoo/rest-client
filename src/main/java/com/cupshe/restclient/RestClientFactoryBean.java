@@ -1,5 +1,6 @@
 package com.cupshe.restclient;
 
+import com.cupshe.restclient.fallback.FallbackInvoker;
 import com.cupshe.restclient.lb.LoadBalanceType;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.FactoryBean;
@@ -33,9 +34,7 @@ public class RestClientFactoryBean implements FactoryBean<Object>, EnvironmentAw
 
     private final int readTimeout;
 
-    private Environment environment;
-
-    private ApplicationContext applicationContext;
+    private Environment env;
 
     public RestClientFactoryBean(Class<?> clazz, String name, String path, LoadBalanceType loadBalanceType,
                                  int maxAutoRetries, Class<?> fallback, int connectTimeout, int readTimeout) {
@@ -51,21 +50,20 @@ public class RestClientFactoryBean implements FactoryBean<Object>, EnvironmentAw
     }
 
     @Override
-    public void setEnvironment(@NonNull Environment environment) {
-        // register fallback environment
-        FallbackInvoker.setEnvironment(this.environment = environment);
+    public void setEnvironment(@NonNull Environment env) {
+        this.env = env;
     }
 
     @Override
-    public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
+    public void setApplicationContext(@NonNull ApplicationContext ctx) throws BeansException {
+        // loaded only config properties
+        ctx.getBean(RestClientProperties.class);
         // register fallback application context
-        FallbackInvoker.setApplicationContext(this.applicationContext = applicationContext);
+        FallbackInvoker.setCtx(ctx);
     }
 
     @Override
     public Object getObject() {
-        // loaded only config properties
-        applicationContext.getBean(RestClientProperties.class);
         return Proxy.newProxyInstance(clazz.getClassLoader(), ofArray(clazz), newProxyInstance());
     }
 
@@ -80,6 +78,6 @@ public class RestClientFactoryBean implements FactoryBean<Object>, EnvironmentAw
 
     private RestClientProxy newProxyInstance() {
         return new RestClientProxy(
-                name, path, loadBalanceType, maxAutoRetries, fallback, connectTimeout, readTimeout, environment);
+                name, path, loadBalanceType, maxAutoRetries, fallback, connectTimeout, readTimeout, env);
     }
 }

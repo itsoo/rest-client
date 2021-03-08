@@ -1,7 +1,6 @@
 package com.cupshe.restclient;
 
 import com.cupshe.restclient.exception.RepeatRouterException;
-import com.cupshe.restclient.lang.PureFunction;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -35,7 +34,6 @@ public class RestClientProperties {
     // GETTER AND SETTER
     //---------------------
 
-    @PureFunction
     static String[] getFilterHeaders() {
         return filterHeaders;
     }
@@ -46,7 +44,6 @@ public class RestClientProperties {
         }
     }
 
-    @PureFunction
     static RequestCaller getRouters(String name) {
         return routers.get(name);
     }
